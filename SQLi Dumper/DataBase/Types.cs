@@ -36,6 +36,24 @@ namespace DataBase
 		// Token: 0x04000889 RID: 2185
 		MsAccess,
 		// Token: 0x0400088A RID: 2186
-		Sybase
+		Sybase,
+		// Token: 0x0400088B RID: 2187
+		SQLite_Unknown,
+		// Token: 0x0400088C RID: 2188
+		SQLite_No_Error,
+		// Token: 0x0400088D RID: 2189
+		SQLite_With_Error,
+		// Token: 0x0400088E RID: 2190
+		MongoDB_Unknown,
+		// Token: 0x0400088F RID: 2191
+		MongoDB_No_Error,
+		// Token: 0x04000890 RID: 2192
+		MongoDB_With_Error,
+		// Token: 0x04000891 RID: 2193
+		DB2_Unknown,
+		// Token: 0x04000892 RID: 2194
+		DB2_No_Error,
+		// Token: 0x04000893 RID: 2195
+		DB2_With_Error
 	}
 }

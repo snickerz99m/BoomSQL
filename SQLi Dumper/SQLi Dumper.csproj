@@ -83,7 +83,13 @@
     <Compile Include="DataBase\PostgreSQLCollactions.cs" />
     <Compile Include="DataBase\PostgreSQLErrorType.cs" />
     <Compile Include="DataBase\Schema.cs" />
+    <Compile Include="DataBase\SQLite.cs" />
     <Compile Include="DataBase\Types.cs" />
+    <Compile Include="DetectionMethods.cs" />
+    <Compile Include="EnhancedAnalyzer.cs" />
+    <Compile Include="ErrorSignatures.cs" />
+    <Compile Include="PayloadEncoder.cs" />
+    <Compile Include="PayloadManager.cs" />
     <Compile Include="DataGP.cs" />
     <Compile Include="DataSearch.cs" />
     <Compile Include="DebugWin.cs">
