@@ -68,6 +68,14 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="AppDomainControl.cs" />
     <Compile Include="ControlButton.cs" />
+    <Compile Include="Core\AnalyzerExtensions.cs" />
+    <Compile Include="Core\CoreIntegration.cs" />
+    <Compile Include="Core\DbTypes.cs" />
+    <Compile Include="Core\DetectionMethods.cs" />
+    <Compile Include="Core\ErrorSignatures.cs" />
+    <Compile Include="Core\Payloads.cs" />
+    <Compile Include="Core\UsageExamples.cs" />
+    <Compile Include="Core\WAFBypass.cs" />
     <Compile Include="Cryptor\Method.cs" />
     <Compile Include="DataBase\InjectionFormat.cs" />
     <Compile Include="DataBase\InjectionType.cs" />
