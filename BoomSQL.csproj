@@ -14,6 +14,8 @@
     <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
     <PackageReference Include="Guna.UI2.WinForms" Version="2.0.4.7" />
     <PackageReference Include="OpenAI" Version="2.2.0-beta.4" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
+    <PackageReference Include="System.Web.HttpUtility" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

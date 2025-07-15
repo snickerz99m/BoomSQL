@@ -83,5 +83,26 @@ namespace BoomSQL.Core
             if (_userAgents.Count == 0) return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
             return _userAgents[_random.Next(_userAgents.Count)];
         }
+
+        public static List<Proxy> LoadProxies(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    return File.ReadLines(filePath)
+                        .Select(line => line.Trim())
+                        .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith("#"))
+                        .Select(line => ParseProxy(line))
+                        .Where(p => p != null)
+                        .ToList()!;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading proxies: {ex.Message}");
+            }
+            return new List<Proxy>();
+        }
     }
 }
