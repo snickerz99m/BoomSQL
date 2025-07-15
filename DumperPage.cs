@@ -9,6 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using System.Net.Http;
+using System.Threading;
+using BoomSQL.Core;
 
 namespace BoomSQL
 {
@@ -18,6 +21,10 @@ namespace BoomSQL
         private bool _isDumping = false;
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
         private int _maxThreads = 3;
+        private HttpClient _httpClient = new HttpClient();
+        private DatabaseDumper _dumper;
+        private VulnerabilityDetails _currentVulnerability;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public DumperPage()
         {
@@ -30,10 +37,22 @@ namespace BoomSQL
         private ImageList CreateImageList()
         {
             var images = new ImageList();
-            images.Images.Add("server", Properties.Resources.ServerIcon);
-            images.Images.Add("database", Properties.Resources.DatabaseIcon);
-            images.Images.Add("table", Properties.Resources.TableIcon);
-            images.Images.Add("column", Properties.Resources.ColumnIcon);
+            try
+            {
+                // Use generic icons if resources are not available
+                images.Images.Add("server", SystemIcons.Application.ToBitmap());
+                images.Images.Add("database", SystemIcons.Application.ToBitmap());
+                images.Images.Add("table", SystemIcons.Application.ToBitmap());
+                images.Images.Add("column", SystemIcons.Application.ToBitmap());
+            }
+            catch
+            {
+                // Fallback to simple icon list
+                images.Images.Add("server", new Bitmap(16, 16));
+                images.Images.Add("database", new Bitmap(16, 16));
+                images.Images.Add("table", new Bitmap(16, 16));
+                images.Images.Add("column", new Bitmap(16, 16));
+            }
             return images;
         }
 
@@ -50,320 +69,226 @@ namespace BoomSQL
 
         private void InitializeTimer()
         {
-            _progressTimer.Interval = 500;
+            _progressTimer.Interval = 1000;
             _progressTimer.Tick += (s, e) => UpdateProgress();
+        }
+
+        public void SetVulnerability(VulnerabilityDetails vulnerability)
+        {
+            _currentVulnerability = vulnerability;
+            if (_currentVulnerability != null)
+            {
+                var config = new SqlInjectionConfig
+                {
+                    MaxThreads = _maxThreads,
+                    RequestTimeout = 30
+                };
+                
+                _dumper = new DatabaseDumper(_httpClient, _currentVulnerability, config);
+                LogMessage($"Vulnerability set: {_currentVulnerability.Payload.Title} on {_currentVulnerability.InjectionPoint.Name}");
+            }
         }
 
         private async void BtnStart_Click(object sender, EventArgs e)
         {
-            if (_isDumping) return;
-
-            var url = txtUrl.Text.Trim();
-            if (string.IsNullOrEmpty(url) || !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            if (_isDumping || _currentVulnerability == null)
             {
-                MessageBox.Show("Please enter a valid URL");
+                MessageBox.Show("Please select a vulnerability from the Tester page first");
                 return;
             }
 
             _isDumping = true;
-            _database = new DatabaseStructure();
-            treeDatabase.Nodes.Clear();
-            txtData.Clear();
+            _cancellationTokenSource = new CancellationTokenSource();
             SetControlsEnabled(false);
             btnStop.Enabled = true;
-
-            _maxThreads = (int)nudThreads.Value;
             _progressTimer.Start();
-            LogMessage($"Starting database dump for: {url}");
 
             try
             {
-                // Step 1: Identify database type
-                var dbType = await IdentifyDatabaseType(url);
-                _database.Type = dbType;
-                LogMessage($"Detected database type: {dbType}");
-
-                // Step 2: Get databases
-                var databases = await GetDatabases(url);
-                foreach (var db in databases)
-                {
-                    _database.Databases.Add(db);
-                    LogMessage($"Found database: {db.Name}");
-                }
-
-                // Step 3: Get tables for each database
-                foreach (var database in _database.Databases)
-                {
-                    var tables = await GetTables(url, database.Name);
-                    foreach (var table in tables)
-                    {
-                        database.Tables.Add(table);
-                        LogMessage($"Found table: {database.Name}.{table.Name}");
-                    }
-                }
-
-                // Step 4: Get columns for each table
-                foreach (var database in _database.Databases)
-                {
-                    foreach (var table in database.Tables)
-                    {
-                        var columns = await GetColumns(url, database.Name, table.Name);
-                        foreach (var column in columns)
-                        {
-                            table.Columns.Add(column);
-                            LogMessage($"Found column: {database.Name}.{table.Name}.{column.Name} ({column.Type})");
-                        }
-                    }
-                }
-
-                PopulateTreeView();
-                DumpingComplete();
+                LogMessage("Starting database enumeration...");
+                _database = await _dumper.DumpDatabaseAsync(_cancellationTokenSource.Token);
+                PopulateDatabaseTree();
+                LogMessage("Database enumeration completed successfully");
+            }
+            catch (OperationCanceledException)
+            {
+                LogMessage("Database enumeration was cancelled");
             }
             catch (Exception ex)
             {
-                LogMessage($"Dumping error: {ex.Message}");
-                DumpingComplete();
+                LogMessage($"Error during database enumeration: {ex.Message}");
+                MessageBox.Show($"Database enumeration failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _isDumping = false;
+                _progressTimer.Stop();
+                SetControlsEnabled(true);
+                btnStop.Enabled = false;
             }
         }
 
-        private async Task<string> IdentifyDatabaseType(string url)
+        private void BtnStop_Click(object sender, EventArgs e)
         {
-            // Actual database identification would go here
-            // This is simplified for example purposes
-            await Task.Delay(1000);
-            return "MySQL";
+            _cancellationTokenSource?.Cancel();
+            _isDumping = false;
+            btnStop.Enabled = false;
+            LogMessage("Database enumeration stopped by user");
         }
 
-        private async Task<List<Database>> GetDatabases(string url)
+        private void PopulateDatabaseTree()
         {
-            // Actual database retrieval would go here
-            await Task.Delay(1000);
-            return new List<Database>
-            {
-                new Database { Name = "information_schema" },
-                new Database { Name = "mysql" },
-                new Database { Name = "performance_schema" },
-                new Database { Name = "sys" },
-                new Database { Name = "app_db" }
-            };
-        }
-
-        private async Task<List<Table>> GetTables(string url, string dbName)
-        {
-            // Actual table retrieval would go here
-            await Task.Delay(500);
-
-            if (dbName == "app_db")
-            {
-                return new List<Table>
-                {
-                    new Table { Name = "users" },
-                    new Table { Name = "products" },
-                    new Table { Name = "orders" }
-                };
-            }
-
-            return new List<Table>();
-        }
-
-        private async Task<List<Column>> GetColumns(string url, string dbName, string tableName)
-        {
-            // Actual column retrieval would go here
-            await Task.Delay(300);
-
-            if (dbName == "app_db" && tableName == "users")
-            {
-                return new List<Column>
-                {
-                    new Column { Name = "id", Type = "int" },
-                    new Column { Name = "username", Type = "varchar(255)" },
-                    new Column { Name = "password", Type = "varchar(255)" },
-                    new Column { Name = "email", Type = "varchar(255)" }
-                };
-            }
-
-            return new List<Column>();
-        }
-
-        private void PopulateTreeView()
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action(PopulateTreeView));
-                return;
-            }
-
-            treeDatabase.BeginUpdate();
             treeDatabase.Nodes.Clear();
+            
+            if (_database == null) return;
 
-            var rootNode = new TreeNode("Database Structure")
+            var serverNode = new TreeNode($"Server ({_database.DatabaseType})")
             {
                 ImageKey = "server",
                 SelectedImageKey = "server"
             };
 
-            foreach (var db in _database.Databases)
+            var databaseNode = new TreeNode($"Database: {_database.DatabaseName}")
             {
-                var dbNode = new TreeNode(db.Name)
+                ImageKey = "database",
+                SelectedImageKey = "database"
+            };
+
+            foreach (var table in _database.Tables)
+            {
+                var tableNode = new TreeNode($"Table: {table.Name} ({table.RowCount} rows)")
                 {
-                    ImageKey = "database",
-                    SelectedImageKey = "database",
-                    Tag = db
+                    ImageKey = "table",
+                    SelectedImageKey = "table",
+                    Tag = table
                 };
 
-                foreach (var table in db.Tables)
+                foreach (var column in table.Columns)
                 {
-                    var tableNode = new TreeNode(table.Name)
+                    var columnNode = new TreeNode($"{column.Name} ({column.DataType})")
                     {
-                        ImageKey = "table",
-                        SelectedImageKey = "table",
-                        Tag = table
+                        ImageKey = "column",
+                        SelectedImageKey = "column",
+                        Tag = column
                     };
-
-                    foreach (var column in table.Columns)
-                    {
-                        var columnNode = new TreeNode($"{column.Name} ({column.Type})")
-                        {
-                            ImageKey = "column",
-                            SelectedImageKey = "column",
-                            Tag = column
-                        };
-                        tableNode.Nodes.Add(columnNode);
-                    }
-
-                    dbNode.Nodes.Add(tableNode);
+                    tableNode.Nodes.Add(columnNode);
                 }
 
-                rootNode.Nodes.Add(dbNode);
+                databaseNode.Nodes.Add(tableNode);
             }
 
-            treeDatabase.Nodes.Add(rootNode);
-            rootNode.Expand();
-            treeDatabase.EndUpdate();
+            serverNode.Nodes.Add(databaseNode);
+            treeDatabase.Nodes.Add(serverNode);
+            treeDatabase.ExpandAll();
         }
 
         private void TreeDatabase_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (e.Node?.Tag is Column column)
+            if (e.Node?.Tag is DatabaseTable table)
             {
-                txtData.Text = $"{column.Parent.Parent.Name}.{column.Parent.Name}.{column.Name}\nType: {column.Type}";
+                DisplayTableData(table);
             }
-            else if (e.Node?.Tag is Table table)
+        }
+
+        private void DisplayTableData(DatabaseTable table)
+        {
+            try
             {
-                txtData.Text = $"{table.Parent.Name}.{table.Name}\nColumns: {table.Columns.Count}";
+                var dataTable = new DataTable();
+                
+                // Add columns
+                foreach (var column in table.Columns)
+                {
+                    dataTable.Columns.Add(column.Name, typeof(string));
+                }
+
+                // Add rows
+                foreach (var row in table.Data)
+                {
+                    var dataRow = dataTable.NewRow();
+                    foreach (var column in table.Columns)
+                    {
+                        if (row.ContainsKey(column.Name))
+                        {
+                            dataRow[column.Name] = row[column.Name]?.ToString() ?? "";
+                        }
+                    }
+                    dataTable.Rows.Add(dataRow);
+                }
+
+                // Display in data grid (assuming there's a DataGridView named dgvData)
+                if (dgvData != null)
+                {
+                    dgvData.DataSource = dataTable;
+                }
             }
-            else if (e.Node?.Tag is Database database)
+            catch (Exception ex)
             {
-                txtData.Text = $"{database.Name}\nTables: {database.Tables.Count}";
+                LogMessage($"Error displaying table data: {ex.Message}");
             }
         }
 
         private async void BtnDumpSelected_Click(object sender, EventArgs e)
         {
-            if (treeDatabase.SelectedNode?.Tag is Table table)
+            if (treeDatabase.SelectedNode?.Tag is DatabaseTable table)
             {
-                await DumpTable(table);
-            }
-            else if (treeDatabase.SelectedNode?.Tag is Database database)
-            {
-                await DumpDatabase(database);
+                await DumpTableAsync(table);
             }
             else
             {
-                MessageBox.Show("Please select a database or table");
+                MessageBox.Show("Please select a table to dump");
             }
         }
 
         private async void BtnDumpAll_Click(object sender, EventArgs e)
         {
-            foreach (var database in _database.Databases)
+            if (_database?.Tables == null || _database.Tables.Count == 0)
             {
-                await DumpDatabase(database);
-            }
-        }
-
-        private async Task DumpTable(Table table)
-        {
-            try
-            {
-                LogMessage($"Dumping table: {table.Parent.Name}.{table.Name}");
-
-                // Actual table dumping would go here
-                await Task.Delay(2000);
-
-                // Simulate data
-                var sb = new StringBuilder();
-                sb.AppendLine($"{table.Parent.Name}.{table.Name}");
-                sb.AppendLine("---------------------------------");
-
-                // Column headers
-                sb.Append(string.Join("\t", table.Columns.Select(c => c.Name)));
-                sb.AppendLine();
-
-                // Sample data
-                for (int i = 1; i <= 10; i++)
-                {
-                    var values = table.Columns.Select(c =>
-                        c.Name == "id" ? i.ToString() :
-                        c.Name == "password" ? "********" :
-                        $"{c.Name}_{i}");
-                    sb.AppendLine(string.Join("\t", values));
-                }
-
-                txtData.Text = sb.ToString();
-                LogMessage($"Dumped {10} rows from {table.Parent.Name}.{table.Name}");
-            }
-            catch (Exception ex)
-            {
-                LogMessage($"Dump error: {ex.Message}");
-            }
-        }
-
-        private async Task DumpDatabase(Database database)
-        {
-            foreach (var table in database.Tables)
-            {
-                await DumpTable(table);
-            }
-        }
-
-        private void UpdateProgress()
-        {
-            // Simulate progress
-            if (progressBar.Value < 90)
-            {
-                progressBar.Value += 5;
-            }
-            lblStatus.Text = $"Dumping... {progressBar.Value}%";
-        }
-
-        private void DumpingComplete()
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action(DumpingComplete));
+                MessageBox.Show("No tables to dump");
                 return;
             }
 
-            _isDumping = false;
-            _progressTimer.Stop();
-            SetControlsEnabled(true);
-            btnStop.Enabled = false;
-            progressBar.Value = 100;
-            lblStatus.Text = "Dumping complete!";
-            LogMessage("Database dump completed");
+            var result = MessageBox.Show($"Are you sure you want to dump all {_database.Tables.Count} tables?", 
+                "Confirm Dump All", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            
+            if (result == DialogResult.Yes)
+            {
+                foreach (var table in _database.Tables)
+                {
+                    await DumpTableAsync(table);
+                }
+            }
         }
 
-        private void BtnStop_Click(object sender, EventArgs e)
+        private async Task DumpTableAsync(DatabaseTable table)
         {
-            _isDumping = false;
-            btnStop.Enabled = false;
-            LogMessage("Dumping stopped by user");
+            if (_dumper == null) return;
+
+            try
+            {
+                LogMessage($"Dumping table: {table.Name}");
+                var result = await _dumper.DumpTableAsync(table.Name);
+                
+                if (result.IsComplete)
+                {
+                    LogMessage($"Table {table.Name} dumped successfully: {result.ExtractedRows} rows");
+                    table.Data = result.Data;
+                    DisplayTableData(table);
+                }
+                else
+                {
+                    LogMessage($"Table {table.Name} partially dumped: {result.ExtractedRows}/{result.TotalRows} rows");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Error dumping table {table.Name}: {ex.Message}");
+            }
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+        private async void BtnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtData.Text))
+            if (_database == null || _database.Tables?.Count == 0)
             {
                 MessageBox.Show("No data to save");
                 return;
@@ -371,19 +296,34 @@ namespace BoomSQL
 
             using (var sfd = new SaveFileDialog())
             {
-                sfd.Filter = "SQL Files|*.sql|Text Files|*.txt|All Files|*.*";
-                sfd.FileName = "database-dump.sql";
+                sfd.Filter = "JSON Files|*.json|CSV Files|*.csv|XML Files|*.xml|SQL Files|*.sql";
+                sfd.FileName = $"database_dump_{DateTime.Now:yyyyMMdd_HHmmss}";
 
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
-                        File.WriteAllText(sfd.FileName, txtData.Text);
-                        MessageBox.Show($"Data saved to {sfd.FileName}");
+                        var extension = Path.GetExtension(sfd.FileName).ToLower();
+                        var format = extension switch
+                        {
+                            ".json" => "json",
+                            ".csv" => "csv",
+                            ".xml" => "xml",
+                            ".sql" => "sql",
+                            _ => "json"
+                        };
+
+                        if (_dumper != null)
+                        {
+                            await _dumper.ExportDataAsync(format, sfd.FileName);
+                            MessageBox.Show($"Database dump saved to {sfd.FileName}", "Save Successful", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error saving file: {ex.Message}");
+                        MessageBox.Show($"Error saving file: {ex.Message}", "Save Error", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -393,15 +333,17 @@ namespace BoomSQL
         {
             using (var ofd = new OpenFileDialog())
             {
-                ofd.Filter = "SQL Files|*.sql|Text Files|*.txt|All Files|*.*";
-                ofd.FileName = "vulnerable-url.txt";
+                ofd.Filter = "JSON Files|*.json|All Files|*.*";
+                ofd.FileName = "database_dump.json";
 
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
-                        txtUrl.Text = File.ReadAllText(ofd.FileName);
-                        MessageBox.Show($"Loaded URL from {ofd.FileName}");
+                        var json = File.ReadAllText(ofd.FileName);
+                        _database = System.Text.Json.JsonSerializer.Deserialize<DatabaseStructure>(json);
+                        PopulateDatabaseTree();
+                        MessageBox.Show($"Database dump loaded from {ofd.FileName}");
                     }
                     catch (Exception ex)
                     {
@@ -413,13 +355,23 @@ namespace BoomSQL
 
         private void SetControlsEnabled(bool enabled)
         {
-            txtUrl.Enabled = enabled;
-            nudThreads.Enabled = enabled;
             btnStart.Enabled = enabled;
-            btnLoad.Enabled = enabled;
             btnSave.Enabled = enabled;
+            btnLoad.Enabled = enabled;
             btnDumpSelected.Enabled = enabled;
             btnDumpAll.Enabled = enabled;
+        }
+
+        private void UpdateProgress()
+        {
+            if (_isDumping)
+            {
+                lblStatus.Text = $"Dumping database... Tables: {_database?.Tables?.Count ?? 0}";
+            }
+            else
+            {
+                lblStatus.Text = $"Ready. Database: {_database?.DatabaseName ?? "None"}, Tables: {_database?.Tables?.Count ?? 0}";
+            }
         }
 
         private void LogMessage(string message)
@@ -431,32 +383,7 @@ namespace BoomSQL
             }
 
             txtLogs.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}\r\n");
+            txtLogs.ScrollToCaret();
         }
-    }
-
-    public class DatabaseStructure
-    {
-        public string Type { get; set; } = "Unknown";
-        public List<Database> Databases { get; } = new List<Database>();
-    }
-
-    public class Database
-    {
-        public string Name { get; set; }
-        public List<Table> Tables { get; } = new List<Table>();
-    }
-
-    public class Table
-    {
-        public string Name { get; set; }
-        public Database Parent { get; set; }
-        public List<Column> Columns { get; } = new List<Column>();
-    }
-
-    public class Column
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public Table Parent { get; set; }
     }
 }

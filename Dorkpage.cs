@@ -24,7 +24,7 @@ namespace BoomSQL
             new SearchEngine { Name = "AOL", UrlFormat = "https://search.aol.com/aol/search?q={dork}" },
             new SearchEngine { Name = "Ask", UrlFormat = "https://www.ask.com/web?q={dork}" },
             new SearchEngine { Name = "Startpage", UrlFormat = "https://www.startpage.com/sp/search?query={dork}" },
-            new SearchEngine { Name = "Dogpile", UrlFormat = "https://www.dogpile.com/serp?q={dork}" }
+            new SearchEngine { Name = "Dogpile", UrlFormat = "https://www.dogpile.com/serp?q={dork}" },
             new SearchEngine { Name = "Yandex", UrlFormat = "https://yandex.com/search/?text={dork}" },
             new SearchEngine { Name = "Baidu", UrlFormat = "https://www.baidu.com/s?wd={dork}" },
             new SearchEngine { Name = "MetaGer", UrlFormat = "https://metager.org/meta/meta.ger3?eingabe={dork}" },
@@ -49,6 +49,7 @@ namespace BoomSQL
 
             InitializeTimer();
             LoadSettings();
+            LoadDorks();
 
             // Ensure buttons are clickable
             btnStart.BringToFront();
@@ -62,6 +63,60 @@ namespace BoomSQL
         {
             _progressTimer.Interval = 500;
             _progressTimer.Tick += UpdateProgressTimer_Tick;
+        }
+
+        private void LoadDorks()
+        {
+            try
+            {
+                var dorkFile = Path.Combine(Application.StartupPath, "dorks.txt");
+                if (File.Exists(dorkFile))
+                {
+                    _currentDorks = File.ReadAllLines(dorkFile)
+                        .Where(line => !string.IsNullOrWhiteSpace(line) && !line.StartsWith("#"))
+                        .Select(line => line.Trim())
+                        .ToList();
+                    
+                    LogMessage($"Loaded {_currentDorks.Count} dorks from file");
+                }
+                else
+                {
+                    LogMessage("Dorks file not found, using default dorks");
+                    _currentDorks = GetDefaultDorks();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Error loading dorks: {ex.Message}");
+                _currentDorks = GetDefaultDorks();
+            }
+        }
+
+        private List<string> GetDefaultDorks()
+        {
+            return new List<string>
+            {
+                "inurl:login.php",
+                "inurl:admin.php",
+                "inurl:index.php?id=",
+                "inurl:page.php?id=",
+                "\"mysql_fetch_array()\"",
+                "\"You have an error in your SQL syntax\"",
+                "\"Microsoft OLE DB Provider for SQL Server\"",
+                "\"ORA-00933: SQL command not properly ended\"",
+                "\"PostgreSQL query failed\"",
+                "inurl:gallery.php?id=",
+                "inurl:article.php?id=",
+                "inurl:show.php?id=",
+                "inurl:view.php?id=",
+                "inurl:product.php?id=",
+                "inurl:category.php?id=",
+                "inurl:news.php?id=",
+                "inurl:item.php?id=",
+                "inurl:forum.php?id=",
+                "inurl:thread.php?id=",
+                "inurl:post.php?id="
+            };
         }
 
         private void LoadSettings()
