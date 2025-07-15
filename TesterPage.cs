@@ -5,6 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using BoomSQL.Core;
 
 namespace BoomSQL
 {
@@ -17,6 +21,9 @@ namespace BoomSQL
         private int _currentTestIndex = 0;
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
         private int _maxThreads = 5;
+        private HttpClient _httpClient = new HttpClient();
+        private SqlInjectionEngine _sqlEngine;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public event EventHandler<TestResult> OnSendToDumper;
 
@@ -27,6 +34,24 @@ namespace BoomSQL
             InitializeTimer();
             LoadPayloads();
             LoadTampers();
+            InitializeSqlEngine();
+        }
+
+        private void InitializeSqlEngine()
+        {
+            var config = new SqlInjectionConfig
+            {
+                MaxThreads = _maxThreads,
+                EnableWafBypasses = true,
+                EnableTimeBasedDetection = true,
+                EnableErrorBasedDetection = true,
+                EnableBooleanBasedDetection = true,
+                EnableUnionBasedDetection = true,
+                TimeBasedThreshold = 3.0,
+                RequestTimeout = 30
+            };
+
+            _sqlEngine = new SqlInjectionEngine(_httpClient, config);
         }
 
         private void InitializeEventHandlers()
@@ -59,7 +84,8 @@ namespace BoomSQL
                             Title = p.Attribute("title")?.Value,
                             PayloadString = p.Value,
                             Risk = int.Parse(p.Attribute("risk")?.Value ?? "1"),
-                            Platform = p.Attribute("platform")?.Value
+                            Platform = p.Attribute("platform")?.Value,
+                            Category = p.Attribute("category")?.Value
                         })
                         .ToList();
 
@@ -120,66 +146,101 @@ namespace BoomSQL
 
             _maxThreads = (int)nudThreads.Value;
             _progressTimer.Start();
+            _cancellationTokenSource = new CancellationTokenSource();
 
-            var tasks = new List<Task>();
-            for (int i = 0; i < _maxThreads; i++)
+            try
             {
-                tasks.Add(Task.Run(ProcessTests));
+                await ProcessUrlsAsync(urls, _cancellationTokenSource.Token);
             }
-
-            await Task.WhenAll(tasks);
-
-            TestingComplete();
+            catch (OperationCanceledException)
+            {
+                LogMessage("Testing was cancelled");
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Error during testing: {ex.Message}");
+            }
+            finally
+            {
+                TestingComplete();
+            }
         }
 
-        private async Task ProcessTests()
+        private async Task ProcessUrlsAsync(List<string> urls, CancellationToken cancellationToken)
         {
-            while (_isTesting)
+            var semaphore = new SemaphoreSlim(_maxThreads, _maxThreads);
+            var tasks = urls.Select(async url =>
             {
-                int currentIndex = Interlocked.Increment(ref _currentTestIndex) - 1;
-                if (currentIndex >= _payloads.Count) break;
-
-                var payload = _payloads[currentIndex];
-                foreach (var url in txtUrls.Lines)
+                await semaphore.WaitAsync(cancellationToken);
+                try
                 {
-                    if (!_isTesting) return;
-
-                    try
-                    {
-                        var result = await TestUrl(url, payload);
-                        if (result != null && result.IsVulnerable)
-                        {
-                            SafeAddResult(result);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogMessage($"Test error: {ex.Message}");
-                    }
+                    return await ProcessSingleUrlAsync(url, cancellationToken);
                 }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            var results = await Task.WhenAll(tasks);
+            
+            foreach (var result in results.Where(r => r != null))
+            {
+                ProcessSqlInjectionResult(result);
             }
         }
 
-        private async Task<TestResult> TestUrl(string url, SqlInjectionPayload payload)
+        private async Task<SqlInjectionResult> ProcessSingleUrlAsync(string url, CancellationToken cancellationToken)
         {
-            // Actual SQL injection test implementation would go here
-            // This is simplified for example purposes
-
-            // Simulate test time
-            await Task.Delay(1000);
-
-            // Random result for demo
-            var random = new Random();
-            bool isVulnerable = random.Next(100) > 70;
-
-            return new TestResult
+            try
             {
-                Url = url,
-                Payload = payload,
-                IsVulnerable = isVulnerable,
-                ResponseTime = random.Next(100, 1000),
-                ResponseCode = 200
-            };
+                LogMessage($"Testing URL: {url}");
+                var result = await _sqlEngine.TestUrlAsync(url, cancellationToken);
+                
+                if (result.IsVulnerable)
+                {
+                    LogMessage($"Vulnerabilities found in {url}: {result.Vulnerabilities.Count}");
+                }
+                
+                Interlocked.Increment(ref _currentTestIndex);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Error testing {url}: {ex.Message}");
+                return null;
+            }
+        }
+
+        private void ProcessSqlInjectionResult(SqlInjectionResult result)
+        {
+            if (result?.Vulnerabilities == null) return;
+
+            foreach (var vulnerability in result.Vulnerabilities)
+            {
+                var testResult = new TestResult
+                {
+                    Url = result.Url,
+                    Payload = new SqlInjectionPayload
+                    {
+                        Title = vulnerability.Payload.Title,
+                        PayloadString = vulnerability.Payload.PayloadString,
+                        Risk = vulnerability.Payload.Risk,
+                        Platform = vulnerability.Payload.Platform,
+                        Category = vulnerability.Payload.Category
+                    },
+                    IsVulnerable = true,
+                    ResponseTime = (int)vulnerability.ResponseTime.TotalMilliseconds,
+                    ResponseCode = vulnerability.ResponseCode,
+                    DetectionMethod = vulnerability.DetectionMethod,
+                    Confidence = vulnerability.Confidence,
+                    DatabaseType = vulnerability.DatabaseType,
+                    Evidence = vulnerability.Evidence,
+                    Response = vulnerability.Response
+                };
+
+                SafeAddResult(testResult);
+            }
         }
 
         private void SafeAddResult(TestResult result)
@@ -191,17 +252,18 @@ namespace BoomSQL
             }
 
             _results.Add(result);
-            lstResults.Items.Add($"[VULN] {result.Url} - {result.Payload.Title}");
-            LogMessage($"Vulnerability found: {result.Url} with payload: {result.Payload.Title}");
+            var displayText = $"[{result.DetectionMethod}] {result.Url} - {result.Payload.Title} (Confidence: {result.Confidence:P0})";
+            lstResults.Items.Add(displayText);
+            LogMessage($"Vulnerability found: {result.Url} with payload: {result.Payload.Title} (Method: {result.DetectionMethod})");
         }
 
         private void UpdateProgress()
         {
             if (_payloads.Count == 0) return;
 
-            int progress = (int)((double)_currentTestIndex / _payloads.Count * 100);
-            progressBar.Value = Math.Min(100, progress);
-            lblStatus.Text = $"Testing: {_currentTestIndex}/{_payloads.Count} payloads | Found: {_results.Count} vulnerabilities";
+            int progress = Math.Min(100, (_currentTestIndex * 100) / Math.Max(1, _payloads.Count));
+            progressBar.Value = progress;
+            lblStatus.Text = $"Testing: {_currentTestIndex} URLs processed | Found: {_results.Count} vulnerabilities";
         }
 
         private void TestingComplete()
@@ -224,6 +286,7 @@ namespace BoomSQL
         private void BtnStop_Click(object sender, EventArgs e)
         {
             _isTesting = false;
+            _cancellationTokenSource?.Cancel();
             btnStop.Enabled = false;
             LogMessage("Testing stopped by user");
         }
@@ -321,25 +384,20 @@ namespace BoomSQL
             if (lstResults.SelectedIndex != -1)
             {
                 var result = _results[lstResults.SelectedIndex];
-                MessageBox.Show($"URL: {result.Url}\nPayload: {result.Payload.PayloadString}\nRisk: {result.Payload.Risk}", "Vulnerability Details");
+                var details = $"URL: {result.Url}\n" +
+                             $"Payload: {result.Payload.PayloadString}\n" +
+                             $"Risk: {result.Payload.Risk}\n" +
+                             $"Platform: {result.Payload.Platform}\n" +
+                             $"Category: {result.Payload.Category}\n" +
+                             $"Detection Method: {result.DetectionMethod}\n" +
+                             $"Confidence: {result.Confidence:P0}\n" +
+                             $"Database Type: {result.DatabaseType}\n" +
+                             $"Response Time: {result.ResponseTime}ms\n" +
+                             $"Response Code: {result.ResponseCode}\n" +
+                             $"Evidence: {result.Evidence}";
+                
+                MessageBox.Show(details, "Vulnerability Details", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-    }
-
-    public class SqlInjectionPayload
-    {
-        public string Title { get; set; }
-        public string PayloadString { get; set; }
-        public int Risk { get; set; }
-        public string Platform { get; set; }
-    }
-
-    public class TestResult
-    {
-        public string Url { get; set; }
-        public SqlInjectionPayload Payload { get; set; }
-        public bool IsVulnerable { get; set; }
-        public int ResponseTime { get; set; }
-        public int ResponseCode { get; set; }
     }
 }
