@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.IO;
 using System.Threading;
+using System.Web;
 
 namespace BoomSQL.Core
 {
