@@ -9,19 +9,19 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net.Http;
+using System.Threading;
 
 namespace BoomSQL
 {
     public partial class CrawlerPage : BasePage
     {
-        private ConcurrentQueue<string> _urlQueue = new ConcurrentQueue<string>();
-        private ConcurrentDictionary<string, bool> _visitedUrls = new ConcurrentDictionary<string, bool>();
-        private ConcurrentDictionary<string, bool> _parameterizedUrls = new ConcurrentDictionary<string, bool>();
-        private int _totalUrls = 0;
-        private int _processedUrls = 0;
+        private WebCrawler _crawler;
+        private HttpClient _httpClient;
+        private List<CrawlerResult> _crawlResults = new List<CrawlerResult>();
         private bool _isCrawling = false;
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
-        private int _maxThreads = 5;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public event EventHandler<List<string>> OnSendToTester;
 
@@ -30,6 +30,14 @@ namespace BoomSQL
             InitializeComponent();
             InitializeEventHandlers();
             InitializeTimer();
+            InitializeCrawler();
+        }
+
+        private void InitializeCrawler()
+        {
+            _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", 
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
         }
 
         private void InitializeEventHandlers()
@@ -59,239 +67,144 @@ namespace BoomSQL
                 return;
             }
 
-            _maxThreads = (int)nudThreads.Value;
             _isCrawling = true;
-            SetControlsEnabled(false);
-            btnStop.Enabled = true;
-
-            _urlQueue = new ConcurrentQueue<string>();
-            _visitedUrls = new ConcurrentDictionary<string, bool>();
-            _parameterizedUrls = new ConcurrentDictionary<string, bool>();
+            _crawlResults.Clear();
             lstResults.Items.Clear();
             txtLogs.Clear();
+            SetControlsEnabled(false);
+            btnStop.Enabled = true;
+            _cancellationTokenSource = new CancellationTokenSource();
 
-            _urlQueue.Enqueue(baseUrl);
-            _visitedUrls[baseUrl] = true;
-            _totalUrls = 1;
-            _processedUrls = 0;
+            // Configure crawler
+            var config = new WebCrawlerConfig
+            {
+                MaxDepth = (int)nudDepth.Value,
+                MaxUrls = (int)nudMaxUrls.Value,
+                MaxConcurrentRequests = (int)nudThreads.Value,
+                RequestDelay = (int)nudDelay.Value,
+                StayInDomain = chkStayInDomain.Checked,
+                BaseUrl = baseUrl,
+                EnableFormDetection = true,
+                EnableParameterExtraction = true,
+                EnableCookieExtraction = true,
+                EnableHeaderExtraction = true,
+                FollowRedirects = true,
+                MaxRedirects = 5,
+                RequestTimeout = 30
+            };
 
+            _crawler = new WebCrawler(_httpClient, config, LogMessage);
             _progressTimer.Start();
-            LogMessage($"Starting crawl from: {baseUrl}");
 
-            var tasks = new List<Task>();
-            for (int i = 0; i < _maxThreads; i++)
-            {
-                tasks.Add(Task.Run(ProcessUrls));
-            }
-
-            await Task.WhenAll(tasks);
-
-            CrawlComplete();
-        }
-
-        private async Task ProcessUrls()
-        {
-            while (_isCrawling && _urlQueue.TryDequeue(out string currentUrl))
-            {
-                try
-                {
-                    var html = await DownloadHtml(currentUrl);
-                    if (!string.IsNullOrEmpty(html))
-                    {
-                        ProcessHtml(currentUrl, html);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogMessage($"Error processing {currentUrl}: {ex.Message}");
-                }
-                finally
-                {
-                    Interlocked.Increment(ref _processedUrls);
-                }
-            }
-        }
-
-        private async Task<string> DownloadHtml(string url)
-        {
             try
             {
-                using (var client = CreateWebClient())
-                {
-                    return await client.DownloadStringTaskAsync(url);
-                }
+                LogMessage($"Starting crawl of: {baseUrl}");
+                var results = await _crawler.CrawlAsync(baseUrl, _cancellationTokenSource.Token);
+                _crawlResults = results;
+                
+                PopulateResults();
+                LogMessage($"Crawl completed. Found {results.Count} URLs, {results.Sum(r => r.Parameters.Count)} parameters");
+            }
+            catch (OperationCanceledException)
+            {
+                LogMessage("Crawl was cancelled");
             }
             catch (Exception ex)
             {
-                LogMessage($"Download error: {url} - {ex.Message}");
-                return null;
+                LogMessage($"Crawl error: {ex.Message}");
+                MessageBox.Show($"Crawl error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private WebClient CreateWebClient()
-        {
-            var client = new WebClient();
-            client.Headers.Add("User-Agent", ProxyManager.GetRandomUserAgent());
-
-            if (ProxyManager.UseProxy)
+            finally
             {
-                var proxy = ProxyManager.GetRandomProxy();
-                if (proxy != null)
-                {
-                    client.Proxy = new WebProxy($"{proxy.Host}:{proxy.Port}");
-                    if (!string.IsNullOrEmpty(proxy.Username))
-                    {
-                        client.Proxy.Credentials = new NetworkCredential(proxy.Username, proxy.Password);
-                    }
-                }
+                _isCrawling = false;
+                _progressTimer.Stop();
+                SetControlsEnabled(true);
+                btnStop.Enabled = false;
             }
-
-            return client;
-        }
-
-        private void ProcessHtml(string baseUrl, string html)
-        {
-            // Extract links
-            var linkMatches = Regex.Matches(html, @"<a\s+[^>]*href\s*=\s*[""']([^""']+)[""'][^>]*>", RegexOptions.IgnoreCase);
-            foreach (Match match in linkMatches)
-            {
-                if (!_isCrawling) return;
-
-                var href = match.Groups[1].Value;
-                var absoluteUrl = GetAbsoluteUrl(baseUrl, href);
-
-                if (!string.IsNullOrEmpty(absoluteUrl) &&
-                    IsSameDomain(baseUrl, absoluteUrl) &&
-                    !_visitedUrls.ContainsKey(absoluteUrl))
-                {
-                    _urlQueue.Enqueue(absoluteUrl);
-                    _visitedUrls[absoluteUrl] = true;
-                    Interlocked.Increment(ref _totalUrls);
-                }
-            }
-
-            // Extract parameterized URLs
-            var paramMatches = Regex.Matches(html, @"<a\s+[^>]*href\s*=\s*[""']([^""'?]+\?[^""']+)[""'][^>]*>", RegexOptions.IgnoreCase);
-            foreach (Match match in paramMatches)
-            {
-                if (!_isCrawling) return;
-
-                var href = match.Groups[1].Value;
-                var absoluteUrl = GetAbsoluteUrl(baseUrl, href);
-
-                if (!string.IsNullOrEmpty(absoluteUrl) &&
-                    IsSameDomain(baseUrl, absoluteUrl) &&
-                    !_parameterizedUrls.ContainsKey(absoluteUrl))
-                {
-                    _parameterizedUrls[absoluteUrl] = true;
-                    SafeAddResult(absoluteUrl);
-                }
-            }
-        }
-
-        private string GetAbsoluteUrl(string baseUrl, string relativeUrl)
-        {
-            try
-            {
-                var baseUri = new Uri(baseUrl);
-                var uri = new Uri(baseUri, relativeUrl);
-                return uri.AbsoluteUri;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private bool IsSameDomain(string url1, string url2)
-        {
-            try
-            {
-                var uri1 = new Uri(url1);
-                var uri2 = new Uri(url2);
-                return uri1.Host == uri2.Host;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private void SafeAddResult(string url)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(SafeAddResult), url);
-                return;
-            }
-
-            lstResults.Items.Add(url);
-            LogMessage($"Found parameterized URL: {url}");
-        }
-
-        private void LogMessage(string message)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(LogMessage), message);
-                return;
-            }
-
-            txtLogs.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}\r\n");
-        }
-
-        private void UpdateProgress()
-        {
-            if (_totalUrls == 0) return;
-
-            int progress = (int)((double)_processedUrls / _totalUrls * 100);
-            progressBar.Value = Math.Min(100, progress);
-            lblStatus.Text = $"Crawling: {_processedUrls}/{_totalUrls} URLs | Found: {lstResults.Items.Count} parameterized URLs";
-        }
-
-        private void CrawlComplete()
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action(CrawlComplete));
-                return;
-            }
-
-            _isCrawling = false;
-            _progressTimer.Stop();
-            SetControlsEnabled(true);
-            btnStop.Enabled = false;
-
-            LogMessage($"Crawl complete! Found {lstResults.Items.Count} parameterized URLs");
-            MessageBox.Show($"Crawl complete! Found {lstResults.Items.Count} parameterized URLs");
         }
 
         private void BtnStop_Click(object sender, EventArgs e)
         {
+            if (_crawler != null)
+            {
+                _crawler.Stop();
+            }
+            _cancellationTokenSource?.Cancel();
             _isCrawling = false;
             btnStop.Enabled = false;
             LogMessage("Crawl stopped by user");
         }
 
+        private void PopulateResults()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(PopulateResults));
+                return;
+            }
+
+            lstResults.Items.Clear();
+            
+            foreach (var result in _crawlResults)
+            {
+                var displayText = $"{result.Url} (Depth: {result.Depth}, Params: {result.Parameters.Count})";
+                lstResults.Items.Add(displayText);
+            }
+
+            lblStatus.Text = $"Found {_crawlResults.Count} URLs with {_crawlResults.Sum(r => r.Parameters.Count)} parameters";
+        }
+
+        private void UpdateProgress()
+        {
+            if (_isCrawling)
+            {
+                lblStatus.Text = $"Crawling... Found {_crawlResults.Count} URLs";
+            }
+        }
+
+        private void BtnSendToTester_Click(object sender, EventArgs e)
+        {
+            if (_crawlResults.Count == 0)
+            {
+                MessageBox.Show("No URLs to send");
+                return;
+            }
+
+            var urlsWithParams = _crawlResults
+                .Where(r => r.Parameters.Count > 0)
+                .Select(r => r.Url)
+                .ToList();
+
+            if (urlsWithParams.Count == 0)
+            {
+                MessageBox.Show("No URLs with parameters found");
+                return;
+            }
+
+            OnSendToTester?.Invoke(this, urlsWithParams);
+            MessageBox.Show($"Sent {urlsWithParams.Count} URLs to Tester");
+        }
+
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (lstResults.Items.Count == 0)
+            if (_crawlResults.Count == 0)
             {
-                MessageBox.Show("No results to save");
+                MessageBox.Show("No URLs to save");
                 return;
             }
 
             using (var sfd = new SaveFileDialog())
             {
                 sfd.Filter = "Text Files|*.txt|All Files|*.*";
-                sfd.FileName = "crawler-results.txt";
+                sfd.FileName = "crawled-urls.txt";
 
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
-                        File.WriteAllLines(sfd.FileName, lstResults.Items.Cast<string>());
-                        MessageBox.Show($"Saved {lstResults.Items.Count} URLs to {sfd.FileName}");
+                        var urls = _crawlResults.Select(r => r.Url).ToList();
+                        File.WriteAllLines(sfd.FileName, urls);
+                        MessageBox.Show($"Saved {urls.Count} URLs to {sfd.FileName}");
                     }
                     catch (Exception ex)
                     {
@@ -299,19 +212,6 @@ namespace BoomSQL
                     }
                 }
             }
-        }
-
-        private void BtnSendToTester_Click(object sender, EventArgs e)
-        {
-            if (lstResults.Items.Count == 0)
-            {
-                MessageBox.Show("No results to send");
-                return;
-            }
-
-            var urls = lstResults.Items.Cast<string>().ToList();
-            OnSendToTester?.Invoke(this, urls);
-            MessageBox.Show($"{urls.Count} URLs sent to SQL Injection Tester");
         }
 
         private void BtnLoad_Click(object sender, EventArgs e)
@@ -326,8 +226,11 @@ namespace BoomSQL
                     try
                     {
                         var urls = File.ReadAllLines(ofd.FileName);
-                        txtBaseUrl.Text = urls.FirstOrDefault() ?? "";
-                        MessageBox.Show($"Loaded base URL from {ofd.FileName}");
+                        if (urls.Length > 0)
+                        {
+                            txtBaseUrl.Text = urls[0];
+                            MessageBox.Show($"Loaded base URL from {ofd.FileName}");
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -339,28 +242,42 @@ namespace BoomSQL
 
         private void BtnShowLogs_Click(object sender, EventArgs e)
         {
-            splitContainer.Panel2Collapsed = !splitContainer.Panel2Collapsed;
-            btnShowLogs.Text = splitContainer.Panel2Collapsed ? "Show Logs" : "Hide Logs";
+            if (txtLogs.Visible)
+            {
+                txtLogs.Visible = false;
+                btnShowLogs.Text = "Show Logs";
+            }
+            else
+            {
+                txtLogs.Visible = true;
+                btnShowLogs.Text = "Hide Logs";
+            }
         }
 
         private void SetControlsEnabled(bool enabled)
         {
             txtBaseUrl.Enabled = enabled;
+            nudDepth.Enabled = enabled;
+            nudMaxUrls.Enabled = enabled;
             nudThreads.Enabled = enabled;
+            nudDelay.Enabled = enabled;
+            chkStayInDomain.Enabled = enabled;
             btnStart.Enabled = enabled;
             btnLoad.Enabled = enabled;
             btnSave.Enabled = enabled;
             btnSendToTester.Enabled = enabled;
         }
 
-        private void lstResults_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void LogMessage(string message)
         {
-            if (lstResults.SelectedItem != null)
+            if (InvokeRequired)
             {
-                var urls = new List<string> { lstResults.SelectedItem.ToString() };
-                OnSendToTester?.Invoke(this, urls);
-                MessageBox.Show("URL sent to SQL Injection Tester");
+                Invoke(new Action<string>(LogMessage), message);
+                return;
             }
+
+            txtLogs.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}\r\n");
+            txtLogs.ScrollToCaret();
         }
     }
 }
