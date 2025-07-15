@@ -25,6 +25,16 @@ namespace BoomSQL
         private DatabaseDumper _dumper;
         private VulnerabilityDetails _currentVulnerability;
         private CancellationTokenSource _cancellationTokenSource;
+        private TreeView treeDatabase;
+        private DataGridView dgvData;
+        private Button btnStart;
+        private Button btnStop;
+        private Button btnSave;
+        private Button btnLoad;
+        private Button btnDumpSelected;
+        private Button btnDumpAll;
+        private Label lblStatus;
+        private TextBox txtLogs;
 
         public DumperPage()
         {
@@ -85,8 +95,34 @@ namespace BoomSQL
                 };
                 
                 _dumper = new DatabaseDumper(_httpClient, _currentVulnerability, config);
-                LogMessage($"Vulnerability set: {_currentVulnerability.Payload.Title} on {_currentVulnerability.InjectionPoint.Name}");
+                LogMessage($"Vulnerability set: {_currentVulnerability.VulnerabilityType} on {_currentVulnerability.InjectionPoint.Name}");
             }
+        }
+
+        public void SetVulnerability(TestResult testResult)
+        {
+            if (testResult == null) return;
+            
+            // Convert TestResult to VulnerabilityDetails
+            var vulnerability = new VulnerabilityDetails
+            {
+                VulnerabilityType = testResult.DetectionMethod,
+                InjectionPoint = new InjectionPoint
+                {
+                    Name = testResult.Url,
+                    Type = InjectionPointType.UrlParameter
+                },
+                Payload = testResult.Payload,
+                ResponseTime = TimeSpan.FromMilliseconds(testResult.ResponseTime),
+                ResponseCode = testResult.ResponseCode,
+                DetectionMethod = testResult.DetectionMethod,
+                Confidence = testResult.Confidence,
+                DatabaseType = testResult.DatabaseType,
+                Evidence = testResult.Evidence,
+                Response = testResult.Response
+            };
+
+            SetVulnerability(vulnerability);
         }
 
         private async void BtnStart_Click(object sender, EventArgs e)
