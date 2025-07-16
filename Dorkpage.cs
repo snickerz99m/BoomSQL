@@ -1,4 +1,4 @@
-﻿using BoomSQL.Core;
+using BoomSQL.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,6 +35,7 @@ namespace BoomSQL
         private List<string>? _currentDorks;
         private bool _isSearching = false;
 
+        public event EventHandler<List<string>>? OnSendToTester;
 
         public DorkPage()
         {
@@ -83,6 +84,12 @@ namespace BoomSQL
                 {
                     LogMessage("Dorks file not found, using default dorks");
                     _currentDorks = GetDefaultDorks();
+                }
+
+                // Populate the text input with loaded dorks
+                if (_currentDorks != null && txtDorkInput != null)
+                {
+                    txtDorkInput.Text = string.Join("\n", _currentDorks);
                 }
             }
             catch (Exception ex)
@@ -160,14 +167,17 @@ namespace BoomSQL
 
         private void ApplySearchEngineStates()
         {
-            _searchEngines[0].Enabled = chkGoogle.Checked;
-            _searchEngines[1].Enabled = chkBing.Checked;
-            _searchEngines[2].Enabled = chkYahoo.Checked;
-            _searchEngines[3].Enabled = chkDuckDuckGo.Checked;
-            _searchEngines[4].Enabled = chkAOL.Checked;
-            _searchEngines[5].Enabled = chkAsk.Checked;
-            _searchEngines[6].Enabled = chkStartpage.Checked;
-            _searchEngines[7].Enabled = chkDogpile.Checked;
+            if (_searchEngines.Count >= 8)
+            {
+                _searchEngines[0].Enabled = chkGoogle?.Checked ?? true;
+                _searchEngines[1].Enabled = chkBing?.Checked ?? true;
+                _searchEngines[2].Enabled = chkYahoo?.Checked ?? true;
+                _searchEngines[3].Enabled = chkDuckDuckGo?.Checked ?? true;
+                _searchEngines[4].Enabled = chkAOL?.Checked ?? true;
+                _searchEngines[5].Enabled = chkAsk?.Checked ?? true;
+                _searchEngines[6].Enabled = chkStartpage?.Checked ?? true;
+                _searchEngines[7].Enabled = chkDogpile?.Checked ?? true;
+            }
         }
 
         private async void BtnStart_Click(object? sender, EventArgs e)
@@ -188,7 +198,7 @@ namespace BoomSQL
         private async Task StartSearchAsync()
         {
             // Validate proxy toggle
-            if (!toggleProxy.Checked)
+            if (toggleProxy?.Checked != true)
             {
                 MessageBox.Show("Please enable proxy to start search");
                 return;
@@ -209,10 +219,10 @@ namespace BoomSQL
             }
 
             // Get dorks
-            var dorks = txtDorkInput.Text.Split(
+            var dorks = txtDorkInput?.Text.Split(
                 new[] { '\n', '\r' },
                 StringSplitOptions.RemoveEmptyEntries
-            );
+            ) ?? new string[0];
 
             if (dorks.Length == 0)
             {
@@ -222,9 +232,9 @@ namespace BoomSQL
 
             // Update UI
             SetControlsEnabled(false);
-            lstResults.Items.Clear();
-            toolStripProgressBar1.Value = 0;
-            toolStripStatusLabel1.Text = "Starting search...";
+            lstResults?.Items.Clear();
+            if (toolStripProgressBar1 != null) toolStripProgressBar1.Value = 0;
+            if (toolStripStatusLabel1 != null) toolStripStatusLabel1.Text = "Starting search...";
             _currentDorks = dorks.ToList();
 
             // Apply current checkbox states
@@ -266,7 +276,7 @@ namespace BoomSQL
                 return;
             }
 
-            if (!lstResults.Items.Contains(url))
+            if (lstResults != null && !lstResults.Items.Contains(url))
             {
                 lstResults.Items.Add(url);
                 UpdateStatus($"Found: {lstResults.Items.Count} URLs");
@@ -282,7 +292,7 @@ namespace BoomSQL
             }
 
             SetControlsEnabled(true);
-            UpdateStatus($"Search complete. Found: {lstResults.Items.Count} URLs");
+            UpdateStatus($"Search complete. Found: {lstResults?.Items.Count ?? 0} URLs");
         }
 
         private void UpdateStatus(string message)
@@ -293,7 +303,7 @@ namespace BoomSQL
                 return;
             }
 
-            toolStripStatusLabel1.Text = message;
+            if (toolStripStatusLabel1 != null) toolStripStatusLabel1.Text = message;
         }
 
         private void BtnStop_Click(object? sender, EventArgs e)
@@ -308,7 +318,7 @@ namespace BoomSQL
 
         private void BtnSaveResult_Click(object? sender, EventArgs e)
         {
-            if (lstResults.Items.Count == 0)
+            if (lstResults?.Items.Count == 0)
             {
                 MessageBox.Show("No results to save");
                 return;
@@ -322,8 +332,9 @@ namespace BoomSQL
             {
                 try
                 {
-                    File.WriteAllLines(sfd.FileName, lstResults.Items.Cast<string>());
-                    MessageBox.Show($"Saved {lstResults.Items.Count} URLs to {sfd.FileName}");
+                    var items = lstResults?.Items.Cast<string>().ToArray() ?? new string[0];
+                    File.WriteAllLines(sfd.FileName, items);
+                    MessageBox.Show($"Saved {items.Length} URLs to {sfd.FileName}");
                 }
                 catch (Exception ex)
                 {
@@ -342,8 +353,11 @@ namespace BoomSQL
             {
                 try
                 {
-                    txtDorkInput.Text = File.ReadAllText(ofd.FileName);
-                    MessageBox.Show($"Loaded dorks from {ofd.FileName}");
+                    if (txtDorkInput != null)
+                    {
+                        txtDorkInput.Text = File.ReadAllText(ofd.FileName);
+                        MessageBox.Show($"Loaded dorks from {ofd.FileName}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -354,36 +368,37 @@ namespace BoomSQL
 
         private void BtnSendToTester_Click(object? sender, EventArgs e)
         {
-            var urls = lstResults.Items.Cast<string>().ToList();
+            var urls = lstResults?.Items.Cast<string>().ToList() ?? new List<string>();
             if (urls.Count == 0)
             {
                 MessageBox.Show("No results to send");
                 return;
             }
 
-            // Implement sending to tester page
-            MessageBox.Show($"Prepared to send {urls.Count} URLs to SQL injection tester");
+            // Trigger event to send to tester page
+            OnSendToTester?.Invoke(this, urls);
+            MessageBox.Show($"Sent {urls.Count} URLs to SQL injection tester");
         }
 
         private void SetControlsEnabled(bool enabled)
         {
-            btnStart.Enabled = enabled;
-            btnStop.Enabled = !enabled;
-            btnLoadDorks.Enabled = enabled;
-            btnSendToTester.Enabled = enabled;
-            btnSaveResult.Enabled = enabled;
-            txtDorkInput.Enabled = enabled;
-            toggleProxy.Enabled = enabled;
+            if (btnStart != null) btnStart.Enabled = enabled;
+            if (btnStop != null) btnStop.Enabled = !enabled;
+            if (btnLoadDorks != null) btnLoadDorks.Enabled = enabled;
+            if (btnSendToTester != null) btnSendToTester.Enabled = enabled;
+            if (btnSaveResult != null) btnSaveResult.Enabled = enabled;
+            if (txtDorkInput != null) txtDorkInput.Enabled = enabled;
+            if (toggleProxy != null) toggleProxy.Enabled = enabled;
 
             // Search engine checkboxes
-            chkGoogle.Enabled = enabled;
-            chkBing.Enabled = enabled;
-            chkYahoo.Enabled = enabled;
-            chkDuckDuckGo.Enabled = enabled;
-            chkAOL.Enabled = enabled;
-            chkAsk.Enabled = enabled;
-            chkStartpage.Enabled = enabled;
-            chkDogpile.Enabled = enabled;
+            if (chkGoogle != null) chkGoogle.Enabled = enabled;
+            if (chkBing != null) chkBing.Enabled = enabled;
+            if (chkYahoo != null) chkYahoo.Enabled = enabled;
+            if (chkDuckDuckGo != null) chkDuckDuckGo.Enabled = enabled;
+            if (chkAOL != null) chkAOL.Enabled = enabled;
+            if (chkAsk != null) chkAsk.Enabled = enabled;
+            if (chkStartpage != null) chkStartpage.Enabled = enabled;
+            if (chkDogpile != null) chkDogpile.Enabled = enabled;
         }
 
         private void UpdateProgressTimer_Tick(object? sender, EventArgs e)
@@ -394,13 +409,13 @@ namespace BoomSQL
             var totalTasks = _currentDorks.Count * _searchEngines.Count(e => e.Enabled);
             var percent = totalTasks > 0 ? Math.Min(100, (int)((double)processed / totalTasks * 100)) : 0;
 
-            toolStripProgressBar1.Value = percent;
+            if (toolStripProgressBar1 != null) toolStripProgressBar1.Value = percent;
             UpdateStatus($"Searching... Found: {_searcher.Results.Count} | Processed: {processed}/{totalTasks}");
         }
 
         private void btnStart_Click_1(object sender, EventArgs e)
         {
-
+            BtnStart_Click(sender, e);
         }
     }
 }

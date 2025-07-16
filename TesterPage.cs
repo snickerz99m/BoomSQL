@@ -25,7 +25,31 @@ namespace BoomSQL
         private SqlInjectionEngine _sqlEngine;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public event EventHandler<TestResult> OnSendToDumper;
+        public void LoadUrls(List<string> urls)
+        {
+            if (urls == null || urls.Count == 0) return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action<List<string>>(LoadUrls), urls);
+                return;
+            }
+
+            if (txtUrls != null)
+            {
+                txtUrls.Text = string.Join(Environment.NewLine, urls);
+                LogMessage($"Loaded {urls.Count} URLs from external source");
+            }
+        }
+
+        public void SetVulnerability(VulnerabilityDetails vulnerability)
+        {
+            // This method can be used to set a specific vulnerability for testing
+            _currentVulnerability = vulnerability;
+            LogMessage($"Set vulnerability: {vulnerability.VulnerabilityType} on {vulnerability.InjectionPoint.Name}");
+        }
+
+        private VulnerabilityDetails? _currentVulnerability;
 
         public TesterPage()
         {

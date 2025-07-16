@@ -12,7 +12,7 @@ namespace BoomSQL
         private Guna2TextBox txtDorkInput;
         private Guna2CheckBox chkGoogle, chkBing, chkYahoo, chkDuckDuckGo, chkAOL, chkAsk, chkStartpage, chkDogpile;
         private Guna2ToggleSwitch toggleProxy;
-        private Guna2Button btnStart, btnStop, btnSendToTester, btnLoadDorks;
+        private Guna2Button btnStart, btnStop, btnSendToTester, btnLoadDorks, btnSaveResult;
         private ListBox lstResults;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
