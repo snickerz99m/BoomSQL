@@ -39,6 +39,7 @@ namespace System.Windows.Forms
         public virtual string Name { get; set; } = "";
         public virtual object Tag { get; set; } = null;
         public virtual bool InvokeRequired => false;
+        public virtual bool DoubleBuffered { get; set; } = true;
         public virtual Control Parent { get; set; } = null;
         public virtual ControlCollection Controls { get; } = new ControlCollection();
         
@@ -71,7 +72,10 @@ namespace System.Windows.Forms
         public virtual void PerformClick() => OnClick(EventArgs.Empty);
     }
 
-    public class Label : Control { }
+    public class Label : Control 
+    {
+        public virtual bool AutoSize { get; set; } = true;
+    }
     
     public class TextBox : Control
     {
@@ -90,6 +94,7 @@ namespace System.Windows.Forms
         public virtual int SelectedIndex { get; set; } = -1;
         public virtual object SelectedItem { get; set; } = null;
         public virtual BorderStyle BorderStyle { get; set; } = BorderStyle.Fixed3D;
+        public virtual bool FormattingEnabled { get; set; } = true;
         public event EventHandler? SelectedIndexChanged;
         public event MouseEventHandler? MouseClick;
         public event MouseEventHandler? MouseDoubleClick;
@@ -159,10 +164,56 @@ namespace System.Windows.Forms
         public virtual object DataSource { get; set; } = null;
         public virtual DataGridViewColumnCollection Columns { get; } = new DataGridViewColumnCollection();
         public virtual DataGridViewRowCollection Rows { get; } = new DataGridViewRowCollection();
+        public virtual DataGridViewSelectedRowCollection SelectedRows { get; } = new DataGridViewSelectedRowCollection();
     }
 
-    public class DataGridViewColumnCollection : List<object> { }
-    public class DataGridViewRowCollection : List<object> { }
+    public class DataGridViewColumnCollection : List<DataGridViewColumn>
+    {
+        public virtual DataGridViewColumn this[string name] => this.FirstOrDefault(c => c.Name == name) ?? new DataGridViewColumn();
+        public virtual DataGridViewColumn this[int index] => index < Count ? base[index] : new DataGridViewColumn();
+    }
+    
+    public class DataGridViewColumn
+    {
+        public virtual string Name { get; set; } = "";
+        public virtual string HeaderText { get; set; } = "";
+        public virtual bool Visible { get; set; } = true;
+        public virtual int Width { get; set; } = 100;
+    }
+    public class DataGridViewRowCollection : List<DataGridViewRow> { }
+    public class DataGridViewSelectedRowCollection : List<DataGridViewRow> 
+    {
+        public new int Count => base.Count;
+        public new DataGridViewRow this[int index] => index < Count ? base[index] : new DataGridViewRow();
+    }
+    
+    public class DataGridViewRow
+    {
+        public virtual DataGridViewCellCollection Cells { get; } = new DataGridViewCellCollection();
+        public virtual int Index { get; set; } = 0;
+        public virtual object Tag { get; set; } = null;
+        public virtual object DataBoundItem { get; set; } = null;
+        public virtual DataGridViewCellStyle DefaultCellStyle { get; set; } = new DataGridViewCellStyle();
+    }
+    
+    public class DataGridViewCellStyle
+    {
+        public virtual Color BackColor { get; set; } = Color.White;
+        public virtual Color ForeColor { get; set; } = Color.Black;
+        public virtual Font Font { get; set; } = new Font("Arial", 10);
+    }
+    
+    public class DataGridViewCellCollection : List<DataGridViewCell> 
+    {
+        public virtual DataGridViewCell this[int index] => index < Count ? this[index] : new DataGridViewCell();
+        public virtual DataGridViewCell this[string columnName] => new DataGridViewCell();
+    }
+    
+    public class DataGridViewCell
+    {
+        public virtual object Value { get; set; } = null;
+        public virtual string FormattedValue { get; set; } = "";
+    }
 
     public class Panel : Control { }
     public class SplitContainer : Control
@@ -247,6 +298,23 @@ namespace System.Windows.Forms
     {
         public static string StartupPath => Environment.CurrentDirectory;
         public static void Exit() { }
+        public static void EnableVisualStyles() { }
+        public static void SetCompatibleTextRenderingDefault(bool defaultValue) { }
+        public static void SetHighDpiMode(HighDpiMode highDpiMode) { }
+        public static void Run(Form form) { }
+    }
+
+    public class ApplicationConfiguration
+    {
+        public static void Initialize() { }
+    }
+
+    public enum HighDpiMode
+    {
+        DpiUnaware,
+        SystemAware,
+        PerMonitor,
+        PerMonitorV2
     }
 
     public class StatusStrip : Control
@@ -470,6 +538,16 @@ namespace System.Drawing
         Strikeout = 8
     }
 
+    public enum TextRenderingHint
+    {
+        SystemDefault = 0,
+        SingleBitPerPixelGridFit = 1,
+        SingleBitPerPixel = 2,
+        AntiAliasGridFit = 3,
+        AntiAlias = 4,
+        ClearTypeGridFit = 5
+    }
+
     public class Bitmap : IDisposable
     {
         public Bitmap(int width, int height) { }
@@ -545,7 +623,17 @@ namespace Guna.UI2.WinForms
         }
     }
     
-    public class Guna2ProgressBar : System.Windows.Forms.ProgressBar { }
+    public class Guna2ProgressBar : System.Windows.Forms.ProgressBar 
+    {
+        public Suite.CustomizableEdges CustomizableEdges { get; set; } = new Suite.CustomizableEdges();
+        public Guna2ShadowDecoration ShadowDecoration { get; set; } = new Guna2ShadowDecoration();
+        public TextRenderingHint TextRenderingHint { get; set; } = TextRenderingHint.SystemDefault;
+        
+        public class Guna2ShadowDecoration
+        {
+            public Suite.CustomizableEdges CustomizableEdges { get; set; } = new Suite.CustomizableEdges();
+        }
+    }
     public class Guna2ControlBox : System.Windows.Forms.Control { }
     public class Guna2CheckBox : System.Windows.Forms.CheckBox { }
     public class Guna2ToggleSwitch : System.Windows.Forms.Control 

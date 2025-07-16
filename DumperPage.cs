@@ -243,10 +243,29 @@ namespace BoomSQL
                     dataTable.Rows.Add(dataRow);
                 }
 
-                // Display in data grid (assuming there's a DataGridView named dgvData)
-                if (dgvData != null)
+                // Display in data grid (using txtData as display area)
+                if (txtData != null)
                 {
-                    dgvData.DataSource = dataTable;
+                    var sb = new StringBuilder();
+                    foreach (var column in table.Columns)
+                    {
+                        sb.Append(column.Name + "\t");
+                    }
+                    sb.AppendLine();
+                    
+                    foreach (var row in table.Data)
+                    {
+                        foreach (var column in table.Columns)
+                        {
+                            if (row.ContainsKey(column.Name))
+                            {
+                                sb.Append(row[column.Name]?.ToString() + "\t");
+                            }
+                        }
+                        sb.AppendLine();
+                    }
+                    
+                    txtData.Text = sb.ToString();
                 }
             }
             catch (Exception ex)
