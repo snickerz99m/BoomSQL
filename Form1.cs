@@ -121,7 +121,11 @@ namespace BoomSQL
 
         private void label2_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("https://myboom.vip");
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "https://myboom.vip",
+                UseShellExecute = true
+            });
         }
 
         private void Dorkbutton_Click(object sender, EventArgs e)

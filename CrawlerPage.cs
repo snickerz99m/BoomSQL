@@ -16,12 +16,12 @@ namespace BoomSQL
 {
     public partial class CrawlerPage : BasePage
     {
-        private WebCrawler _crawler;
-        private HttpClient _httpClient;
+        private WebCrawler _crawler = null!;
+        private HttpClient _httpClient = new HttpClient();
         private List<CrawlerResult> _crawlResults = new List<CrawlerResult>();
         private bool _isCrawling = false;
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
-        private CancellationTokenSource _cancellationTokenSource;
+        private CancellationTokenSource? _cancellationTokenSource;
         private TextBox txtBaseUrl;
         private NumericUpDown nudDepth;
         private NumericUpDown nudMaxUrls;

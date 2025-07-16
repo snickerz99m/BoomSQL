@@ -22,9 +22,9 @@ namespace BoomSQL
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
         private int _maxThreads = 3;
         private HttpClient _httpClient = new HttpClient();
-        private DatabaseDumper _dumper;
-        private VulnerabilityDetails _currentVulnerability;
-        private CancellationTokenSource _cancellationTokenSource;
+        private DatabaseDumper? _dumper;
+        private VulnerabilityDetails? _currentVulnerability;
+        private CancellationTokenSource? _cancellationTokenSource;
         private TreeView treeDatabase;
         private DataGridView dgvData;
         private Button btnStart;
