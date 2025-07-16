@@ -157,7 +157,7 @@ namespace BoomSQL
             }
         }
 
-        protected void LogMessage(string message)
+        protected virtual void LogMessage(string message)
         {
             // Base logging method that can be overridden
             System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");

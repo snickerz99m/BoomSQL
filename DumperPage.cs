@@ -410,7 +410,7 @@ namespace BoomSQL
             }
         }
 
-        private void LogMessage(string message)
+        protected override void LogMessage(string message)
         {
             if (InvokeRequired)
             {

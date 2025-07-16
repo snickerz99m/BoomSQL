@@ -22,21 +22,7 @@ namespace BoomSQL
         private bool _isCrawling = false;
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
         private CancellationTokenSource? _cancellationTokenSource;
-        private TextBox txtBaseUrl;
-        private NumericUpDown nudDepth;
-        private NumericUpDown nudMaxUrls;
-        private NumericUpDown nudThreads;
-        private NumericUpDown nudDelay;
-        private CheckBox chkStayInDomain;
-        private Button btnStart;
-        private Button btnStop;
-        private Button btnSave;
-        private Button btnSendToTester;
-        private Button btnLoad;
-        private Button btnShowLogs;
-        private ListBox lstResults;
-        private Label lblStatus;
-        private TextBox txtLogs;
+        // UI Controls are defined in Designer.cs
 
         public event EventHandler<List<string>>? OnSendToTester;
 
@@ -283,7 +269,7 @@ namespace BoomSQL
             btnSendToTester.Enabled = enabled;
         }
 
-        private void LogMessage(string message)
+        protected override void LogMessage(string message)
         {
             if (InvokeRequired)
             {

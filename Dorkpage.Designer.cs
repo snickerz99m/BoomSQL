@@ -615,6 +615,6 @@ namespace BoomSQL
         private Guna2CheckBox guna2CheckBox4;
         private Guna2CheckBox guna2CheckBox3;
         private Guna2CheckBox guna2CheckBox2;
-        private Guna2Button btnSaveResult;
+        // btnSaveResult already declared on line 15
     }
 }
