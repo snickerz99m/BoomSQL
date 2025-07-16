@@ -22,21 +22,7 @@ namespace BoomSQL
         private bool _isCrawling = false;
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
         private CancellationTokenSource? _cancellationTokenSource;
-        private TextBox txtBaseUrl;
-        private NumericUpDown nudDepth;
-        private NumericUpDown nudMaxUrls;
-        private NumericUpDown nudThreads;
-        private NumericUpDown nudDelay;
-        private CheckBox chkStayInDomain;
-        private Button btnStart;
-        private Button btnStop;
-        private Button btnSave;
-        private Button btnSendToTester;
-        private Button btnLoad;
-        private Button btnShowLogs;
-        private ListBox lstResults;
-        private Label lblStatus;
-        private TextBox txtLogs;
+        // UI Controls are defined in Designer.cs
 
         public event EventHandler<List<string>>? OnSendToTester;
 
@@ -85,19 +71,19 @@ namespace BoomSQL
             _isCrawling = true;
             _crawlResults.Clear();
             lstResults.Items.Clear();
-            txtLogs.Clear();
+            txtLogs.Text = ""; // Clear equivalent
             SetControlsEnabled(false);
             btnStop.Enabled = true;
             _cancellationTokenSource = new CancellationTokenSource();
 
-            // Configure crawler
+            // Configure crawler with default values
             var config = new WebCrawlerConfig
             {
-                MaxDepth = (int)nudDepth.Value,
-                MaxUrls = (int)nudMaxUrls.Value,
+                MaxDepth = 2, // Default depth
+                MaxUrls = 100, // Default max URLs
                 MaxConcurrentRequests = (int)nudThreads.Value,
-                RequestDelay = (int)nudDelay.Value,
-                StayInDomain = chkStayInDomain.Checked,
+                RequestDelay = 1000, // Default delay
+                StayInDomain = true, // Default stay in domain
                 BaseUrl = baseUrl,
                 EnableFormDetection = true,
                 EnableParameterExtraction = true,
@@ -272,18 +258,14 @@ namespace BoomSQL
         private void SetControlsEnabled(bool enabled)
         {
             txtBaseUrl.Enabled = enabled;
-            nudDepth.Enabled = enabled;
-            nudMaxUrls.Enabled = enabled;
             nudThreads.Enabled = enabled;
-            nudDelay.Enabled = enabled;
-            chkStayInDomain.Enabled = enabled;
             btnStart.Enabled = enabled;
             btnLoad.Enabled = enabled;
             btnSave.Enabled = enabled;
             btnSendToTester.Enabled = enabled;
         }
 
-        private void LogMessage(string message)
+        protected override void LogMessage(string message)
         {
             if (InvokeRequired)
             {

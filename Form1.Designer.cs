@@ -1,4 +1,7 @@
-﻿namespace BoomSQL
+﻿using System.Windows.Forms;
+using System.Drawing;
+
+namespace BoomSQL
 {
     partial class Form1
     {
@@ -804,16 +807,16 @@
         #endregion
 
         private Bunifu.UI.WinForms.BunifuGradientPanel bunifuGradientPanel1;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton Dorkbutton;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton dumperbutton;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton Testerbutton;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton crawlerbutton;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton settingsbutton;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton exitbutton;
+        private Bunifu.UI.WinForms.BunifuButton Dorkbutton;
+        private Bunifu.UI.WinForms.BunifuButton dumperbutton;
+        private Bunifu.UI.WinForms.BunifuButton Testerbutton;
+        private Bunifu.UI.WinForms.BunifuButton crawlerbutton;
+        private Bunifu.UI.WinForms.BunifuButton settingsbutton;
+        private Bunifu.UI.WinForms.BunifuButton exitbutton;
         private Label label2;
         private Guna.UI2.WinForms.Guna2ControlBox guna2ControlBox1;
         private Guna.UI2.WinForms.Guna2ControlBox guna2ControlBox2;
         private Guna.UI2.WinForms.Guna2ResizeForm guna2ResizeForm1;
-        private Bunifu.UI.WinForms.BunifuButton.BunifuButton aboutbutton;
+        private Bunifu.UI.WinForms.BunifuButton aboutbutton;
     }
 }

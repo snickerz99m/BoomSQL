@@ -25,16 +25,7 @@ namespace BoomSQL
         private DatabaseDumper? _dumper;
         private VulnerabilityDetails? _currentVulnerability;
         private CancellationTokenSource? _cancellationTokenSource;
-        private TreeView treeDatabase;
-        private DataGridView dgvData;
-        private Button btnStart;
-        private Button btnStop;
-        private Button btnSave;
-        private Button btnLoad;
-        private Button btnDumpSelected;
-        private Button btnDumpAll;
-        private Label lblStatus;
-        private TextBox txtLogs;
+        // UI Controls are defined in Designer.cs
 
         public DumperPage()
         {
@@ -252,10 +243,29 @@ namespace BoomSQL
                     dataTable.Rows.Add(dataRow);
                 }
 
-                // Display in data grid (assuming there's a DataGridView named dgvData)
-                if (dgvData != null)
+                // Display in data grid (using txtData as display area)
+                if (txtData != null)
                 {
-                    dgvData.DataSource = dataTable;
+                    var sb = new StringBuilder();
+                    foreach (var column in table.Columns)
+                    {
+                        sb.Append(column.Name + "\t");
+                    }
+                    sb.AppendLine();
+                    
+                    foreach (var row in table.Data)
+                    {
+                        foreach (var column in table.Columns)
+                        {
+                            if (row.ContainsKey(column.Name))
+                            {
+                                sb.Append(row[column.Name]?.ToString() + "\t");
+                            }
+                        }
+                        sb.AppendLine();
+                    }
+                    
+                    txtData.Text = sb.ToString();
                 }
             }
             catch (Exception ex)
@@ -410,7 +420,7 @@ namespace BoomSQL
             }
         }
 
-        private void LogMessage(string message)
+        protected override void LogMessage(string message)
         {
             if (InvokeRequired)
             {

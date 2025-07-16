@@ -604,17 +604,15 @@ namespace BoomSQL.Core
         public bool IncludeRequirements { get; set; } = true;
         public bool IncludeDesigns { get; set; } = true;
         public bool IncludeArchitectures { get; set; } = true;
-        public bool IncludeStructures { get; set; } = true;
+        // Duplicate definitions removed - keeping original definitions from lines 435-464
         public bool IncludeOrganizations { get; set; } = true;
         public bool IncludeHierarchies { get; set; } = true;
         public bool IncludeTrees { get; set; } = true;
-        public bool IncludeGraphs { get; set; } = true;
         public bool IncludeNetworks { get; set; } = true;
         public bool IncludeConnections { get; set; } = true;
         public bool IncludeRelationships { get; set; } = true;
         public bool IncludeAssociations { get; set; } = true;
         public bool IncludeLinks { get; set; } = true;
-        public bool IncludeReferences { get; set; } = true;
         public bool IncludePointers { get; set; } = true;
         public bool IncludeIndexes { get; set; } = true;
         public bool IncludeKeys { get; set; } = true;
@@ -687,15 +685,14 @@ namespace BoomSQL.Core
         public bool IncludeAlgorithms { get; set; } = true;
         public bool IncludeLogics { get; set; } = true;
         public bool IncludeCriterias { get; set; } = true;
+        // Duplicate definitions removed - keeping original definitions from lines 435-464
         public bool IncludeFilters { get; set; } = true;
         public bool IncludeSearches { get; set; } = true;
         public bool IncludeQueries { get; set; } = true;
         public bool IncludeStatements { get; set; } = true;
-        public bool IncludeCommands { get; set; } = true;
         public bool IncludeInstructions { get; set; } = true;
         public bool IncludeDirectives { get; set; } = true;
         public bool IncludeRequests { get; set; } = true;
-        public bool IncludeResponses { get; set; } = true;
         public bool IncludeReplies { get; set; } = true;
         public bool IncludeAnswers { get; set; } = true;
         public bool IncludeSolutions { get; set; } = true;

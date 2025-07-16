@@ -380,7 +380,7 @@ namespace BoomSQL
             btnSendToDumper.Enabled = enabled;
         }
 
-        private void LogMessage(string message)
+        protected override void LogMessage(string message)
         {
             if (InvokeRequired)
             {

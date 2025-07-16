@@ -1,3 +1,5 @@
+using System.Windows.Forms;
+
 namespace BoomSQL
 {
     internal static class Program

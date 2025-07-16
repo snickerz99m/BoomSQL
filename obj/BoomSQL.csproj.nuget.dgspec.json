@@ -17,14 +17,14 @@
           "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net8.0-windows"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net8.0-windows7.0": {
-            "targetAlias": "net8.0-windows",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -35,32 +35,32 @@
         }
       },
       "frameworks": {
-        "net8.0-windows7.0": {
-          "targetAlias": "net8.0-windows",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
-            "Bunifu.UI.WinForms": {
-              "target": "Package",
-              "version": "[9.0.0, )"
-            },
-            "Bunifu.UI.WinForms.1.5.3": {
-              "target": "Package",
-              "version": "[2.0.0, )"
-            },
-            "FontAwesome.Sharp": {
-              "target": "Package",
-              "version": "[6.6.0, )"
-            },
-            "Guna.UI2.WinForms": {
-              "target": "Package",
-              "version": "[2.0.4.7, )"
-            },
             "HtmlAgilityPack": {
               "target": "Package",
               "version": "[1.11.54, )"
             },
-            "OpenAI": {
+            "System.Configuration.ConfigurationManager": {
               "target": "Package",
-              "version": "[2.2.0-beta.4, )"
+              "version": "[8.0.0, )"
+            },
+            "System.Net.Http": {
+              "target": "Package",
+              "version": "[4.3.4, )"
+            },
+            "System.Resources.Extensions": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.5, )"
+            },
+            "System.Threading.Tasks.Extensions": {
+              "target": "Package",
+              "version": "[4.5.4, )"
             }
           },
           "imports": [
