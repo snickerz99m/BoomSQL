@@ -54,9 +54,17 @@
               "target": "Package",
               "version": "[2.0.4.7, )"
             },
+            "HtmlAgilityPack": {
+              "target": "Package",
+              "version": "[1.11.54, )"
+            },
             "OpenAI": {
               "target": "Package",
               "version": "[2.2.0-beta.4, )"
+            },
+            "System.Web.HttpUtility": {
+              "target": "Package",
+              "version": "[4.3.0, )"
             }
           },
           "imports": [
