@@ -25,16 +25,7 @@ namespace BoomSQL
         private DatabaseDumper? _dumper;
         private VulnerabilityDetails? _currentVulnerability;
         private CancellationTokenSource? _cancellationTokenSource;
-        private TreeView treeDatabase;
-        private DataGridView dgvData;
-        private Button btnStart;
-        private Button btnStop;
-        private Button btnSave;
-        private Button btnLoad;
-        private Button btnDumpSelected;
-        private Button btnDumpAll;
-        private Label lblStatus;
-        private TextBox txtLogs;
+        // UI Controls are defined in Designer.cs
 
         public DumperPage()
         {

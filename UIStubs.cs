@@ -47,6 +47,12 @@ namespace System.Windows.Forms
         public virtual void SendToBack() { }
         public virtual void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
+        protected virtual void OnPaintBackground(PaintEventArgs e) { }
+        protected virtual void InvokePaintBackground(Control c, PaintEventArgs e) { }
+        protected virtual void InvokePaint(Control c, PaintEventArgs e) { }
+        public virtual void SuspendLayout() { }
+        public virtual void ResumeLayout() { }
+        public virtual void ResumeLayout(bool performLayout) { }
         
         public event EventHandler? Click;
         protected virtual void OnClick(EventArgs e) => Click?.Invoke(this, e);
@@ -75,6 +81,7 @@ namespace System.Windows.Forms
         public virtual ScrollBars ScrollBars { get; set; } = ScrollBars.None;
         public virtual void AppendText(string text) { }
         public virtual void ScrollToCaret() { }
+        public virtual void Clear() { Text = ""; }
     }
 
     public class ListBox : Control
@@ -82,6 +89,7 @@ namespace System.Windows.Forms
         public virtual ListBox.ObjectCollection Items { get; } = new ListBox.ObjectCollection();
         public virtual int SelectedIndex { get; set; } = -1;
         public virtual object SelectedItem { get; set; } = null;
+        public virtual BorderStyle BorderStyle { get; set; } = BorderStyle.Fixed3D;
         public event EventHandler? SelectedIndexChanged;
         public event MouseEventHandler? MouseClick;
         public event MouseEventHandler? MouseDoubleClick;
@@ -141,9 +149,9 @@ namespace System.Windows.Forms
 
     public class TreeNodeCollection : List<TreeNode>
     {
-        public virtual void Clear() => base.Clear();
-        public virtual void Add(TreeNode node) => base.Add(node);
-        public virtual void Remove(TreeNode node) => base.Remove(node);
+        public new virtual void Clear() => base.Clear();
+        public new virtual void Add(TreeNode node) => base.Add(node);
+        public new virtual void Remove(TreeNode node) => base.Remove(node);
     }
 
     public class DataGridView : Control
@@ -187,8 +195,16 @@ namespace System.Windows.Forms
 
     public class ContextMenuStrip : Control
     {
+        private readonly object _components;
+        
+        public ContextMenuStrip() { }
+        public ContextMenuStrip(object components) { _components = components; }
+        
         public virtual ToolStripItemCollection Items { get; } = new ToolStripItemCollection();
         public virtual void Show(Control control, Point position) { }
+        public virtual void SuspendLayout() { }
+        public virtual void ResumeLayout() { }
+        public virtual void ResumeLayout(bool performLayout) { }
     }
 
     public class ToolStripItemCollection : List<ToolStripItem> { }
@@ -244,6 +260,29 @@ namespace System.Windows.Forms
         public int Value { get; set; } = 0;
         public int Maximum { get; set; } = 100;
         public int Minimum { get; set; } = 0;
+    }
+
+    public class TabControl : Control
+    {
+        public virtual TabPageCollection TabPages { get; } = new TabPageCollection();
+        public virtual int SelectedIndex { get; set; } = 0;
+        public virtual TabPage SelectedTab { get; set; } = null;
+        public event EventHandler? SelectedIndexChanged;
+    }
+
+    public class TabPage : Panel
+    {
+        public virtual string Text { get; set; } = "";
+        public virtual bool UseVisualStyleBackColor { get; set; } = true;
+        public TabPage() { }
+        public TabPage(string text) { Text = text; }
+    }
+
+    public class TabPageCollection : List<TabPage>
+    {
+        public new virtual void Add(TabPage page) => base.Add(page);
+        public new virtual void Remove(TabPage page) => base.Remove(page);
+        public new virtual void Clear() => base.Clear();
     }
 
     public class DataGridViewTextBoxColumn : Control
@@ -304,6 +343,7 @@ namespace System.Windows.Forms
     public enum ProgressBarStyle { Blocks, Continuous, Marquee }
     public enum MessageBoxButtons { OK, OKCancel, YesNo, YesNoCancel }
     public enum MessageBoxIcon { None, Information, Warning, Error, Question }
+    public enum BorderStyle { None, FixedSingle, Fixed3D }
 }
 
 namespace System.Data
@@ -351,9 +391,6 @@ namespace System.Drawing
         public static Color White => new Color();
         public static Color Black => new Color();
         public static Color Transparent => new Color();
-        public static Color FromArgb(int argb) => new Color();
-        public static Color FromArgb(int alpha, int red, int green, int blue) => new Color();
-        public static Color FromArgb(int red, int green, int blue) => new Color();
         public static Color Blue => new Color();
         public static Color Red => new Color();
         public static Color Green => new Color();
@@ -361,6 +398,24 @@ namespace System.Drawing
         public static Color Gray => new Color();
         public static Color Silver => new Color();
         public static Color Aqua => new Color();
+        public static Color DarkGray => new Color();
+        public static Color SlateBlue => new Color();
+        public static Color Orange => new Color();
+        public static Color Purple => new Color();
+        public static Color Pink => new Color();
+        public static Color Brown => new Color();
+        public static Color Cyan => new Color();
+        public static Color Magenta => new Color();
+        public static Color Lime => new Color();
+        public static Color Maroon => new Color();
+        public static Color Navy => new Color();
+        public static Color Olive => new Color();
+        public static Color Teal => new Color();
+        public static Color Fuchsia => new Color();
+        
+        public static Color FromArgb(int argb) => new Color();
+        public static Color FromArgb(int alpha, int red, int green, int blue) => new Color();
+        public static Color FromArgb(int red, int green, int blue) => new Color();
     }
 
     public struct Size
@@ -400,8 +455,19 @@ namespace System.Drawing
     {
         public string Name { get; set; } = "";
         public float Size { get; set; } = 10f;
+        public FontStyle Style { get; set; } = FontStyle.Regular;
         public Font(string name, float size) { Name = name; Size = size; }
+        public Font(string name, float size, FontStyle style) { Name = name; Size = size; Style = style; }
         public void Dispose() { }
+    }
+
+    public enum FontStyle
+    {
+        Regular = 0,
+        Bold = 1,
+        Italic = 2,
+        Underline = 4,
+        Strikeout = 8
     }
 
     public class Bitmap : IDisposable
@@ -426,8 +492,59 @@ namespace System.Drawing
 
 namespace Guna.UI2.WinForms
 {
-    public class Guna2Button : System.Windows.Forms.Button { }
-    public class Guna2TextBox : System.Windows.Forms.TextBox { }
+    public class Guna2Button : System.Windows.Forms.Button 
+    {
+        public Color BorderColor { get; set; }
+        public int BorderRadius { get; set; }
+        public Suite.CustomizableEdges CustomizableEdges { get; set; } = new Suite.CustomizableEdges();
+        public Guna2ButtonState DisabledState { get; set; } = new Guna2ButtonState();
+        public Color FillColor { get; set; }
+        public Guna2ButtonState HoverState { get; set; } = new Guna2ButtonState();
+        public Guna2ShadowDecoration ShadowDecoration { get; set; } = new Guna2ShadowDecoration();
+        
+        public class Guna2ButtonState
+        {
+            public Color BorderColor { get; set; }
+            public Color CustomBorderColor { get; set; }
+            public Color FillColor { get; set; }
+            public Color ForeColor { get; set; }
+        }
+        
+        public class Guna2ShadowDecoration
+        {
+            public Suite.CustomizableEdges CustomizableEdges { get; set; } = new Suite.CustomizableEdges();
+        }
+    }
+    
+    public class Guna2TextBox : System.Windows.Forms.TextBox 
+    {
+        public Color BorderColor { get; set; }
+        public int BorderRadius { get; set; }
+        public Suite.CustomizableEdges CustomizableEdges { get; set; } = new Suite.CustomizableEdges();
+        public string DefaultText { get; set; } = "";
+        public Guna2TextBoxState DisabledState { get; set; } = new Guna2TextBoxState();
+        public Color FillColor { get; set; }
+        public Guna2TextBoxState FocusedState { get; set; } = new Guna2TextBoxState();
+        public Guna2TextBoxState HoverState { get; set; } = new Guna2TextBoxState();
+        public Color PlaceholderForeColor { get; set; }
+        public string PlaceholderText { get; set; } = "";
+        public string SelectedText { get; set; } = "";
+        public Guna2ShadowDecoration ShadowDecoration { get; set; } = new Guna2ShadowDecoration();
+        
+        public class Guna2TextBoxState
+        {
+            public Color BorderColor { get; set; }
+            public Color FillColor { get; set; }
+            public Color ForeColor { get; set; }
+            public Color PlaceholderForeColor { get; set; }
+        }
+        
+        public class Guna2ShadowDecoration
+        {
+            public Suite.CustomizableEdges CustomizableEdges { get; set; } = new Suite.CustomizableEdges();
+        }
+    }
+    
     public class Guna2ProgressBar : System.Windows.Forms.ProgressBar { }
     public class Guna2ControlBox : System.Windows.Forms.Control { }
     public class Guna2CheckBox : System.Windows.Forms.CheckBox { }
@@ -451,7 +568,6 @@ namespace Bunifu.UI.WinForms
 {
     public class BunifuGroupBox : System.Windows.Forms.Panel { }
     public class BunifuTextBox : System.Windows.Forms.TextBox { }
-    public class BunifuButton : System.Windows.Forms.Button { }
     public class BunifuCheckBox : System.Windows.Forms.CheckBox { }
     public class BunifuDropdown : System.Windows.Forms.Control { }
     public class BunifuPages : System.Windows.Forms.Control { }
@@ -471,6 +587,25 @@ namespace Bunifu.UI.WinForms
     public class BunifuColorTransition : System.Windows.Forms.Control { }
     public class BunifuProgressBar : System.Windows.Forms.ProgressBar { }
     public class BunifuDataGridView : System.Windows.Forms.DataGridView { }
+    
+    public class BunifuButton : System.Windows.Forms.Button 
+    {
+        public class BunifuButtonState
+        {
+            public Color BorderColor { get; set; }
+            public Color CustomBorderColor { get; set; }
+            public Color FillColor { get; set; }
+            public Color ForeColor { get; set; }
+        }
+        
+        public BunifuButtonState DisabledState { get; set; } = new BunifuButtonState();
+        public BunifuButtonState IdleState { get; set; } = new BunifuButtonState();
+        public BunifuButtonState HoverState { get; set; } = new BunifuButtonState();
+        public BunifuButtonState PressedState { get; set; } = new BunifuButtonState();
+        public int BorderRadius { get; set; } = 0;
+        public int BorderThickness { get; set; } = 1;
+        public bool UseTransparentBackground { get; set; } = false;
+    }
 }
 
 namespace System.ComponentModel

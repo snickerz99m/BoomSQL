@@ -71,19 +71,19 @@ namespace BoomSQL
             _isCrawling = true;
             _crawlResults.Clear();
             lstResults.Items.Clear();
-            txtLogs.Clear();
+            txtLogs.Text = ""; // Clear equivalent
             SetControlsEnabled(false);
             btnStop.Enabled = true;
             _cancellationTokenSource = new CancellationTokenSource();
 
-            // Configure crawler
+            // Configure crawler with default values
             var config = new WebCrawlerConfig
             {
-                MaxDepth = (int)nudDepth.Value,
-                MaxUrls = (int)nudMaxUrls.Value,
+                MaxDepth = 2, // Default depth
+                MaxUrls = 100, // Default max URLs
                 MaxConcurrentRequests = (int)nudThreads.Value,
-                RequestDelay = (int)nudDelay.Value,
-                StayInDomain = chkStayInDomain.Checked,
+                RequestDelay = 1000, // Default delay
+                StayInDomain = true, // Default stay in domain
                 BaseUrl = baseUrl,
                 EnableFormDetection = true,
                 EnableParameterExtraction = true,
@@ -258,11 +258,7 @@ namespace BoomSQL
         private void SetControlsEnabled(bool enabled)
         {
             txtBaseUrl.Enabled = enabled;
-            nudDepth.Enabled = enabled;
-            nudMaxUrls.Enabled = enabled;
             nudThreads.Enabled = enabled;
-            nudDelay.Enabled = enabled;
-            chkStayInDomain.Enabled = enabled;
             btnStart.Enabled = enabled;
             btnLoad.Enabled = enabled;
             btnSave.Enabled = enabled;

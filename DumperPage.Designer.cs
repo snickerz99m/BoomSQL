@@ -1,4 +1,6 @@
 ﻿using Guna.UI2.WinForms;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace BoomSQL
 {
