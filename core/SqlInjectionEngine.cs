@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.IO;
 using System.Threading;
-using System.Web;
+using System.Collections.Specialized;
 
 namespace BoomSQL.Core
 {
@@ -346,7 +346,7 @@ namespace BoomSQL.Core
             
             // Parse URL for parameters
             var uri = new Uri(url);
-            var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var queryParams = ParseQueryString(uri.Query);
             
             foreach (string paramName in queryParams.AllKeys)
             {
@@ -406,7 +406,7 @@ namespace BoomSQL.Core
         private string ReplaceUrlParameter(string url, string paramName, string newValue)
         {
             var uri = new Uri(url);
-            var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var queryParams = ParseQueryString(uri.Query);
             queryParams[paramName] = newValue;
             
             var uriBuilder = new UriBuilder(uri)
@@ -415,6 +415,37 @@ namespace BoomSQL.Core
             };
             
             return uriBuilder.ToString();
+        }
+
+        private NameValueCollection ParseQueryString(string query)
+        {
+            var result = new NameValueCollection();
+            
+            if (string.IsNullOrEmpty(query))
+                return result;
+            
+            // Remove leading '?' if present
+            if (query.StartsWith("?"))
+                query = query.Substring(1);
+            
+            var pairs = query.Split('&');
+            foreach (var pair in pairs)
+            {
+                var keyValue = pair.Split('=');
+                if (keyValue.Length == 2)
+                {
+                    var key = System.Net.WebUtility.UrlDecode(keyValue[0]);
+                    var value = System.Net.WebUtility.UrlDecode(keyValue[1]);
+                    result.Add(key, value);
+                }
+                else if (keyValue.Length == 1)
+                {
+                    var key = System.Net.WebUtility.UrlDecode(keyValue[0]);
+                    result.Add(key, "");
+                }
+            }
+            
+            return result;
         }
 
         private SqlInjectionPayload ApplyWafBypass(SqlInjectionPayload payload, WafBypass bypass)

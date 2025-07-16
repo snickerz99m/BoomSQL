@@ -3553,8 +3553,7 @@
       "FontAwesome.Sharp >= 6.6.0",
       "Guna.UI2.WinForms >= 2.0.4.7",
       "HtmlAgilityPack >= 1.11.54",
-      "OpenAI >= 2.2.0-beta.4",
-      "System.Web.HttpUtility >= 4.3.0"
+      "OpenAI >= 2.2.0-beta.4"
     ]
   },
   "packageFolders": {
@@ -3617,10 +3616,6 @@
           "OpenAI": {
             "target": "Package",
             "version": "[2.2.0-beta.4, )"
-          },
-          "System.Web.HttpUtility": {
-            "target": "Package",
-            "version": "[4.3.0, )"
           }
         },
         "imports": [
@@ -3644,15 +3639,6 @@
     }
   },
   "logs": [
-    {
-      "code": "NU1101",
-      "level": "Error",
-      "message": "Unable to find package System.Web.HttpUtility. No packages exist with this id in source(s): nuget.org",
-      "libraryId": "System.Web.HttpUtility",
-      "targetGraphs": [
-        "net8.0-windows7.0"
-      ]
-    },
     {
       "code": "NU1701",
       "level": "Warning",

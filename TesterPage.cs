@@ -22,8 +22,11 @@ namespace BoomSQL
         private System.Windows.Forms.Timer _progressTimer = new System.Windows.Forms.Timer();
         private int _maxThreads = 5;
         private HttpClient _httpClient = new HttpClient();
-        private SqlInjectionEngine _sqlEngine;
-        private CancellationTokenSource _cancellationTokenSource;
+        private SqlInjectionEngine _sqlEngine = null!;
+        private CancellationTokenSource? _cancellationTokenSource;
+
+        // Event for sending test results to the DumperPage
+        public event EventHandler<TestResult>? OnSendToDumper;
 
         public void LoadUrls(List<string> urls)
         {

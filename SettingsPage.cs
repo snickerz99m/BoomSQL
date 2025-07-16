@@ -14,23 +14,6 @@ namespace BoomSQL
         private BindingList<Proxy> _proxies = new BindingList<Proxy>();
         private List<string> _userAgents = new List<string>();
         private bool _isTestingProxies = false;
-        private DataGridView dgvProxies;
-        private Button btnLoadProxies;
-        private Button btnSaveProxies;
-        private Button btnAddProxy;
-        private Button btnRemoveProxy;
-        private Button btnTestProxies;
-        private Button btnSaveSettings;
-        private TextBox txtHost;
-        private NumericUpDown nudPort;
-        private TextBox txtUsername;
-        private TextBox txtPassword;
-        private NumericUpDown nudDorkThreads;
-        private NumericUpDown nudCrawlerThreads;
-        private NumericUpDown nudTesterThreads;
-        private NumericUpDown nudDumperThreads;
-        private CheckBox chkRemoveDead;
-        private TextBox txtLogs;
 
         public SettingsPage()
         {
@@ -238,7 +221,7 @@ namespace BoomSQL
             MessageBox.Show("Settings saved successfully");
         }
 
-        private void LogMessage(string message)
+        private new void LogMessage(string message)
         {
             txtLogs.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}\r\n");
         }

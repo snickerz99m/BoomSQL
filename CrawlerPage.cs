@@ -38,7 +38,7 @@ namespace BoomSQL
         private Label lblStatus;
         private TextBox txtLogs;
 
-        public event EventHandler<List<string>> OnSendToTester;
+        public event EventHandler<List<string>>? OnSendToTester;
 
         public CrawlerPage()
         {
