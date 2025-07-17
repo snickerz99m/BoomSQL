@@ -97,173 +97,6 @@ except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
 
-class BoomSQLApplication:
-    """Main BoomSQL application class"""
-    
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.withdraw()  # Hide main window initially
-        
-        # Setup logging
-        setup_logging()
-        self.logger = logging.getLogger(__name__)
-        
-        # Initialize event loop manager
-        self.event_loop_manager = get_event_loop_manager()
-        
-        # Load configuration
-        self.config = ConfigManager()
-        
-        # Initialize components
-        self.sql_engine = None
-        self.database_dumper = None
-        self.web_crawler = None
-        self.dork_searcher = None
-        self.report_generator = None
-        
-        # Setup GUI
-        self.setup_gui()
-        
-    def setup_gui(self):
-        """Setup the main GUI"""
-        self.root.title("BoomSQL - Advanced SQL Injection Testing Tool v2.0.0")
-        self.root.geometry("1200x800")
-        self.root.minsize(1000, 700)
-        
-        # Center the window on screen
-        self.root.update_idletasks()
-        width = self.root.winfo_width()
-        height = self.root.winfo_height()
-        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.root.winfo_screenheight() // 2) - (height // 2)
-        self.root.geometry(f"{width}x{height}+{x}+{y}")
-        
-        # Set window icon (if available)
-        try:
-            icon_path = project_root / "assets" / "icon.ico"
-            if icon_path.exists():
-                self.root.iconbitmap(str(icon_path))
-        except:
-            pass
-        
-        # Apply theme
-        self.apply_theme()
-        
-        # Create main window
-        if TKINTER_AVAILABLE and MainWindow:
-            self.main_window = MainWindow(self.root, self)
-        else:
-            self.main_window = None
-        
-    def apply_theme(self):
-        """Apply dark theme to the application"""
-        style = ttk.Style()
-        
-        # Configure colors
-        bg_color = "#2b2b2b"
-        fg_color = "#ffffff"
-        select_color = "#404040"
-        accent_color = "#ff6b35"
-        
-        self.root.configure(bg=bg_color)
-        
-        # Configure ttk styles
-        style.configure("TLabel", background=bg_color, foreground=fg_color)
-        style.configure("TButton", background=select_color, foreground=fg_color)
-        style.configure("TEntry", fieldbackground=select_color, foreground=fg_color)
-        style.configure("TText", background=select_color, foreground=fg_color)
-        style.configure("TFrame", background=bg_color)
-        style.configure("TNotebook", background=bg_color)
-        style.configure("TNotebook.Tab", background=select_color, foreground=fg_color)
-        style.configure("Treeview", background=select_color, foreground=fg_color)
-        style.configure("Treeview.Heading", background=accent_color, foreground=fg_color)
-        
-        # Map styles for active states
-        style.map("TButton", background=[('active', accent_color)])
-        style.map("TNotebook.Tab", background=[('selected', accent_color)])
-        
-    def show_disclaimer(self):
-        """Show legal disclaimer dialog"""
-        if not TKINTER_AVAILABLE or not DisclaimerDialog:
-            # In non-GUI mode, assume acceptance
-            return True
-            
-        disclaimer = DisclaimerDialog(self.root)
-        if not disclaimer.accepted:
-            self.root.destroy()
-            return False
-        return True
-        
-    def run(self):
-        """Run the application"""
-        self.logger.info("Starting BoomSQL application")
-        
-        # Show disclaimer first
-        if not self.show_disclaimer():
-            return
-            
-        # Show main window with enhanced Windows visibility
-        self.root.deiconify()
-        self.root.lift()
-        self.root.focus_force()
-        
-        # Enhanced Windows GUI visibility fixes
-        try:
-            # Force window to be visible and on top
-            self.root.attributes('-topmost', True)
-            self.root.update()
-            self.root.after(200, lambda: self.root.attributes('-topmost', False))
-            
-            # Additional Windows-specific fixes
-            self.root.state('normal')  # Ensure not minimized
-            self.root.focus_set()      # Set focus
-            self.root.grab_set()       # Grab focus (temporary)
-            self.root.after(500, lambda: self.root.grab_release())  # Release grab after 500ms
-            
-            # Force window to front on Windows
-            if sys.platform.startswith('win'):
-                import ctypes
-                try:
-                    hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
-                    ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002)
-                except:
-                    pass  # Ignore if ctypes approach fails
-                    
-        except Exception as e:
-            self.logger.warning(f"Could not apply Windows visibility fixes: {e}")
-        
-        # Start main loop
-        try:
-            self.root.mainloop()
-        except KeyboardInterrupt:
-            self.logger.info("Application interrupted by user")
-        except Exception as e:
-            self.logger.error(f"Unexpected error: {e}")
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
-        finally:
-            self.cleanup()
-            
-    def cleanup(self):
-        """Cleanup resources before exit"""
-        self.logger.info("Cleaning up resources")
-        
-        # Cancel any running tasks
-        if hasattr(self, 'main_window') and self.main_window:
-            self.main_window.cancel_all_tasks()
-            
-        # Close database connections
-        if self.database_dumper:
-            self.database_dumper.close()
-            
-        # Shutdown event loop manager
-        if hasattr(self, 'event_loop_manager'):
-            self.event_loop_manager.stop()
-            
-        # Global shutdown
-        shutdown_event_loop()
-            
-        self.logger.info("BoomSQL application closed")
-
 def is_gui_available():
     """
     Check if GUI is available on the current platform
@@ -276,8 +109,11 @@ def is_gui_available():
         # On Windows, tkinter should work fine
         if platform.system() == "Windows":
             # Quick test to make sure tkinter works
+            print("🔍 Testing tkinter on Windows...")
             root = tk.Tk()
             root.withdraw()
+            root.update_idletasks()
+            print("✅ Tkinter test window created successfully")
             root.destroy()
             return True, "GUI available on Windows"
         
@@ -336,18 +172,24 @@ class BoomSQLApplication:
     """Main BoomSQL application class"""
     
     def __init__(self):
+        print("🔧 Initializing BoomSQL application...")
+        
         self.root = tk.Tk()
         self.root.withdraw()  # Hide main window initially
+        print("📱 Tkinter root window created")
         
         # Setup logging
         setup_logging()
         self.logger = logging.getLogger(__name__)
+        print("📝 Logging system initialized")
         
         # Initialize event loop manager
         self.event_loop_manager = get_event_loop_manager()
+        print("🔄 Event loop manager initialized")
         
         # Load configuration
         self.config = ConfigManager()
+        print("⚙️ Configuration loaded")
         
         # Initialize components
         self.sql_engine = None
@@ -355,12 +197,16 @@ class BoomSQLApplication:
         self.web_crawler = None
         self.dork_searcher = None
         self.report_generator = None
+        print("🧩 Component containers initialized")
         
         # Setup GUI
         self.setup_gui()
+        print("✅ BoomSQL application initialization complete")
         
     def setup_gui(self):
         """Setup the main GUI"""
+        print("🔧 Setting up GUI components...")
+        
         self.root.title("BoomSQL - Advanced SQL Injection Testing Tool v2.0.0")
         self.root.geometry("1200x800")
         self.root.minsize(1000, 700)
@@ -372,22 +218,43 @@ class BoomSQLApplication:
         x = (self.root.winfo_screenwidth() // 2) - (width // 2)
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f"{width}x{height}+{x}+{y}")
+        print(f"📐 Window positioned at {x},{y} with size {width}x{height}")
         
         # Set window icon (if available)
         try:
             icon_path = project_root / "assets" / "icon.ico"
             if icon_path.exists():
                 self.root.iconbitmap(str(icon_path))
-        except:
-            pass
+                print("🎨 Icon loaded successfully")
+        except Exception as e:
+            print(f"⚠️ Could not load icon: {e}")
         
         # Apply theme
+        print("🎨 Applying dark theme...")
         self.apply_theme()
         
         # Create main window
+        print("🏗️ Creating main window interface...")
         if TKINTER_AVAILABLE and MainWindow:
-            self.main_window = MainWindow(self.root, self)
+            try:
+                self.main_window = MainWindow(self.root, self)
+                print("✅ Main window interface created successfully")
+            except Exception as e:
+                print(f"❌ Failed to create main window interface: {e}")
+                print("🔧 GUI will show but may not be fully functional")
+                self.main_window = None
+                
+                # Create a basic fallback interface
+                fallback_label = tk.Label(
+                    self.root, 
+                    text="BoomSQL GUI\nInterface loading failed.\nCheck logs for details.",
+                    font=("Arial", 14),
+                    bg="#2b2b2b",
+                    fg="#ffffff"
+                )
+                fallback_label.pack(expand=True)
         else:
+            print("❌ MainWindow class not available")
             self.main_window = None
         
     def apply_theme(self):
@@ -437,36 +304,89 @@ class BoomSQLApplication:
         if not self.show_disclaimer():
             return
             
-        # Show main window with enhanced Windows visibility
-        self.root.deiconify()
-        self.root.lift()
-        self.root.focus_force()
+        # Enhanced Windows GUI initialization and visibility
+        self.logger.info("Initializing GUI window...")
+        print("🔧 Preparing GUI window...")
         
-        # Enhanced Windows GUI visibility fixes
         try:
-            # Force window to be visible and on top
+            # First, make sure window is properly configured
+            self.root.update_idletasks()
+            
+            # Windows-specific fixes BEFORE showing window
+            if sys.platform.startswith('win'):
+                print("🖥️ Applying Windows-specific GUI fixes...")
+                
+                # Force window to be a normal window (not withdrawn)
+                self.root.state('normal')
+                self.root.update()
+                
+                # Try Windows-specific window positioning and visibility
+                try:
+                    import ctypes
+                    from ctypes import wintypes
+                    
+                    # Get window handle
+                    hwnd = self.root.winfo_id()
+                    
+                    # Constants for SetWindowPos
+                    HWND_TOP = 0
+                    HWND_TOPMOST = -1
+                    SWP_NOMOVE = 0x0002
+                    SWP_NOSIZE = 0x0001
+                    SWP_SHOWWINDOW = 0x0040
+                    SWP_NOACTIVATE = 0x0010
+                    
+                    # Show and activate the window with correct flags
+                    ctypes.windll.user32.SetWindowPos(
+                        hwnd, HWND_TOP, 0, 0, 0, 0,
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
+                    )
+                    
+                    # Use ShowWindow to ensure it's visible
+                    SW_SHOW = 5
+                    SW_RESTORE = 9
+                    SW_SHOWNORMAL = 1
+                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOWNORMAL)
+                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
+                    
+                    # Set foreground window (bring to front)
+                    ctypes.windll.user32.SetForegroundWindow(hwnd)
+                    
+                    # Also try BringWindowToTop
+                    ctypes.windll.user32.BringWindowToTop(hwnd)
+                    
+                    self.logger.info("Applied Windows-specific window positioning")
+                    print("✅ Windows GUI fixes applied successfully")
+                    
+                except Exception as e:
+                    self.logger.warning(f"Windows-specific positioning failed: {e}")
+                    print(f"⚠️ Some Windows fixes failed: {e}")
+            
+            # Show the window using tkinter methods
+            self.root.deiconify()
+            self.root.update()
+            
+            # General visibility improvements
+            self.root.lift()
+            self.root.focus_force()
+            
+            # Temporarily set topmost to ensure visibility
             self.root.attributes('-topmost', True)
             self.root.update()
-            self.root.after(200, lambda: self.root.attributes('-topmost', False))
             
-            # Additional Windows-specific fixes
-            self.root.state('normal')  # Ensure not minimized
-            self.root.focus_set()      # Set focus
-            self.root.grab_set()       # Grab focus (temporary)
-            self.root.after(500, lambda: self.root.grab_release())  # Release grab after 500ms
+            # Schedule to remove topmost after window is visible
+            self.root.after(200, self._finalize_window_display)
             
-            # Force window to front on Windows
-            if sys.platform.startswith('win'):
-                import ctypes
-                try:
-                    hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
-                    ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002)
-                except:
-                    pass  # Ignore if ctypes approach fails
-                    
+            self.logger.info("GUI window should now be visible")
+            print("✅ GUI window initialized successfully!")
+            print("📱 BoomSQL GUI should now be visible on your screen.")
+            
         except Exception as e:
-            self.logger.warning(f"Could not apply Windows visibility fixes: {e}")
-        
+            self.logger.error(f"Failed to initialize GUI window: {e}")
+            print(f"❌ GUI initialization failed: {e}")
+            print("🔧 The application may not be visible. Try minimizing/maximizing your windows.")
+            print("💡 If the GUI still doesn't appear, try running with --skip-gui flag.")
+            
         # Start main loop
         try:
             self.root.mainloop()
@@ -474,9 +394,40 @@ class BoomSQLApplication:
             self.logger.info("Application interrupted by user")
         except Exception as e:
             self.logger.error(f"Unexpected error: {e}")
-            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+            if TKINTER_AVAILABLE:
+                messagebox.showerror("Error", f"An unexpected error occurred: {e}")
         finally:
             self.cleanup()
+            
+    def _finalize_window_display(self):
+        """Final window display adjustments (called after initial display)"""
+        try:
+            # Remove topmost after window is shown
+            self.root.attributes('-topmost', False)
+            
+            # Ensure focus
+            self.root.focus_set()
+            
+            # Final update
+            self.root.update()
+            
+            # Additional Windows-specific final adjustments
+            if sys.platform.startswith('win'):
+                try:
+                    import ctypes
+                    hwnd = self.root.winfo_id()
+                    
+                    # Final activation to ensure it's in foreground
+                    ctypes.windll.user32.SetActiveWindow(hwnd)
+                    
+                except Exception as e:
+                    self.logger.warning(f"Final Windows activation failed: {e}")
+            
+            self.logger.info("Window display finalized")
+            print("🎉 GUI is ready for use!")
+            
+        except Exception as e:
+            self.logger.warning(f"Could not finalize window display: {e}")
             
     def cleanup(self):
         """Cleanup resources before exit"""
@@ -519,11 +470,17 @@ def main():
     if gui_available:
         print(f"✓ {gui_message}")
         try:
+            print("🚀 Launching GUI application...")
             app = BoomSQLApplication()
+            print("📱 GUI application initialized, starting...")
             app.run()
         except Exception as e:
-            print(f"Failed to start GUI application: {e}")
-            print("Falling back to command line mode...")
+            print(f"❌ Failed to start GUI application: {e}")
+            import traceback
+            print("🔍 Full error details:")
+            traceback.print_exc()
+            print()
+            print("🔄 Falling back to command line mode...")
             run_cli_mode()
     else:
         print(f"GUI not available: {gui_message}")
