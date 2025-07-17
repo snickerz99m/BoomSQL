@@ -241,21 +241,121 @@ class BoomSQLApplication:
                 print("✅ Main window interface created successfully")
             except Exception as e:
                 print(f"❌ Failed to create main window interface: {e}")
-                print("🔧 GUI will show but may not be fully functional")
+                print("🔧 Creating fallback GUI interface...")
                 self.main_window = None
                 
-                # Create a basic fallback interface
-                fallback_label = tk.Label(
-                    self.root, 
-                    text="BoomSQL GUI\nInterface loading failed.\nCheck logs for details.",
-                    font=("Arial", 14),
-                    bg="#2b2b2b",
-                    fg="#ffffff"
-                )
-                fallback_label.pack(expand=True)
+                # Create a comprehensive fallback interface
+                self.create_fallback_interface()
         else:
             print("❌ MainWindow class not available")
+            print("🔧 Creating basic fallback interface...")
             self.main_window = None
+            self.create_fallback_interface()
+            
+    def create_fallback_interface(self):
+        """Create a basic fallback interface when MainWindow fails"""
+        # Clear any existing widgets
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        
+        # Main container
+        main_frame = tk.Frame(self.root, bg="#2b2b2b")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title
+        title_label = tk.Label(
+            main_frame,
+            text="BoomSQL - Advanced SQL Injection Testing Tool",
+            font=("Arial", 18, "bold"),
+            bg="#2b2b2b",
+            fg="#ffffff"
+        )
+        title_label.pack(pady=(0, 10))
+        
+        # Version
+        version_label = tk.Label(
+            main_frame,
+            text="Version 2.0.0 - Python Edition",
+            font=("Arial", 12),
+            bg="#2b2b2b",
+            fg="#cccccc"
+        )
+        version_label.pack(pady=(0, 20))
+        
+        # Status message
+        status_label = tk.Label(
+            main_frame,
+            text="⚠️ Main interface failed to load\nBasic GUI mode active",
+            font=("Arial", 14),
+            bg="#2b2b2b",
+            fg="#ff6b35",
+            justify=tk.CENTER
+        )
+        status_label.pack(pady=(0, 30))
+        
+        # Instructions
+        instructions = tk.Text(
+            main_frame,
+            height=8,
+            font=("Arial", 11),
+            bg="#404040",
+            fg="#ffffff",
+            wrap=tk.WORD
+        )
+        instructions.pack(fill=tk.X, pady=(0, 20))
+        
+        instructions.insert(tk.END, 
+            "BoomSQL is running in fallback GUI mode.\n\n"
+            "To use the full functionality, run from command line:\n\n"
+            "• Test URL: python boomsql.py --url 'http://example.com/page?id=1'\n"
+            "• Crawl site: python boomsql.py --crawl 'http://example.com'\n"
+            "• Dump database: python boomsql.py --dump 'http://vulnerable-url'\n"
+            "• Skip GUI: python boomsql.py --skip-gui\n"
+            "• Test GUI: python boomsql.py --gui-test\n\n"
+            "Check the logs for error details."
+        )
+        instructions.config(state=tk.DISABLED)
+        
+        # Buttons frame
+        button_frame = tk.Frame(main_frame, bg="#2b2b2b")
+        button_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        # Test GUI button
+        test_button = tk.Button(
+            button_frame,
+            text="Test GUI",
+            command=self.run_gui_test,
+            font=("Arial", 11),
+            bg="#ff6b35",
+            fg="#ffffff",
+            padx=20,
+            pady=8
+        )
+        test_button.pack(side=tk.LEFT, padx=(0, 10))
+        
+        # Close button
+        close_button = tk.Button(
+            button_frame,
+            text="Close",
+            command=self.root.quit,
+            font=("Arial", 11),
+            bg="#666666",
+            fg="#ffffff",
+            padx=20,
+            pady=8
+        )
+        close_button.pack(side=tk.LEFT)
+        
+        print("✅ Fallback GUI interface created")
+        
+    def run_gui_test(self):
+        """Run GUI diagnostic test"""
+        try:
+            import subprocess
+            import sys
+            subprocess.Popen([sys.executable, "windows_gui_test.py"])
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not run GUI test: {e}")
         
     def apply_theme(self):
         """Apply dark theme to the application"""
@@ -346,14 +446,57 @@ class BoomSQLApplication:
                     SW_SHOW = 5
                     SW_RESTORE = 9
                     SW_SHOWNORMAL = 1
-                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOWNORMAL)
-                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
+                    SW_MAXIMIZE = 3
+                    
+                    # Try multiple approaches to ensure visibility
+                    ctypes.windll.user32.ShowWindow(hwnd, SW_RESTORE)  # Restore if minimized
+                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOWNORMAL)  # Show normal
+                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)  # Show window
                     
                     # Set foreground window (bring to front)
                     ctypes.windll.user32.SetForegroundWindow(hwnd)
                     
                     # Also try BringWindowToTop
                     ctypes.windll.user32.BringWindowToTop(hwnd)
+                    
+                    # Force activation
+                    ctypes.windll.user32.SetActiveWindow(hwnd)
+                    
+                    # Additional Windows API calls for maximum visibility
+                    try:
+                        # Get current thread and foreground window thread
+                        current_thread = ctypes.windll.kernel32.GetCurrentThreadId()
+                        foreground_hwnd = ctypes.windll.user32.GetForegroundWindow()
+                        foreground_thread = ctypes.windll.user32.GetWindowThreadProcessId(foreground_hwnd, None)
+                        
+                        # Attach to foreground thread input
+                        if foreground_thread != current_thread:
+                            ctypes.windll.user32.AttachThreadInput(current_thread, foreground_thread, True)
+                            ctypes.windll.user32.SetForegroundWindow(hwnd)
+                            ctypes.windll.user32.AttachThreadInput(current_thread, foreground_thread, False)
+                        
+                        # Flash window to attract attention
+                        FLASHW_ALL = 0x00000003
+                        FLASHW_TIMERNOFG = 0x0000000C
+                        
+                        class FLASHWINFO(ctypes.Structure):
+                            _fields_ = [("cbSize", ctypes.c_uint),
+                                      ("hwnd", wintypes.HWND),
+                                      ("dwFlags", wintypes.DWORD),
+                                      ("uCount", ctypes.c_uint),
+                                      ("dwTimeout", wintypes.DWORD)]
+                        
+                        flash_info = FLASHWINFO()
+                        flash_info.cbSize = ctypes.sizeof(FLASHWINFO)
+                        flash_info.hwnd = hwnd
+                        flash_info.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
+                        flash_info.uCount = 3
+                        flash_info.dwTimeout = 0
+                        
+                        ctypes.windll.user32.FlashWindowEx(ctypes.byref(flash_info))
+                        
+                    except Exception as e:
+                        self.logger.debug(f"Advanced Windows activation failed: {e}")
                     
                     self.logger.info("Applied Windows-specific window positioning")
                     print("✅ Windows GUI fixes applied successfully")
@@ -374,12 +517,22 @@ class BoomSQLApplication:
             self.root.attributes('-topmost', True)
             self.root.update()
             
+            # Additional aggressive visibility measures
+            self.root.wm_attributes('-topmost', True)
+            self.root.tkraise()
+            self.root.focus_set()
+            
             # Schedule to remove topmost after window is visible
-            self.root.after(200, self._finalize_window_display)
+            self.root.after(300, self._finalize_window_display)
+            
+            # Force a window refresh
+            self.root.after(100, lambda: self.root.update())
+            self.root.after(200, lambda: self.root.update_idletasks())
             
             self.logger.info("GUI window should now be visible")
             print("✅ GUI window initialized successfully!")
             print("📱 BoomSQL GUI should now be visible on your screen.")
+            print("💡 If you don't see the window, check your taskbar or try Alt+Tab")
             
         except Exception as e:
             self.logger.error(f"Failed to initialize GUI window: {e}")
@@ -461,11 +614,45 @@ def main():
     print("This tool is designed for educational purposes and authorized")
     print("penetration testing. Unauthorized use is illegal and unethical.")
     print()
+    
+    # Parse command line arguments early for special modes
+    parser = argparse.ArgumentParser(description='BoomSQL - Advanced SQL Injection Testing Tool')
+    parser.add_argument('--url', type=str, help='URL to test for SQL injection vulnerabilities')
+    parser.add_argument('--crawl', type=str, help='URL to crawl for parametrized URLs')
+    parser.add_argument('--dump', type=str, help='URL to dump database from (must be vulnerable)')
+    parser.add_argument('--skip-gui', action='store_true', help='Skip GUI and run in command line mode')
+    parser.add_argument('--force-gui', action='store_true', help='Force GUI mode even if auto-detection fails')
+    parser.add_argument('--gui-test', action='store_true', help='Run GUI diagnostic test')
+    args = parser.parse_args()
+    
+    # Handle special GUI test mode
+    if args.gui_test:
+        print("🔧 Running GUI diagnostic test...")
+        print()
+        try:
+            from windows_gui_test import test_windows_gui
+            return test_windows_gui()
+        except ImportError:
+            print("❌ GUI test module not found")
+            return False
+    
     print("Starting application...")
     print()
     
+    # Check if GUI should be skipped
+    if args.skip_gui:
+        print("🔄 GUI mode skipped by user request")
+        run_cli_mode()
+        return
+    
     # Check if GUI is available using cross-platform detection
     gui_available, gui_message = is_gui_available()
+    
+    # Force GUI mode if requested
+    if args.force_gui:
+        print("🚀 GUI mode forced by user request")
+        gui_available = True
+        gui_message = "GUI forced by --force-gui flag"
     
     if gui_available:
         print(f"✓ {gui_message}")
@@ -545,6 +732,8 @@ def run_cli_mode():
         parser.add_argument('--crawl', type=str, help='URL to crawl for parametrized URLs')
         parser.add_argument('--dump', type=str, help='URL to dump database from (must be vulnerable)')
         parser.add_argument('--skip-gui', action='store_true', help='Skip GUI and run in command line mode')
+        parser.add_argument('--force-gui', action='store_true', help='Force GUI mode even if auto-detection fails')
+        parser.add_argument('--gui-test', action='store_true', help='Run GUI diagnostic test')
         args = parser.parse_args()
         
         # Add command line functionality

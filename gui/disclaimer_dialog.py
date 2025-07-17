@@ -20,7 +20,23 @@ class DisclaimerDialog:
         self.dialog.geometry("800x600")
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
-        self.dialog.grab_set()
+        
+        # Windows-specific visibility improvements
+        import sys
+        if sys.platform.startswith('win'):
+            try:
+                import ctypes
+                # Make sure dialog appears on top
+                self.dialog.attributes('-topmost', True)
+                self.dialog.lift()
+                self.dialog.focus_force()
+                
+                # Windows API calls for better visibility
+                hwnd = self.dialog.winfo_id()
+                ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0003)
+                ctypes.windll.user32.SetForegroundWindow(hwnd)
+            except:
+                pass  # Ignore if ctypes fails
         
         # Center dialog
         self.dialog.update_idletasks()
@@ -30,8 +46,15 @@ class DisclaimerDialog:
         
         self.create_widgets()
         
-        # Focus on dialog
+        # Enhanced focus and visibility
+        self.dialog.grab_set()
         self.dialog.focus_set()
+        self.dialog.lift()
+        
+        # Windows-specific final visibility push
+        if sys.platform.startswith('win'):
+            self.dialog.after(100, lambda: self.dialog.attributes('-topmost', False))
+            self.dialog.after(50, lambda: self.dialog.focus_force())
         
         # Wait for user response
         self.dialog.wait_window()
