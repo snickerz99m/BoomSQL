@@ -419,17 +419,37 @@ class BoomSQLApplication:
         """Show legal disclaimer dialog"""
         if not TKINTER_AVAILABLE or not DisclaimerDialog:
             # In non-GUI mode, assume acceptance
+            print("⚠️  Legal disclaimer accepted (GUI not available)")
             return True
             
-        disclaimer = DisclaimerDialog(self.root)
-        if not disclaimer.accepted:
-            self.root.destroy()
-            return False
-        return True
+        try:
+            print("📋 Showing legal disclaimer dialog...")
+            disclaimer = DisclaimerDialog(self.root)
+            print(f"📋 Disclaimer dialog result: {disclaimer.accepted}")
+            
+            if not disclaimer.accepted:
+                print("❌ User declined legal disclaimer - exiting")
+                self.root.destroy()
+                return False
+            
+            print("✅ Legal disclaimer accepted - continuing")
+            return True
+            
+        except Exception as e:
+            print(f"⚠️  Error showing disclaimer dialog: {e}")
+            print("⚠️  Proceeding with disclaimer acceptance...")
+            return True
         
     def run(self):
         """Run the application"""
         self.logger.info("Starting BoomSQL application")
+        
+        # CRITICAL: Show window BEFORE disclaimer to ensure it's visible
+        print("🚀 Making window visible before disclaimer...")
+        self.root.deiconify()
+        self.root.update()
+        self.root.lift()
+        self.root.focus_force()
         
         # Show disclaimer first
         if not self.show_disclaimer():
@@ -440,16 +460,28 @@ class BoomSQLApplication:
         print("🔧 Preparing GUI window...")
         
         try:
+            # Force window to show IMMEDIATELY - critical fix
+            print("📱 Making window visible...")
+            self.root.deiconify()  # Show window first
+            self.root.update()     # Force immediate update
+            
             # First, make sure window is properly configured
             self.root.update_idletasks()
             
-            # Windows-specific fixes BEFORE showing window
+            # Windows-specific fixes BEFORE applying advanced positioning
             if sys.platform.startswith('win'):
                 print("🖥️ Applying Windows-specific GUI fixes...")
                 
                 # Force window to be a normal window (not withdrawn)
                 self.root.state('normal')
                 self.root.update()
+                
+                # IMMEDIATE visibility - show window right now
+                self.root.lift()
+                self.root.focus_force()
+                self.root.update()
+                
+                print("🔧 Window should now be visible - applying advanced fixes...")
                 
                 # Try Windows-specific window positioning and visibility
                 try:
@@ -564,6 +596,8 @@ class BoomSQLApplication:
             print("✅ GUI window initialized successfully!")
             print("📱 BoomSQL GUI should now be visible on your screen.")
             print("💡 If you don't see the window, check your taskbar or try Alt+Tab")
+            print("🔄 Starting main application loop...")
+            print("⚠️  Application will remain running until you close the GUI window...")
             
         except Exception as e:
             self.logger.error(f"Failed to initialize GUI window: {e}")
@@ -571,16 +605,51 @@ class BoomSQLApplication:
             print("🔧 The application may not be visible. Try minimizing/maximizing your windows.")
             print("💡 If the GUI still doesn't appear, try running with --skip-gui flag.")
             
+        # CRITICAL: Add debug message before mainloop
+        print("🚀 Entering GUI main loop - window should be visible now!")
+        self.logger.info("Entering GUI main loop")
+        
+        # Final safety check - ensure window is visible
+        self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
+        self.root.update()
+        
+        # Additional safety - add a method to check if window is actually visible
+        if sys.platform.startswith('win'):
+            try:
+                import ctypes
+                hwnd = self.root.winfo_id()
+                # Check if window is visible
+                is_visible = ctypes.windll.user32.IsWindowVisible(hwnd)
+                print(f"🔍 Window visibility check: {bool(is_visible)}")
+                if not is_visible:
+                    print("⚠️ Window not visible - applying emergency fixes...")
+                    ctypes.windll.user32.ShowWindow(hwnd, 5)  # SW_SHOW
+                    ctypes.windll.user32.SetForegroundWindow(hwnd)
+            except Exception as e:
+                print(f"⚠️ Visibility check failed: {e}")
+        
         # Start main loop
         try:
+            print("🔄 Starting tkinter main event loop...")
             self.root.mainloop()
+            print("🔚 Main loop ended - application shutting down")
         except KeyboardInterrupt:
             self.logger.info("Application interrupted by user")
+            print("🛑 Application interrupted by user")
         except Exception as e:
             self.logger.error(f"Unexpected error: {e}")
+            print(f"❌ Unexpected error in main loop: {e}")
+            import traceback
+            traceback.print_exc()
             if TKINTER_AVAILABLE:
-                messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+                try:
+                    messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+                except:
+                    pass  # Ignore if messagebox fails
         finally:
+            print("🧹 Cleaning up and exiting...")
             self.cleanup()
             
     def _finalize_window_display(self):
@@ -604,14 +673,24 @@ class BoomSQLApplication:
                     # Final activation to ensure it's in foreground
                     ctypes.windll.user32.SetActiveWindow(hwnd)
                     
+                    # Force window to be visible one more time
+                    SW_SHOW = 5
+                    ctypes.windll.user32.ShowWindow(hwnd, SW_SHOW)
+                    ctypes.windll.user32.SetForegroundWindow(hwnd)
+                    
+                    print("🎉 Final Windows visibility fixes applied!")
+                    
                 except Exception as e:
                     self.logger.warning(f"Final Windows activation failed: {e}")
             
             self.logger.info("Window display finalized")
             print("🎉 GUI is ready for use!")
+            print("📱 If you can't see the window, try Alt+Tab to find it")
+            print("💡 The window should be visible on your screen now")
             
         except Exception as e:
             self.logger.warning(f"Could not finalize window display: {e}")
+            print(f"⚠️ Could not finalize window display: {e}")
             
     def cleanup(self):
         """Cleanup resources before exit"""

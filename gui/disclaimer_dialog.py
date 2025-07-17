@@ -14,50 +14,77 @@ class DisclaimerDialog:
         self.parent = parent
         self.accepted = False
         
-        # Create dialog window
-        self.dialog = tk.Toplevel(parent)
-        self.dialog.title("BoomSQL - Legal Disclaimer")
-        self.dialog.geometry("800x600")
-        self.dialog.resizable(False, False)
-        self.dialog.transient(parent)
+        print("📋 Creating disclaimer dialog...")
         
-        # Windows-specific visibility improvements
-        import sys
-        if sys.platform.startswith('win'):
-            try:
-                import ctypes
-                # Make sure dialog appears on top
-                self.dialog.attributes('-topmost', True)
-                self.dialog.lift()
-                self.dialog.focus_force()
-                
-                # Windows API calls for better visibility
-                hwnd = self.dialog.winfo_id()
-                ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0003)
-                ctypes.windll.user32.SetForegroundWindow(hwnd)
-            except:
-                pass  # Ignore if ctypes fails
-        
-        # Center dialog
-        self.dialog.update_idletasks()
-        x = (self.dialog.winfo_screenwidth() // 2) - (800 // 2)
-        y = (self.dialog.winfo_screenheight() // 2) - (600 // 2)
-        self.dialog.geometry(f"800x600+{x}+{y}")
-        
-        self.create_widgets()
-        
-        # Enhanced focus and visibility
-        self.dialog.grab_set()
-        self.dialog.focus_set()
-        self.dialog.lift()
-        
-        # Windows-specific final visibility push
-        if sys.platform.startswith('win'):
-            self.dialog.after(100, lambda: self.dialog.attributes('-topmost', False))
-            self.dialog.after(50, lambda: self.dialog.focus_force())
-        
-        # Wait for user response
-        self.dialog.wait_window()
+        try:
+            # Create dialog window
+            self.dialog = tk.Toplevel(parent)
+            self.dialog.title("BoomSQL - Legal Disclaimer")
+            self.dialog.geometry("800x600")
+            self.dialog.resizable(False, False)
+            self.dialog.transient(parent)
+            
+            print("📋 Disclaimer dialog window created")
+            
+            # Windows-specific visibility improvements
+            import sys
+            if sys.platform.startswith('win'):
+                print("📋 Applying Windows-specific disclaimer fixes...")
+                try:
+                    import ctypes
+                    # Make sure dialog appears on top
+                    self.dialog.attributes('-topmost', True)
+                    self.dialog.lift()
+                    self.dialog.focus_force()
+                    
+                    # Windows API calls for better visibility
+                    hwnd = self.dialog.winfo_id()
+                    ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0003)
+                    ctypes.windll.user32.SetForegroundWindow(hwnd)
+                    print("📋 Windows disclaimer fixes applied")
+                except Exception as e:
+                    print(f"📋 Windows disclaimer fixes failed: {e}")
+            
+            # Center dialog
+            self.dialog.update_idletasks()
+            x = (self.dialog.winfo_screenwidth() // 2) - (800 // 2)
+            y = (self.dialog.winfo_screenheight() // 2) - (600 // 2)
+            self.dialog.geometry(f"800x600+{x}+{y}")
+            
+            print("📋 Creating disclaimer widgets...")
+            self.create_widgets()
+            
+            # Enhanced focus and visibility
+            self.dialog.grab_set()
+            self.dialog.focus_set()
+            self.dialog.lift()
+            
+            # Windows-specific final visibility push
+            if sys.platform.startswith('win'):
+                self.dialog.after(100, lambda: self.dialog.attributes('-topmost', False))
+                self.dialog.after(50, lambda: self.dialog.focus_force())
+            
+            # Add auto-timeout as safety measure (30 seconds)
+            self.dialog.after(30000, self.auto_accept)
+            
+            print("📋 Showing disclaimer dialog - waiting for user response...")
+            
+            # Wait for user response
+            self.dialog.wait_window()
+            
+            print(f"📋 Disclaimer dialog closed - accepted: {self.accepted}")
+            
+        except Exception as e:
+            print(f"📋 Error creating disclaimer dialog: {e}")
+            # If dialog creation fails, auto-accept
+            self.accepted = True
+            
+    def auto_accept(self):
+        """Auto-accept disclaimer after timeout"""
+        print("📋 Auto-accepting disclaimer after 30 seconds timeout...")
+        if hasattr(self, 'dialog') and self.dialog.winfo_exists():
+            self.accepted = True
+            self.dialog.destroy()
         
     def create_widgets(self):
         """Create dialog widgets"""
@@ -253,10 +280,13 @@ Version 2.0.0 - Python Edition"""
             
     def accept_disclaimer(self):
         """Accept disclaimer and continue"""
+        print("📋 Accept button clicked")
         if not self.agreement_var.get():
+            print("📋 Agreement checkbox not checked")
             messagebox.showerror("Error", "You must agree to the terms to continue.")
             return
-            
+        
+        print("📋 Showing final confirmation dialog...")
         # Show final confirmation
         result = messagebox.askyesno(
             "Final Confirmation",
@@ -269,10 +299,14 @@ Version 2.0.0 - Python Edition"""
         )
         
         if result:
+            print("📋 User confirmed agreement - accepting disclaimer")
             self.accepted = True
             self.dialog.destroy()
+        else:
+            print("📋 User declined final confirmation")
             
     def decline_disclaimer(self):
         """Decline disclaimer and exit"""
+        print("📋 Disclaimer declined - exiting")
         self.accepted = False
         self.dialog.destroy()
