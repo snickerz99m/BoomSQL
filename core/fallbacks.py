@@ -78,12 +78,12 @@ class MockSession:
     def __init__(self):
         self.closed = False
         
-    async def get(self, url: str, **kwargs):
-        """Mock GET request"""
+    def get(self, url: str, **kwargs):
+        """Mock GET request - returns MockResponse directly"""
         return MockResponse(url)
     
-    async def post(self, url: str, **kwargs):
-        """Mock POST request"""
+    def post(self, url: str, **kwargs):
+        """Mock POST request - returns MockResponse directly"""
         return MockResponse(url)
     
     async def close(self):
@@ -112,22 +112,34 @@ class MockResponse:
         """Mock JSON response"""
         return {"error": "Mock response - aiohttp not available"}
     
-    def __enter__(self):
+    async def __aenter__(self):
         return self
         
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         pass
 
 class MockClientSession:
     """Mock ClientSession for when aiohttp is not available"""
     
     def __init__(self, **kwargs):
-        pass
+        self.session = MockSession()
         
     async def __aenter__(self):
-        return MockSession()
+        return self.session
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+        
+    def get(self, url: str, **kwargs):
+        """Mock GET request"""
+        return MockResponse(url)
+    
+    def post(self, url: str, **kwargs):
+        """Mock POST request"""
+        return MockResponse(url)
+    
+    async def close(self):
+        """Mock close"""
         pass
 
 # Try to import real aiohttp, fallback to mock
@@ -137,10 +149,18 @@ try:
     AIOHTTP_AVAILABLE = True
 except ImportError:
     warnings.warn("aiohttp not available, using mock implementation")
+    class MockClientTimeout:
+        def __init__(self, **kwargs):
+            pass
+    
+    class MockTCPConnector:
+        def __init__(self, **kwargs):
+            pass
+    
     aiohttp = type('MockAiohttp', (), {
         'ClientSession': MockClientSession,
-        'ClientTimeout': lambda **kwargs: None,
-        'TCPConnector': lambda **kwargs: None
+        'ClientTimeout': MockClientTimeout,
+        'TCPConnector': MockTCPConnector
     })()
     ClientSession = MockClientSession
     AIOHTTP_AVAILABLE = False
