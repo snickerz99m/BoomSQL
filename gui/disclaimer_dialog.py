@@ -20,7 +20,7 @@ class DisclaimerDialog:
             # Create dialog window
             self.dialog = tk.Toplevel(parent)
             self.dialog.title("BoomSQL - Legal Disclaimer")
-            self.dialog.geometry("800x600")
+            self.dialog.geometry("900x700")  # Increased height to ensure buttons are visible
             self.dialog.resizable(False, False)
             self.dialog.transient(parent)
             
@@ -47,9 +47,9 @@ class DisclaimerDialog:
             
             # Center dialog
             self.dialog.update_idletasks()
-            x = (self.dialog.winfo_screenwidth() // 2) - (800 // 2)
-            y = (self.dialog.winfo_screenheight() // 2) - (600 // 2)
-            self.dialog.geometry(f"800x600+{x}+{y}")
+            x = (self.dialog.winfo_screenwidth() // 2) - (900 // 2)  # Updated for new width
+            y = (self.dialog.winfo_screenheight() // 2) - (700 // 2)  # Updated for new height
+            self.dialog.geometry(f"900x700+{x}+{y}")
             
             print("📋 Creating disclaimer widgets...")
             self.create_widgets()
@@ -124,7 +124,7 @@ class DisclaimerDialog:
         
         # Disclaimer text
         disclaimer_frame = ttk.Frame(main_frame)
-        disclaimer_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        disclaimer_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))  # Reduced bottom padding
         
         # Scrollable text
         text_frame = ttk.Frame(disclaimer_frame)
@@ -140,7 +140,8 @@ class DisclaimerDialog:
             font=("Arial", 10),
             bg="white",
             fg="black",
-            state=tk.DISABLED
+            state=tk.DISABLED,
+            height=15  # Fixed height to ensure space for buttons
         )
         self.text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.text_widget.yview)
@@ -151,14 +152,23 @@ class DisclaimerDialog:
         self.text_widget.insert(tk.END, disclaimer_text)
         self.text_widget.config(state=tk.DISABLED)
         
-        # Checkbox frame
+        # Checkbox frame - make more prominent
         checkbox_frame = ttk.Frame(main_frame)
-        checkbox_frame.pack(fill=tk.X, pady=(0, 20))
+        checkbox_frame.pack(fill=tk.X, pady=(10, 15))
+        
+        # Add instruction label
+        instruction_label = ttk.Label(
+            checkbox_frame,
+            text="👇 Check the box below to enable the Accept button:",
+            font=("Arial", 11, "bold"),
+            foreground="#ff6b35"
+        )
+        instruction_label.pack(anchor=tk.W, pady=(0, 5))
         
         self.agreement_var = tk.BooleanVar()
         agreement_checkbox = ttk.Checkbutton(
             checkbox_frame,
-            text="I have read and agree to the terms above. I understand that this tool is for educational and authorized testing purposes only.",
+            text="✓ I have read and agree to the terms above. I understand that this tool is for educational and authorized testing purposes only.",
             variable=self.agreement_var,
             command=self.on_agreement_change
         )
@@ -166,27 +176,40 @@ class DisclaimerDialog:
         
         print("📋 Disclaimer checkbox created")
         
-        # Button frame
+        # Button frame - make more prominent
         button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, pady=(10, 0))
+        button_frame.pack(fill=tk.X, pady=(15, 10))
         
         print("📋 Creating disclaimer buttons...")
         
-        # Buttons with enhanced visibility
-        self.accept_button = ttk.Button(
+        # Add button instruction
+        button_instruction_label = ttk.Label(
             button_frame,
-            text="Accept and Continue",
+            text="👇 Use these buttons after checking the agreement above:",
+            font=("Arial", 10, "bold"),
+            foreground="#4CAF50"
+        )
+        button_instruction_label.pack(anchor=tk.W, pady=(0, 8))
+        
+        # Button container frame
+        button_container = ttk.Frame(button_frame)
+        button_container.pack(fill=tk.X)
+        
+        # Buttons with enhanced visibility and larger size
+        self.accept_button = ttk.Button(
+            button_container,
+            text="✅ Accept and Continue",
             command=self.accept_disclaimer,
             state=tk.DISABLED
         )
-        self.accept_button.pack(side=tk.RIGHT, padx=(10, 0), pady=5)
+        self.accept_button.pack(side=tk.RIGHT, padx=(15, 0), pady=8, ipadx=20, ipady=8)
         
         decline_button = ttk.Button(
-            button_frame,
-            text="Decline and Exit",
+            button_container,
+            text="❌ Decline and Exit",
             command=self.decline_disclaimer
         )
-        decline_button.pack(side=tk.RIGHT, pady=5)
+        decline_button.pack(side=tk.RIGHT, pady=8, ipadx=20, ipady=8)
         
         # Windows-specific button styling and visibility fixes
         import sys
@@ -194,13 +217,16 @@ class DisclaimerDialog:
             try:
                 # Force button style refresh on Windows
                 style = ttk.Style()
-                style.configure('Disclaimer.TButton', padding=(10, 5))
+                style.configure('Disclaimer.TButton', 
+                              padding=(15, 10),
+                              font=('Arial', 11, 'bold'))
                 
                 self.accept_button.configure(style='Disclaimer.TButton')
                 decline_button.configure(style='Disclaimer.TButton')
                 
-                # Make buttons more visible
-                button_frame.configure(relief='raised', borderwidth=1)
+                # Make button frames more visible
+                button_container.configure(relief='raised', borderwidth=2)
+                button_frame.configure(relief='sunken', borderwidth=1)
                 
                 print("📋 Windows-specific button styling applied")
             except Exception as e:
@@ -269,11 +295,26 @@ class DisclaimerDialog:
         # Add keyboard shortcuts for accessibility
         self.dialog.bind("<Return>", lambda e: self.try_accept_disclaimer())
         self.dialog.bind("<space>", lambda e: self.toggle_agreement())
+        self.dialog.bind("<Control-a>", lambda e: self.auto_accept_for_testing())  # Ctrl+A for auto-accept
         
         # Focus on the checkbox initially for keyboard navigation
         agreement_checkbox.focus_set()
         
-        print("📋 Keyboard shortcuts added (Enter=accept, Space=toggle, Esc=decline)")
+        # Make dialog modal and ensure it stays on top initially
+        self.dialog.grab_set()
+        self.dialog.focus_force()
+        self.dialog.lift()
+        
+        # Force window refresh after creation
+        self.dialog.update()
+        self.dialog.update_idletasks()
+        
+        print("📋 Keyboard shortcuts added:")
+        print("📋   • Enter = Accept (if agreed)")
+        print("📋   • Space = Toggle agreement") 
+        print("📋   • Esc = Decline and exit")
+        print("📋   • Ctrl+A = Emergency auto-accept")
+        print("📋 Dialog should now be visible with prominent buttons")
         
     def get_disclaimer_text(self):
         """Get the disclaimer text"""
@@ -365,20 +406,37 @@ Version 2.0.0 - Python Edition"""
         """Handle agreement checkbox change"""
         print(f"📋 Checkbox state changed: {self.agreement_var.get()}")
         if self.agreement_var.get():
-            print("📋 Enabling accept button")
+            print("📋 ✅ Agreement checked - enabling accept button")
             self.accept_button.config(state=tk.NORMAL)
+            # Change button text to show it's enabled
+            self.accept_button.config(text="✅ Accept and Continue (ENABLED)")
             # Also enable emergency button if it exists
             if hasattr(self, 'emergency_accept_button'):
                 self.emergency_accept_button.config(state=tk.NORMAL)
                 print("📋 Emergency accept button enabled")
         else:
-            print("📋 Disabling accept button")
+            print("📋 ❌ Agreement unchecked - disabling accept button")
             self.accept_button.config(state=tk.DISABLED)
+            # Change button text to show it's disabled
+            self.accept_button.config(text="❌ Accept and Continue (DISABLED)")
             # Also disable emergency button if it exists
             if hasattr(self, 'emergency_accept_button'):
                 self.emergency_accept_button.config(state=tk.DISABLED)
                 print("📋 Emergency accept button disabled")
+        
+        # Force UI update
+        if hasattr(self, 'dialog'):
+            self.dialog.update_idletasks()
             
+    def auto_accept_for_testing(self):
+        """Auto-accept for testing (Ctrl+A shortcut)"""
+        print("📋 🚨 EMERGENCY AUTO-ACCEPT activated (Ctrl+A pressed)")
+        print("📋 Automatically checking agreement and accepting...")
+        self.agreement_var.set(True)
+        self.on_agreement_change()
+        # Wait a moment for UI update then accept
+        self.dialog.after(100, self.accept_disclaimer)
+        
     def try_accept_disclaimer(self):
         """Try to accept disclaimer (for Enter key)"""
         if self.agreement_var.get():
