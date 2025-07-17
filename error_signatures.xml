@@ -1,0 +1,980 @@
+<?xml version="1.0" encoding="utf-8"?>
+<error_signatures>
+  <!-- MySQL Error Signatures -->
+  <signature database="mysql" severity="high">
+    <pattern>You have an error in your SQL syntax</pattern>
+    <pattern>Warning: mysql_</pattern>
+    <pattern>MySQLSyntaxErrorException</pattern>
+    <pattern>valid MySQL result</pattern>
+    <pattern>MySQL server version for the right syntax to use</pattern>
+    <pattern>SQL syntax.*MySQL server version</pattern>
+    <pattern>mysql_real_escape_string</pattern>
+    <pattern>mysql_set_charset</pattern>
+    <pattern>mysql_get_client_info</pattern>
+    <pattern>mysql_stat</pattern>
+    <pattern>mysql_thread_id</pattern>
+    <pattern>mysql_list_tables</pattern>
+    <pattern>mysql_create_db</pattern>
+    <pattern>mysql_drop_db</pattern>
+    <pattern>mysql_info</pattern>
+    <pattern>mysql_insert_id</pattern>
+    <pattern>mysql_affected_rows</pattern>
+    <pattern>mysql_field_type</pattern>
+    <pattern>mysql_field_flags</pattern>
+    <pattern>mysql_field_len</pattern>
+    <pattern>mysql_field_name</pattern>
+    <pattern>mysql_field_table</pattern>
+    <pattern>mysql_data_seek</pattern>
+    <pattern>mysql_row_seek</pattern>
+    <pattern>mysql_row_tell</pattern>
+    <pattern>mysql_free_result</pattern>
+    <pattern>mysql_ping</pattern>
+    <pattern>mysql_get_host_info</pattern>
+    <pattern>mysql_get_proto_info</pattern>
+    <pattern>mysql_get_server_info</pattern>
+    <pattern>mysql_list_dbs</pattern>
+    <pattern>mysql_list_processes</pattern>
+    <pattern>mysql_tablename</pattern>
+    <pattern>mysql_unbuffered_query</pattern>
+    <pattern>mysql_db_query</pattern>
+    <pattern>mysql_pconnect</pattern>
+    <pattern>mysql_close</pattern>
+    <pattern>Warning: Supplied argument is not a valid MySQL-Link resource</pattern>
+    <pattern>Warning: Supplied argument is not a valid MySQL result resource</pattern>
+    <pattern>MySQL client ran out of memory</pattern>
+    <pattern>Commands out of sync</pattern>
+    <pattern>Server has gone away</pattern>
+    <pattern>MySQL server has gone away</pattern>
+    <pattern>Can't connect to local MySQL server</pattern>
+    <pattern>Can't connect to MySQL server on</pattern>
+    <pattern>Authentication plugin.*cannot be loaded</pattern>
+    <pattern>Plugin.*cannot be loaded</pattern>
+    <pattern>The server requested authentication method unknown to the client</pattern>
+    <pattern>Table.*doesn't exist</pattern>
+    <pattern>Unknown database</pattern>
+    <pattern>Database.*doesn't exist</pattern>
+    <pattern>Got error.*from storage engine</pattern>
+    <pattern>Incorrect.*value</pattern>
+    <pattern>Data too long for column</pattern>
+    <pattern>Out of range value for column</pattern>
+    <pattern>Incorrect key file for table</pattern>
+    <pattern>Table.*is read only</pattern>
+    <pattern>Disk full</pattern>
+    <pattern>Can't open file</pattern>
+    <pattern>File.*not found</pattern>
+    <pattern>Can't find file</pattern>
+    <pattern>Can't read dir of</pattern>
+    <pattern>Can't lock file</pattern>
+    <pattern>Deadlock found when trying to get lock</pattern>
+    <pattern>Lock wait timeout exceeded</pattern>
+    <pattern>Too many connections</pattern>
+    <pattern>User.*already exists</pattern>
+    <pattern>Operation.*requires a connection to a master server</pattern>
+    <pattern>The MySQL server is running with the.*option</pattern>
+    <pattern>Access denied.*using password</pattern>
+    <pattern>Host.*is not allowed to connect</pattern>
+    <pattern>Host.*is blocked</pattern>
+    <pattern>MySQL Error 1045</pattern>
+    <pattern>MySQL Error 1049</pattern>
+    <pattern>MySQL Error 1054</pattern>
+    <pattern>MySQL Error 1064</pattern>
+    <pattern>MySQL Error 1146</pattern>
+    <pattern>MySQL Error 1064.*SQL syntax</pattern>
+    <pattern>MySQL Error 2002</pattern>
+    <pattern>MySQL Error 2003</pattern>
+    <pattern>MySQL Error 2006</pattern>
+    <pattern>MySQL Error 2013</pattern>
+    <pattern>mysql_num_rows()</pattern>
+    <pattern>mysql_fetch_array()</pattern>
+    <pattern>mysql_fetch_assoc()</pattern>
+    <pattern>mysql_fetch_row()</pattern>
+    <pattern>mysql_result()</pattern>
+    <pattern>supplied argument is not a valid MySQL</pattern>
+    <pattern>Column count doesn't match value count at row</pattern>
+    <pattern>mysql_error()</pattern>
+    <pattern>mysql_errno()</pattern>
+    <pattern>Duplicate entry</pattern>
+    <pattern>Unknown column</pattern>
+    <pattern>Unknown table</pattern>
+    <pattern>Table doesn't exist</pattern>
+    <pattern>Can't find file</pattern>
+    <pattern>Access denied for user</pattern>
+    <pattern>Host is blocked</pattern>
+    <pattern>Too many connections</pattern>
+    <pattern>Lost connection to MySQL server</pattern>
+    <pattern>The used SELECT statements have a different number of columns</pattern>
+    <pattern>Subquery returns more than 1 row</pattern>
+    <pattern>Operand should contain 1 column(s)</pattern>
+    <pattern>Illegal mix of collations</pattern>
+    <pattern>For the right syntax to use near</pattern>
+    <pattern>check the manual that corresponds to your MySQL server version</pattern>
+    <pattern>mysql_connect()</pattern>
+    <pattern>mysql_select_db()</pattern>
+    <pattern>mysql_query()</pattern>
+    <pattern>MySQL Error</pattern>
+    <pattern>Warning: MySQL</pattern>
+    <pattern>MySQLDB</pattern>
+    <pattern>mysql.connector</pattern>
+    <pattern>PyMySQL</pattern>
+    <pattern>MySQLdb</pattern>
+    <pattern>mysql2</pattern>
+    <pattern>node-mysql</pattern>
+    <pattern>SQLSTATE[HY000]</pattern>
+    <pattern>SQLSTATE[23000]</pattern>
+    <pattern>SQLSTATE[42000]</pattern>
+    <pattern>SQLSTATE[42S02]</pattern>
+  </signature>
+  
+  <!-- Microsoft SQL Server Error Signatures -->
+  <signature database="mssql" severity="high">
+    <pattern>Microsoft SQL Server</pattern>
+    <pattern>Incorrect syntax near</pattern>
+    <pattern>System.Data.SqlClient.SqlException</pattern>
+    <pattern>SqlException</pattern>
+    <pattern>Microsoft OLE DB Provider for SQL Server</pattern>
+    <pattern>ODBC SQL Server Driver</pattern>
+    <pattern>Microsoft JET Database Engine</pattern>
+    <pattern>SQLServer JDBC Driver</pattern>
+    <pattern>SqlCommand</pattern>
+    <pattern>Microsoft SQL Native Client</pattern>
+    <pattern>SQL Server Native Client</pattern>
+    <pattern>Unclosed quotation mark after the character string</pattern>
+    <pattern>Invalid column name</pattern>
+    <pattern>Invalid object name</pattern>
+    <pattern>Cannot insert the value NULL into column</pattern>
+    <pattern>Conversion failed when converting</pattern>
+    <pattern>String or binary data would be truncated</pattern>
+    <pattern>Arithmetic overflow error</pattern>
+    <pattern>Divide by zero error encountered</pattern>
+    <pattern>The column prefix does not match with a table name or alias name</pattern>
+    <pattern>Multi-part identifier could not be bound</pattern>
+    <pattern>Cannot resolve the collation conflict</pattern>
+    <pattern>Login failed for user</pattern>
+    <pattern>Cannot open database</pattern>
+    <pattern>Network-related or instance-specific error</pattern>
+    <pattern>A connection was successfully established with the server</pattern>
+    <pattern>Timeout expired</pattern>
+    <pattern>Connection is broken</pattern>
+    <pattern>SQL Server does not exist or access denied</pattern>
+    <pattern>Microsoft SQL Server, Error</pattern>
+    <pattern>SQLSTATE</pattern>
+    <pattern>Warning: mssql_</pattern>
+    <pattern>mssql_query()</pattern>
+    <pattern>mssql_fetch_array()</pattern>
+    <pattern>Microsoft OLE DB Provider for ODBC Drivers</pattern>
+    <pattern>ADODB.Connection</pattern>
+    <pattern>ADODB.Recordset</pattern>
+    <pattern>System.Data.OleDb.OleDbException</pattern>
+    <pattern>System.Data.OleDb.OleDbCommand</pattern>
+    <pattern>Line 1: Incorrect syntax near</pattern>
+    <pattern>Msg 156, Level 15, State 1</pattern>
+    <pattern>Msg 207, Level 16, State 1</pattern>
+    <pattern>Msg 208, Level 16, State 1</pattern>
+    <pattern>Msg 245, Level 16, State 1</pattern>
+    <pattern>Msg 515, Level 16, State 2</pattern>
+    <pattern>Msg 8114, Level 16, State 5</pattern>
+    <pattern>Msg 8152, Level 16, State 14</pattern>
+    <pattern>Msg 8115, Level 16, State 2</pattern>
+    <pattern>Msg 8134, Level 16, State 1</pattern>
+    <pattern>Msg 107, Level 16, State 3</pattern>
+    <pattern>Msg 4104, Level 16, State 1</pattern>
+    <pattern>Msg 18456, Level 14, State 1</pattern>
+    <pattern>Msg 4060, Level 11, State 1</pattern>
+    <pattern>Msg 2, Level 20, State 0</pattern>
+    <pattern>Msg -2, Level 20, State 0</pattern>
+    <pattern>Msg 64, Level 20, State 0</pattern>
+    <pattern>Msg 233, Level 20, State 0</pattern>
+  </signature>
+  
+  <!-- Oracle Error Signatures -->
+  <signature database="oracle" severity="high">
+    <pattern>ORA-00001</pattern>
+    <pattern>ORA-00933</pattern>
+    <pattern>ORA-00936</pattern>
+    <pattern>ORA-00942</pattern>
+    <pattern>ORA-01400</pattern>
+    <pattern>ORA-01403</pattern>
+    <pattern>ORA-01722</pattern>
+    <pattern>ORA-01756</pattern>
+    <pattern>ORA-01789</pattern>
+    <pattern>ORA-12154</pattern>
+    <pattern>ORA-12203</pattern>
+    <pattern>ORA-12500</pattern>
+    <pattern>ORA-12505</pattern>
+    <pattern>ORA-12541</pattern>
+    <pattern>ORA-12545</pattern>
+    <pattern>ORA-12560</pattern>
+    <pattern>ORA-12571</pattern>
+    <pattern>ORA-12638</pattern>
+    <pattern>ORA-28000</pattern>
+    <pattern>ORA-28001</pattern>
+    <pattern>ORA-28009</pattern>
+    <pattern>ORA-28040</pattern>
+    <pattern>Oracle error</pattern>
+    <pattern>Oracle Driver</pattern>
+    <pattern>Warning: oci_</pattern>
+    <pattern>Warning: ora_</pattern>
+    <pattern>oracle.jdbc.driver.OracleDriver</pattern>
+    <pattern>Oracle JDBC Driver</pattern>
+    <pattern>Oracle OCI Driver</pattern>
+    <pattern>Oracle.DataAccess.Client.OracleException</pattern>
+    <pattern>System.Data.OracleClient.OracleException</pattern>
+    <pattern>OracleCommand</pattern>
+    <pattern>OracleConnection</pattern>
+    <pattern>OracleDataAdapter</pattern>
+    <pattern>quoted string not properly terminated</pattern>
+    <pattern>SQL command not properly ended</pattern>
+    <pattern>missing expression</pattern>
+    <pattern>table or view does not exist</pattern>
+    <pattern>cannot insert NULL into</pattern>
+    <pattern>no data found</pattern>
+    <pattern>invalid number</pattern>
+    <pattern>quoted string not properly terminated</pattern>
+    <pattern>query block has incorrect number of result columns</pattern>
+    <pattern>TNS:listener does not currently know of service</pattern>
+    <pattern>TNS:could not resolve the connect identifier</pattern>
+    <pattern>TNS:operation timed out</pattern>
+    <pattern>TNS:protocol adapter error</pattern>
+    <pattern>TNS:listener could not find available handler</pattern>
+    <pattern>TNS:no listener</pattern>
+    <pattern>TNS:permission denied</pattern>
+    <pattern>TNS:the account is locked</pattern>
+    <pattern>TNS:password has expired</pattern>
+    <pattern>TNS:connection timeout occurred</pattern>
+    <pattern>TNS:packet writer failure</pattern>
+    <pattern>TNS:credential retrieval failed</pattern>
+    <pattern>TNS:connection authentication failed</pattern>
+    <pattern>unique constraint violated</pattern>
+    <pattern>integrity constraint violated</pattern>
+    <pattern>invalid identifier</pattern>
+    <pattern>table or view does not exist</pattern>
+    <pattern>column ambiguously defined</pattern>
+    <pattern>not a GROUP BY expression</pattern>
+    <pattern>missing right parenthesis</pattern>
+    <pattern>missing SELECT keyword</pattern>
+    <pattern>missing FROM keyword</pattern>
+    <pattern>PLS-00201</pattern>
+    <pattern>PLS-00306</pattern>
+    <pattern>PLS-00428</pattern>
+    <pattern>PLS-00201: identifier 'DBMS_OUTPUT.PUT_LINE' must be declared</pattern>
+  </signature>
+  
+  <!-- PostgreSQL Error Signatures -->
+  <signature database="postgresql" severity="high">
+    <pattern>PostgreSQL query failed</pattern>
+    <pattern>Warning: pg_</pattern>
+    <pattern>Warning: postgres_</pattern>
+    <pattern>PostgreSQL</pattern>
+    <pattern>psql:</pattern>
+    <pattern>ERROR: syntax error at or near</pattern>
+    <pattern>ERROR: column</pattern>
+    <pattern>ERROR: relation</pattern>
+    <pattern>ERROR: function</pattern>
+    <pattern>ERROR: operator</pattern>
+    <pattern>ERROR: unterminated quoted string</pattern>
+    <pattern>ERROR: invalid input syntax for type</pattern>
+    <pattern>ERROR: missing FROM-clause entry for table</pattern>
+    <pattern>ERROR: permission denied for relation</pattern>
+    <pattern>ERROR: duplicate key value violates unique constraint</pattern>
+    <pattern>ERROR: null value in column</pattern>
+    <pattern>ERROR: integer out of range</pattern>
+    <pattern>ERROR: division by zero</pattern>
+    <pattern>ERROR: invalid regular expression</pattern>
+    <pattern>ERROR: cannot drop table</pattern>
+    <pattern>ERROR: there is no parameter</pattern>
+    <pattern>FATAL: database</pattern>
+    <pattern>FATAL: password authentication failed</pattern>
+    <pattern>FATAL: role</pattern>
+    <pattern>FATAL: Ident authentication failed</pattern>
+    <pattern>FATAL: no pg_hba.conf entry for host</pattern>
+    <pattern>FATAL: connection limit exceeded</pattern>
+    <pattern>FATAL: the database system is starting up</pattern>
+    <pattern>FATAL: the database system is shutting down</pattern>
+    <pattern>pg_query()</pattern>
+    <pattern>pg_exec()</pattern>
+    <pattern>pg_result()</pattern>
+    <pattern>pg_fetch_array()</pattern>
+    <pattern>pg_fetch_row()</pattern>
+    <pattern>pg_fetch_assoc()</pattern>
+    <pattern>pg_numrows()</pattern>
+    <pattern>pg_fieldname()</pattern>
+    <pattern>pg_last_error()</pattern>
+    <pattern>org.postgresql.util.PSQLException</pattern>
+    <pattern>postgresql.driver.psql.PsqlSQLException</pattern>
+    <pattern>System.Data.PostgreSql.PostgreSqlException</pattern>
+    <pattern>Npgsql.PostgresException</pattern>
+    <pattern>NpgsqlException</pattern>
+    <pattern>PostgresException</pattern>
+    <pattern>pq:</pattern>
+    <pattern>libpq.so</pattern>
+    <pattern>psycopg2.OperationalError</pattern>
+    <pattern>psycopg2.ProgrammingError</pattern>
+    <pattern>psycopg2.IntegrityError</pattern>
+    <pattern>psycopg2.DataError</pattern>
+    <pattern>psycopg2.NotSupportedError</pattern>
+    <pattern>psycopg2.InternalError</pattern>
+    <pattern>psycopg2.DatabaseError</pattern>
+    <pattern>psycopg2.InterfaceError</pattern>
+    <pattern>psycopg2.Error</pattern>
+    <pattern>column reference is ambiguous</pattern>
+    <pattern>could not determine data type of parameter</pattern>
+    <pattern>more than one row returned by a subquery</pattern>
+    <pattern>subquery must return only one column</pattern>
+    <pattern>cross-database references are not implemented</pattern>
+    <pattern>canceling statement due to user request</pattern>
+    <pattern>current transaction is aborted</pattern>
+    <pattern>server closed the connection unexpectedly</pattern>
+    <pattern>could not connect to server</pattern>
+    <pattern>Connection refused</pattern>
+    <pattern>No route to host</pattern>
+    <pattern>Connection timed out</pattern>
+    <pattern>Name or service not known</pattern>
+    <pattern>received invalid response to SSL negotiation</pattern>
+    <pattern>SSL connection has been closed unexpectedly</pattern>
+    <pattern>server does not support SSL</pattern>
+    <pattern>SCRAM authentication requires libpq version 10 or above</pattern>
+  </signature>
+  
+  <!-- SQLite Error Signatures -->
+  <signature database="sqlite" severity="medium">
+    <pattern>SQLite error</pattern>
+    <pattern>sqlite3.OperationalError</pattern>
+    <pattern>sqlite3.DatabaseError</pattern>
+    <pattern>sqlite3.IntegrityError</pattern>
+    <pattern>sqlite3.ProgrammingError</pattern>
+    <pattern>sqlite3.NotSupportedError</pattern>
+    <pattern>sqlite3.DataError</pattern>
+    <pattern>sqlite3.InterfaceError</pattern>
+    <pattern>sqlite3.InternalError</pattern>
+    <pattern>sqlite3.Error</pattern>
+    <pattern>System.Data.SQLite.SQLiteException</pattern>
+    <pattern>SQLiteException</pattern>
+    <pattern>Warning: sqlite_</pattern>
+    <pattern>sqlite_query</pattern>
+    <pattern>sqlite_exec</pattern>
+    <pattern>sqlite_array_query</pattern>
+    <pattern>sqlite_single_query</pattern>
+    <pattern>sqlite_open</pattern>
+    <pattern>sqlite_close</pattern>
+    <pattern>sqlite_fetch_array</pattern>
+    <pattern>sqlite_fetch_single</pattern>
+    <pattern>sqlite_fetch_string</pattern>
+    <pattern>sqlite_num_rows</pattern>
+    <pattern>sqlite_num_fields</pattern>
+    <pattern>sqlite_field_name</pattern>
+    <pattern>sqlite_libversion</pattern>
+    <pattern>sqlite_libencoding</pattern>
+    <pattern>sqlite_changes</pattern>
+    <pattern>sqlite_last_insert_rowid</pattern>
+    <pattern>sqlite_error_string</pattern>
+    <pattern>sqlite_escape_string</pattern>
+    <pattern>sqlite_busy_timeout</pattern>
+    <pattern>sqlite_last_error</pattern>
+    <pattern>sqlite_error_string</pattern>
+    <pattern>no such table</pattern>
+    <pattern>no such column</pattern>
+    <pattern>SQL logic error</pattern>
+    <pattern>malformed database</pattern>
+    <pattern>database is locked</pattern>
+    <pattern>database disk image is malformed</pattern>
+    <pattern>library routine called out of sequence</pattern>
+    <pattern>constraint failed</pattern>
+    <pattern>datatype mismatch</pattern>
+    <pattern>no such function</pattern>
+    <pattern>no such collation sequence</pattern>
+    <pattern>ambiguous column name</pattern>
+    <pattern>misuse of aggregate function</pattern>
+    <pattern>near "": syntax error</pattern>
+    <pattern>incomplete input</pattern>
+    <pattern>cannot commit - no transaction is active</pattern>
+    <pattern>cannot rollback - no transaction is active</pattern>
+    <pattern>database table is locked</pattern>
+    <pattern>attempt to write a readonly database</pattern>
+    <pattern>interrupted</pattern>
+    <pattern>disk I/O error</pattern>
+    <pattern>database or disk is full</pattern>
+    <pattern>unable to open database file</pattern>
+    <pattern>locking protocol</pattern>
+    <pattern>table has no column named</pattern>
+    <pattern>such column: </pattern>
+    <pattern>unrecognized token</pattern>
+    <pattern>unexpected token</pattern>
+    <pattern>fts expression parse error</pattern>
+    <pattern>unable to use function</pattern>
+    <pattern>authorization denied</pattern>
+    <pattern>auxiliary database format error</pattern>
+    <pattern>bind or column index out of range</pattern>
+    <pattern>file is not a database</pattern>
+    <pattern>large file support is disabled</pattern>
+    <pattern>access permission denied</pattern>
+    <pattern>unable to delete/modify user-function due to active statements</pattern>
+    <pattern>unable to open a temporary database file for storing temporary tables</pattern>
+    <pattern>VirtualTable configuration error</pattern>
+    <pattern>vtable constructor failed</pattern>
+    <pattern>vtable constructor did not declare schema</pattern>
+    <pattern>vtable constructor returned error</pattern>
+    <pattern>no such vtab</pattern>
+    <pattern>vtable limits exceeded</pattern>
+    <pattern>vtable misuse</pattern>
+    <pattern>vtable module not found</pattern>
+    <pattern>vtable registration failed</pattern>
+    <pattern>vtable indexing error</pattern>
+    <pattern>vtable constraint violation</pattern>
+    <pattern>vtable authorization failure</pattern>
+    <pattern>vtable schema error</pattern>
+    <pattern>vtable readonly</pattern>
+    <pattern>vtable mismatch</pattern>
+    <pattern>vtable aggregate error</pattern>
+    <pattern>vtable corrupt</pattern>
+    <pattern>vtable internal error</pattern>
+    <pattern>vtable range error</pattern>
+    <pattern>vtable empty</pattern>
+    <pattern>vtable ioerr</pattern>
+    <pattern>vtable cantopen</pattern>
+    <pattern>vtable protocol</pattern>
+    <pattern>vtable notfound</pattern>
+    <pattern>vtable full</pattern>
+    <pattern>vtable locked</pattern>
+    <pattern>vtable nomem</pattern>
+    <pattern>vtable readonly</pattern>
+    <pattern>vtable interrupt</pattern>
+    <pattern>vtable ioerr</pattern>
+    <pattern>vtable corrupt</pattern>
+    <pattern>vtable notfound</pattern>
+    <pattern>vtable full</pattern>
+    <pattern>vtable cantopen</pattern>
+    <pattern>vtable protocol</pattern>
+    <pattern>vtable empty</pattern>
+    <pattern>vtable schema</pattern>
+    <pattern>vtable toobig</pattern>
+    <pattern>vtable constraint</pattern>
+    <pattern>vtable mismatch</pattern>
+    <pattern>vtable misuse</pattern>
+    <pattern>vtable nolfs</pattern>
+    <pattern>vtable auth</pattern>
+    <pattern>vtable format</pattern>
+    <pattern>vtable range</pattern>
+    <pattern>vtable notadb</pattern>
+    <pattern>vtable notice</pattern>
+    <pattern>vtable warning</pattern>
+    <pattern>vtable row</pattern>
+    <pattern>vtable done</pattern>
+  </signature>
+  
+  <!-- MongoDB Error Signatures -->
+  <signature database="mongodb" severity="high">
+    <pattern>MongoDB</pattern>
+    <pattern>MongoError</pattern>
+    <pattern>MongoServerError</pattern>
+    <pattern>MongoNetworkError</pattern>
+    <pattern>MongoTimeoutError</pattern>
+    <pattern>MongoWriteError</pattern>
+    <pattern>MongoWriteConcernError</pattern>
+    <pattern>MongoBulkWriteError</pattern>
+    <pattern>MongoParseError</pattern>
+    <pattern>MongoInvalidArgumentError</pattern>
+    <pattern>MongoCompatibilityError</pattern>
+    <pattern>MongoMissingCredentialsError</pattern>
+    <pattern>MongoMissingDependencyError</pattern>
+    <pattern>MongoDriverError</pattern>
+    <pattern>MongoNotConnectedError</pattern>
+    <pattern>MongoDecompressionError</pattern>
+    <pattern>MongoKerberosError</pattern>
+    <pattern>MongoAWSError</pattern>
+    <pattern>MongoAzureError</pattern>
+    <pattern>MongoGCPError</pattern>
+    <pattern>MongoRuntimeError</pattern>
+    <pattern>MongoSystemError</pattern>
+    <pattern>MongoTopologyClosedError</pattern>
+    <pattern>MongoServerClosedError</pattern>
+    <pattern>MongoServerSelectionError</pattern>
+    <pattern>MongoExpiredSessionError</pattern>
+    <pattern>MongoTransactionError</pattern>
+    <pattern>MongoChangeStreamError</pattern>
+    <pattern>MongoGridFSError</pattern>
+    <pattern>MongoGridFSChunkError</pattern>
+    <pattern>MongoGridFSStreamError</pattern>
+    <pattern>MongoTailableCursorError</pattern>
+    <pattern>pymongo.errors.</pattern>
+    <pattern>com.mongodb.MongoException</pattern>
+    <pattern>com.mongodb.MongoClientException</pattern>
+    <pattern>com.mongodb.MongoCommandException</pattern>
+    <pattern>com.mongodb.MongoConfigurationException</pattern>
+    <pattern>com.mongodb.MongoConnectionException</pattern>
+    <pattern>com.mongodb.MongoCursorNotFoundException</pattern>
+    <pattern>com.mongodb.MongoExecutionTimeoutException</pattern>
+    <pattern>com.mongodb.MongoIncompatibleDriverException</pattern>
+    <pattern>com.mongodb.MongoInternalException</pattern>
+    <pattern>com.mongodb.MongoInterruptedException</pattern>
+    <pattern>com.mongodb.MongoNamespaceExistsException</pattern>
+    <pattern>com.mongodb.MongoNodeIsRecoveringException</pattern>
+    <pattern>com.mongodb.MongoNotPrimaryException</pattern>
+    <pattern>com.mongodb.MongoQueryException</pattern>
+    <pattern>com.mongodb.MongoSecurityException</pattern>
+    <pattern>com.mongodb.MongoServerException</pattern>
+    <pattern>com.mongodb.MongoSocketException</pattern>
+    <pattern>com.mongodb.MongoSocketOpenException</pattern>
+    <pattern>com.mongodb.MongoSocketReadException</pattern>
+    <pattern>com.mongodb.MongoSocketReadTimeoutException</pattern>
+    <pattern>com.mongodb.MongoSocketWriteException</pattern>
+    <pattern>com.mongodb.MongoTimeoutException</pattern>
+    <pattern>com.mongodb.MongoWaitQueueFullException</pattern>
+    <pattern>com.mongodb.MongoWriteConcernException</pattern>
+    <pattern>com.mongodb.MongoWriteException</pattern>
+    <pattern>MongoDB.Driver.MongoException</pattern>
+    <pattern>MongoDB.Driver.MongoClientException</pattern>
+    <pattern>MongoDB.Driver.MongoCommandException</pattern>
+    <pattern>MongoDB.Driver.MongoConfigurationException</pattern>
+    <pattern>MongoDB.Driver.MongoConnectionException</pattern>
+    <pattern>MongoDB.Driver.MongoCursorNotFoundException</pattern>
+    <pattern>MongoDB.Driver.MongoExecutionTimeoutException</pattern>
+    <pattern>MongoDB.Driver.MongoIncompatibleDriverException</pattern>
+    <pattern>MongoDB.Driver.MongoInternalException</pattern>
+    <pattern>MongoDB.Driver.MongoInterruptedException</pattern>
+    <pattern>MongoDB.Driver.MongoNamespaceExistsException</pattern>
+    <pattern>MongoDB.Driver.MongoNodeIsRecoveringException</pattern>
+    <pattern>MongoDB.Driver.MongoNotPrimaryException</pattern>
+    <pattern>MongoDB.Driver.MongoQueryException</pattern>
+    <pattern>MongoDB.Driver.MongoSecurityException</pattern>
+    <pattern>MongoDB.Driver.MongoServerException</pattern>
+    <pattern>MongoDB.Driver.MongoSocketException</pattern>
+    <pattern>MongoDB.Driver.MongoSocketOpenException</pattern>
+    <pattern>MongoDB.Driver.MongoSocketReadException</pattern>
+    <pattern>MongoDB.Driver.MongoSocketReadTimeoutException</pattern>
+    <pattern>MongoDB.Driver.MongoSocketWriteException</pattern>
+    <pattern>MongoDB.Driver.MongoTimeoutException</pattern>
+    <pattern>MongoDB.Driver.MongoWaitQueueFullException</pattern>
+    <pattern>MongoDB.Driver.MongoWriteConcernException</pattern>
+    <pattern>MongoDB.Driver.MongoWriteException</pattern>
+    <pattern>not authorized</pattern>
+    <pattern>command failed</pattern>
+    <pattern>cursor not found</pattern>
+    <pattern>duplicate key error</pattern>
+    <pattern>index already exists</pattern>
+    <pattern>namespace not found</pattern>
+    <pattern>operation exceeded time limit</pattern>
+    <pattern>shard key not found</pattern>
+    <pattern>too many connections</pattern>
+    <pattern>unauthorized</pattern>
+    <pattern>unknown operator</pattern>
+    <pattern>writeConcernError</pattern>
+    <pattern>writeError</pattern>
+    <pattern>BSONObj size</pattern>
+    <pattern>errmsg</pattern>
+    <pattern>nModified</pattern>
+    <pattern>upserted</pattern>
+    <pattern>writeErrors</pattern>
+    <pattern>writeConcernErrors</pattern>
+    <pattern>MongoClient</pattern>
+    <pattern>MongoDatabase</pattern>
+    <pattern>MongoCollection</pattern>
+    <pattern>FindCursor</pattern>
+    <pattern>AggregateCursor</pattern>
+    <pattern>ChangeStreamCursor</pattern>
+    <pattern>ListIndexesCursor</pattern>
+    <pattern>MapReduceCursor</pattern>
+    <pattern>GridFSBucket</pattern>
+    <pattern>GridFSDownloadStream</pattern>
+    <pattern>GridFSUploadStream</pattern>
+    <pattern>ClientSession</pattern>
+    <pattern>TransactionOptions</pattern>
+    <pattern>ReadConcern</pattern>
+    <pattern>WriteConcern</pattern>
+    <pattern>ReadPreference</pattern>
+    <pattern>ServerDescription</pattern>
+    <pattern>TopologyDescription</pattern>
+    <pattern>ClusterDescription</pattern>
+    <pattern>ServerHeartbeatStartedEvent</pattern>
+    <pattern>ServerHeartbeatSucceededEvent</pattern>
+    <pattern>ServerHeartbeatFailedEvent</pattern>
+    <pattern>ServerOpeningEvent</pattern>
+    <pattern>ServerClosedEvent</pattern>
+    <pattern>ServerDescriptionChangedEvent</pattern>
+    <pattern>TopologyOpeningEvent</pattern>
+    <pattern>TopologyClosedEvent</pattern>
+    <pattern>TopologyDescriptionChangedEvent</pattern>
+    <pattern>ServerSelectionStartedEvent</pattern>
+    <pattern>ServerSelectionSucceededEvent</pattern>
+    <pattern>ServerSelectionFailedEvent</pattern>
+    <pattern>ConnectionPoolCreatedEvent</pattern>
+    <pattern>ConnectionPoolReadyEvent</pattern>
+    <pattern>ConnectionPoolClosedEvent</pattern>
+    <pattern>ConnectionPoolClearedEvent</pattern>
+    <pattern>ConnectionCreatedEvent</pattern>
+    <pattern>ConnectionReadyEvent</pattern>
+    <pattern>ConnectionClosedEvent</pattern>
+    <pattern>ConnectionCheckOutStartedEvent</pattern>
+    <pattern>ConnectionCheckOutFailedEvent</pattern>
+    <pattern>ConnectionCheckedOutEvent</pattern>
+    <pattern>ConnectionCheckedInEvent</pattern>
+    <pattern>CommandStartedEvent</pattern>
+    <pattern>CommandSucceededEvent</pattern>
+    <pattern>CommandFailedEvent</pattern>
+  </signature>
+
+  <!-- Generic Error Signatures -->
+  <signature database="unknown" severity="low">
+    <pattern>invalid query</pattern>
+    <pattern>query failed</pattern>
+    <pattern>sql error</pattern>
+    <pattern>database error</pattern>
+    <pattern>fatal error</pattern>
+    <pattern>syntax error</pattern>
+    <pattern>unexpected error</pattern>
+    <pattern>internal server error</pattern>
+    <pattern>a database error occurred</pattern>
+    <pattern>an illegal character has been found in the statement</pattern>
+    <pattern>failed to execute query</pattern>
+    <pattern>error in query</pattern>
+    <pattern>invalid sql</pattern>
+    <pattern>server error in application</pattern>
+    <pattern>unexpected end of command</pattern>
+  </signature>
+
+  <!-- WAF and Security Product Signatures -->
+  <signature database="unknown" severity="high">
+    <pattern>Web Application Firewall</pattern>
+    <pattern>Not Acceptable!</pattern>
+    <pattern>Request Rejected</pattern>
+    <pattern>Forbidden</pattern>
+    <pattern>Access Denied</pattern>
+    <pattern>Blocked by</pattern>
+    <pattern>Security policy violation</pattern>
+    <pattern>Mod_Security</pattern>
+    <pattern>mod_secure</pattern>
+    <pattern>Sucuri</pattern>
+    <pattern>Cloudflare</pattern>
+    <pattern>Incapsula</pattern>
+    <pattern>Akamai</pattern>
+    <pattern>F5 BIG-IP</pattern>
+    <pattern>Imperva</pattern>
+    <pattern>FortiWeb</pattern>
+    <pattern>Barracuda</pattern>
+    <pattern>dotDefender</pattern>
+    <pattern>Applicure</pattern>
+    <pattern>NetContinuum</pattern>
+    <pattern>BinarySec</pattern>
+    <pattern>Teros</pattern>
+    <pattern>Stingray</pattern>
+    <pattern>Request unsuccessful</pattern>
+    <pattern>Attack detected</pattern>
+    <pattern>Your request has been blocked</pattern>
+    <pattern>This request has been blocked by the web application firewall</pattern>
+  </signature>
+
+  <!-- IBM DB2 Error Signatures -->
+  <signature database="db2" severity="high">
+    <pattern>DB2 SQL error</pattern>
+    <pattern>SQLCODE=</pattern>
+    <pattern>SQLSTATE=</pattern>
+    <pattern>com.ibm.db2.jcc</pattern>
+    <pattern>CLI Driver</pattern>
+    <pattern>DB2Connection</pattern>
+    <pattern>DB2 Error</pattern>
+    <pattern>SQL0</pattern>
+    <pattern>SQL1</pattern>
+    <pattern>SQL2</pattern>
+    <pattern>SQL3</pattern>
+    <pattern>SQL4</pattern>
+    <pattern>SQL5</pattern>
+  </signature>
+
+  <!-- Sybase Error Signatures -->
+  <signature database="sybase" severity="high">
+    <pattern>Sybase message</pattern>
+    <pattern>Sybase ASE</pattern>
+    <pattern>SybSQLException</pattern>
+    <pattern>com.sybase.jdbc</pattern>
+    <pattern>Sybase SQL Server</pattern>
+    <pattern>Sybase.Data.AseClient</pattern>
+    <pattern>Adaptive Server Enterprise</pattern>
+  </signature>
+
+  <!-- Informix Error Signatures -->
+  <signature database="informix" severity="high">
+    <pattern>Informix ODBC Driver</pattern>
+    <pattern>com.informix.jdbc</pattern>
+    <pattern>IfxException</pattern>
+    <pattern>Informix Dynamic Server</pattern>
+    <pattern>SQLCODE[-]</pattern>
+  </signature>
+
+  <!-- Firebird Error Signatures -->
+  <signature database="firebird" severity="high">
+    <pattern>Firebird SQL Error</pattern>
+    <pattern>org.firebirdsql.jdbc</pattern>
+    <pattern>isc_dsql_prepare</pattern>
+    <pattern>Dynamic SQL Error</pattern>
+  </signature>
+
+  <!-- Redis Error Signatures -->
+  <signature database="unknown" severity="medium">
+    <pattern>redis.RedisError</pattern>
+    <pattern>WRONGTYPE Operation against a key holding the wrong kind of value</pattern>
+    <pattern>ERR syntax error</pattern>
+    <pattern>io.lettuce.core.RedisCommandExecutionException</pattern>
+    <pattern>redis: nil</pattern>
+  </signature>
+
+  <!-- Cassandra Error Signatures -->
+  <signature database="unknown" severity="medium">
+    <pattern>Cassandra Query Error</pattern>
+    <pattern>com.datastax.driver.core.exceptions</pattern>
+    <pattern>SyntaxError:</pattern>
+    <pattern>InvalidRequestException</pattern>
+    <pattern>unconfigured table</pattern>
+  </signature>
+
+  <!-- CouchDB Error Signatures -->
+  <signature database="unknown" severity="medium">
+    <pattern>CouchDB</pattern>
+    <pattern>ejson</pattern>
+    <pattern>Expression does not eval to a boolean</pattern>
+    <pattern>badarg</pattern>
+  </signature>
+
+  <!-- SAP MaxDB Error Signatures -->
+  <signature database="unknown" severity="high">
+    <pattern>SQL error</pattern>
+    <pattern>-3008</pattern>
+    <pattern>com.sap.dbtech.jdbc</pattern>
+  </signature>
+
+  <!-- Ingres Error Signatures -->
+  <signature database="unknown" severity="high">
+    <pattern>Ingres SQLSTATE</pattern>
+    <pattern>II_</pattern>
+    <pattern>com.ingres.gcf.util</pattern>
+  </signature>
+
+  <!-- FrontBase Error Signatures -->
+  <signature database="unknown" severity="high">
+    <pattern>FrontBase</pattern>
+    <pattern>com.frontbase.jdbc</pattern>
+    <pattern>Syntax error</pattern>
+  </signature>
+
+  <!-- Advanced Private Error Signatures -->
+  <signature database="unknown" severity="critical">
+    <!-- Time-based SQL injection detection patterns -->
+    <pattern>sleep\(.*\) took longer than expected</pattern>
+    <pattern>benchmark\(.*\) execution time</pattern>
+    <pattern>waitfor delay.*timeout</pattern>
+    <pattern>pg_sleep\(.*\) completed</pattern>
+    <pattern>dbms_lock\.sleep\(.*\) finished</pattern>
+    
+    <!-- Blind SQL injection detection patterns -->
+    <pattern>boolean-based blind detected</pattern>
+    <pattern>time-based blind detected</pattern>
+    <pattern>error-based injection detected</pattern>
+    <pattern>union-based injection detected</pattern>
+    <pattern>stacked queries detected</pattern>
+    
+    <!-- Advanced payload execution traces -->
+    <pattern>xp_cmdshell executed successfully</pattern>
+    <pattern>sp_oacreate object created</pattern>
+    <pattern>sp_makewebtask file created</pattern>
+    <pattern>bulk insert from.*completed</pattern>
+    <pattern>openrowset connection established</pattern>
+    <pattern>opendatasource connection opened</pattern>
+    
+    <!-- WAF evasion detection -->
+    <pattern>encoding bypass successful</pattern>
+    <pattern>comment injection successful</pattern>
+    <pattern>case manipulation bypass</pattern>
+    <pattern>whitespace evasion successful</pattern>
+    <pattern>keyword splitting bypass</pattern>
+    
+    <!-- Advanced privilege escalation -->
+    <pattern>privilege escalation attempt detected</pattern>
+    <pattern>admin rights acquired</pattern>
+    <pattern>root access obtained</pattern>
+    <pattern>system user privileges</pattern>
+    <pattern>database administrator access</pattern>
+    
+    <!-- File system access patterns -->
+    <pattern>file read operation successful</pattern>
+    <pattern>file write operation completed</pattern>
+    <pattern>directory listing retrieved</pattern>
+    <pattern>file upload completed</pattern>
+    <pattern>outfile creation successful</pattern>
+    <pattern>dumpfile creation completed</pattern>
+    <pattern>load_file operation successful</pattern>
+    
+    <!-- Network-based attacks -->
+    <pattern>dns exfiltration channel opened</pattern>
+    <pattern>http request smuggling detected</pattern>
+    <pattern>reverse shell connection established</pattern>
+    <pattern>backdoor installation completed</pattern>
+    <pattern>tunnel creation successful</pattern>
+    
+    <!-- Advanced enumeration patterns -->
+    <pattern>schema enumeration completed</pattern>
+    <pattern>table structure extracted</pattern>
+    <pattern>column information retrieved</pattern>
+    <pattern>user privileges enumerated</pattern>
+    <pattern>database version identified</pattern>
+    <pattern>system information gathered</pattern>
+    
+    <!-- Cryptographic attacks -->
+    <pattern>hash extraction successful</pattern>
+    <pattern>password hash retrieved</pattern>
+    <pattern>encryption key obtained</pattern>
+    <pattern>salt value extracted</pattern>
+    <pattern>credential dump completed</pattern>
+    
+    <!-- Memory-based attacks -->
+    <pattern>buffer overflow detected</pattern>
+    <pattern>heap corruption identified</pattern>
+    <pattern>stack overflow exploited</pattern>
+    <pattern>memory leak detected</pattern>
+    <pattern>use-after-free vulnerability</pattern>
+    
+    <!-- Advanced persistence techniques -->
+    <pattern>stored procedure backdoor installed</pattern>
+    <pattern>trigger-based persistence established</pattern>
+    <pattern>view-based backdoor created</pattern>
+    <pattern>function persistence mechanism</pattern>
+    <pattern>scheduled task created</pattern>
+    
+    <!-- Advanced data exfiltration -->
+    <pattern>data compression before exfiltration</pattern>
+    <pattern>steganographic data hiding</pattern>
+    <pattern>covert channel established</pattern>
+    <pattern>data fragmentation successful</pattern>
+    <pattern>encrypted exfiltration channel</pattern>
+  </signature>
+
+  <!-- NoSQL Injection Signatures -->
+  <signature database="unknown" severity="high">
+    <!-- MongoDB injection patterns -->
+    <pattern>\$where.*function</pattern>
+    <pattern>\$regex.*injection</pattern>
+    <pattern>\$ne.*bypass</pattern>
+    <pattern>\$gt.*injection</pattern>
+    <pattern>\$lt.*injection</pattern>
+    <pattern>\$in.*array injection</pattern>
+    <pattern>\$nin.*array bypass</pattern>
+    <pattern>\$exists.*field probe</pattern>
+    <pattern>\$type.*type confusion</pattern>
+    <pattern>\$size.*array manipulation</pattern>
+    <pattern>\$all.*array injection</pattern>
+    <pattern>\$elemMatch.*sub-document injection</pattern>
+    
+    <!-- CouchDB injection patterns -->
+    <pattern>_design.*view injection</pattern>
+    <pattern>_list.*function injection</pattern>
+    <pattern>_show.*function bypass</pattern>
+    <pattern>_update.*handler injection</pattern>
+    <pattern>_filter.*function manipulation</pattern>
+    
+    <!-- Redis injection patterns -->
+    <pattern>EVAL.*lua injection</pattern>
+    <pattern>EVALSHA.*script injection</pattern>
+    <pattern>SCRIPT.*load injection</pattern>
+    <pattern>DEBUG.*command injection</pattern>
+    <pattern>CONFIG.*parameter manipulation</pattern>
+    <pattern>FLUSHALL.*data destruction</pattern>
+    <pattern>SHUTDOWN.*service disruption</pattern>
+    
+    <!-- ElasticSearch injection patterns -->
+    <pattern>_search.*query injection</pattern>
+    <pattern>_msearch.*multi-query injection</pattern>
+    <pattern>_bulk.*bulk injection</pattern>
+    <pattern>script.*groovy injection</pattern>
+    <pattern>query.*dsl injection</pattern>
+    
+    <!-- Neo4j injection patterns -->
+    <pattern>CYPHER.*injection</pattern>
+    <pattern>MATCH.*pattern injection</pattern>
+    <pattern>WHERE.*condition bypass</pattern>
+    <pattern>RETURN.*data extraction</pattern>
+    <pattern>CREATE.*node injection</pattern>
+    <pattern>MERGE.*relationship injection</pattern>
+  </signature>
+
+  <!-- Cloud Database Signatures -->
+  <signature database="unknown" severity="high">
+    <!-- AWS RDS specific patterns -->
+    <pattern>RDS.*connection error</pattern>
+    <pattern>Aurora.*cluster error</pattern>
+    <pattern>DynamoDB.*access denied</pattern>
+    <pattern>Redshift.*query error</pattern>
+    <pattern>DocumentDB.*mongo error</pattern>
+    <pattern>Neptune.*graph error</pattern>
+    <pattern>Timestream.*time-series error</pattern>
+    
+    <!-- Azure SQL specific patterns -->
+    <pattern>Azure SQL.*connection failed</pattern>
+    <pattern>Cosmos DB.*request failed</pattern>
+    <pattern>Azure Database.*authentication failed</pattern>
+    <pattern>SQL Managed Instance.*error</pattern>
+    <pattern>Azure Synapse.*query failed</pattern>
+    
+    <!-- Google Cloud SQL patterns -->
+    <pattern>Cloud SQL.*connection error</pattern>
+    <pattern>Firestore.*operation failed</pattern>
+    <pattern>Bigtable.*access denied</pattern>
+    <pattern>Spanner.*query error</pattern>
+    <pattern>BigQuery.*syntax error</pattern>
+  </signature>
+
+  <!-- Advanced Web Framework Signatures -->
+  <signature database="unknown" severity="medium">
+    <!-- PHP framework patterns -->
+    <pattern>PDO.*prepare failed</pattern>
+    <pattern>mysqli.*connection refused</pattern>
+    <pattern>Doctrine.*DBAL error</pattern>
+    <pattern>Eloquent.*query exception</pattern>
+    <pattern>Propel.*SQL error</pattern>
+    <pattern>Zend.*Db.*exception</pattern>
+    <pattern>CakePHP.*database error</pattern>
+    <pattern>Symfony.*Doctrine error</pattern>
+    
+    <!-- Python framework patterns -->
+    <pattern>Django.*database error</pattern>
+    <pattern>SQLAlchemy.*operational error</pattern>
+    <pattern>Flask.*SQL error</pattern>
+    <pattern>Peewee.*integrity error</pattern>
+    <pattern>Tornado.*database exception</pattern>
+    
+    <!-- Node.js framework patterns -->
+    <pattern>Sequelize.*validation error</pattern>
+    <pattern>Mongoose.*cast error</pattern>
+    <pattern>Knex.*query error</pattern>
+    <pattern>TypeORM.*query failed</pattern>
+    <pattern>Prisma.*query engine error</pattern>
+    
+    <!-- Java framework patterns -->
+    <pattern>Hibernate.*SQL exception</pattern>
+    <pattern>JPA.*persistence exception</pattern>
+    <pattern>MyBatis.*SQL error</pattern>
+    <pattern>Spring.*data access exception</pattern>
+    <pattern>JDBI.*statement exception</pattern>
+    
+    <!-- .NET framework patterns -->
+    <pattern>Entity Framework.*SQL exception</pattern>
+    <pattern>Dapper.*SQL error</pattern>
+    <pattern>NHibernate.*ADO exception</pattern>
+    <pattern>LINQ to SQL.*exception</pattern>
+  </signature>
+
+  <!-- Container and Microservice Signatures -->
+  <signature database="unknown" severity="medium">
+    <!-- Docker database patterns -->
+    <pattern>Docker.*database container error</pattern>
+    <pattern>Kubernetes.*database pod error</pattern>
+    <pattern>compose.*database service error</pattern>
+    
+    <!-- Microservice patterns -->
+    <pattern>gRPC.*database call failed</pattern>
+    <pattern>REST API.*database timeout</pattern>
+    <pattern>GraphQL.*resolver error</pattern>
+    <pattern>Message queue.*database deadlock</pattern>
+    
+    <!-- Service mesh patterns -->
+    <pattern>Istio.*database proxy error</pattern>
+    <pattern>Envoy.*database upstream error</pattern>
+    <pattern>Linkerd.*database connection error</pattern>
+  </signature>
+</error_signatures>

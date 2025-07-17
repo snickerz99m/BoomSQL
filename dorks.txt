@@ -1,0 +1,1347 @@
+# Google Dorks for SQL Injection Testing
+# Basic SQL injection dorks
+inurl:login.php
+inurl:admin.php
+inurl:login.asp
+inurl:admin.asp
+inurl:login.aspx
+inurl:admin.aspx
+inurl:login.jsp
+inurl:admin.jsp
+inurl:login.cfm
+inurl:admin.cfm
+
+# Parameter-based dorks
+inurl:index.php?id=
+inurl:page.php?id=
+inurl:category.php?id=
+inurl:product.php?id=
+inurl:item.php?id=
+inurl:news.php?id=
+inurl:article.php?id=
+inurl:detail.php?id=
+inurl:view.php?id=
+inurl:show.php?id=
+
+# Common vulnerable parameters
+inurl:?id=
+inurl:?pid=
+inurl:?uid=
+inurl:?cid=
+inurl:?cat=
+inurl:?action=
+inurl:?page=
+inurl:?p=
+inurl:?q=
+inurl:?search=
+
+# Database error dorks
+"mysql_fetch_array()"
+"mysql_num_rows()"
+"mysql_fetch_assoc()"
+"Warning: mysql_"
+"You have an error in your SQL syntax"
+"Microsoft OLE DB Provider for SQL Server"
+"Microsoft JET Database Engine"
+"ORA-00933: SQL command not properly ended"
+"PostgreSQL query failed"
+"Warning: pg_"
+
+# Shopping cart vulnerabilities
+inurl:cart.php?id=
+inurl:addtocart.php?id=
+inurl:buy.php?id=
+inurl:checkout.php?id=
+inurl:order.php?id=
+inurl:purchase.php?id=
+inurl:shopping.php?id=
+
+# CMS vulnerabilities
+inurl:index.php?option=com_
+inurl:index.php?module=
+inurl:index.php?mod=
+inurl:index.php?action=
+inurl:index.php?do=
+inurl:index.php?task=
+inurl:index.php?page=
+
+# Forum vulnerabilities
+inurl:forum.php?id=
+inurl:topic.php?id=
+inurl:thread.php?id=
+inurl:post.php?id=
+inurl:message.php?id=
+inurl:board.php?id=
+
+# Gallery vulnerabilities
+inurl:gallery.php?id=
+inurl:photo.php?id=
+inurl:image.php?id=
+inurl:picture.php?id=
+inurl:album.php?id=
+inurl:images.php?id=
+
+# Blog vulnerabilities
+inurl:blog.php?id=
+inurl:post.php?id=
+inurl:comment.php?id=
+inurl:entry.php?id=
+inurl:article.php?id=
+inurl:story.php?id=
+
+# Advanced SQL injection dorks
+"Microsoft SQL Server" "error '80040e14'"
+"MySQL server version" "error"
+"Warning: Division by zero"
+"Warning: mysql_connect()"
+"Warning: mysql_query()"
+"Warning: mysql_num_rows()"
+"Warning: Cannot modify header information"
+"Parse error: parse error, unexpected T_VARIABLE"
+"Fatal error: Call to undefined function"
+
+# Specific application vulnerabilities
+inurl:"/gallery/displayCategory.php?id="
+inurl:"/article/article.php?id="
+inurl:"/show.php?id="
+inurl:"/public/show.php?id="
+inurl:"/article.php?ID="
+inurl:"/play_old.php?id="
+inurl:"/declaration_more.php?decl_id="
+inurl:"/pageid="
+inurl:"/games.php?id="
+inurl:"/page.php?file="
+inurl:"/newsDetail.php?id="
+inurl:"/gallery.php?id="
+inurl:"/article.php?id="
+inurl:"/show.php?id="
+inurl:"/staff_id="
+inurl:"/newsitem.php?num="
+inurl:"/readnews.php?id="
+inurl:"/top10.php?cat="
+inurl:"/historialeer.php?num="
+inurl:"/reagir.php?num="
+inurl:"/Stray-Questions-View.php?num="
+inurl:"/forum_bds.php?num="
+inurl:"/game.php?id="
+inurl:"/view_product.php?id="
+inurl:"/newsone.php?id="
+inurl:"/sw_comment.php?id="
+inurl:"/news.php?id="
+inurl:"/avd_start.php?avd="
+inurl:"/event.php?id="
+inurl:"/product-item.php?id="
+inurl:"/sql.php?id="
+inurl:"/news_view.php?id="
+inurl:"/select_biblio.php?id="
+inurl:"/humor.php?id="
+inurl:"/aboutbook.php?id="
+inurl:"/ogl_inet.php?ogl_id="
+inurl:"/fiche_spectacle.php?id="
+inurl:"/communique_detail.php?id="
+inurl:"/sem.php3?id="
+inurl:"/kategorie.php4?id="
+inurl:"/news.php?id="
+inurl:"/index.php?id="
+inurl:"/faq2.php?id="
+inurl:"/show_an.php?id="
+inurl:"/preview.php?id="
+inurl:"/loadpsb.php?id="
+inurl:"/opinions.php?id="
+inurl:"/spr.php?id="
+inurl:"/pages.php?id="
+inurl:"/announce.php?id="
+inurl:"/clanek.php4?id="
+inurl:"/participant.php?id="
+inurl:"/download.php?id="
+inurl:"/main.php?id="
+inurl:"/review.php?id="
+inurl:"/chappies.php?id="
+inurl:"/read.php?id="
+inurl:"/prod_detail.php?id="
+inurl:"/viewphoto.php?id="
+inurl:"/item.php?id="
+inurl:"/view.php?id="
+inurl:"/website.php?id="
+inurl:"/hosting_info.php?id="
+inurl:"/gallery.php?id="
+inurl:"/rub.php?idr="
+inurl:"/view_faq.php?id="
+inurl:"/artikelinfo.php?id="
+inurl:"/detail.php?ID="
+inurl:"/index.php?="
+inurl:"/profile_view.php?id="
+inurl:"/category.php?id="
+inurl:"/publications.php?id="
+inurl:"/fellows.php?id="
+inurl:"/downloads.php?id="
+inurl:"/prod_info.php?id="
+inurl:"/shop.php?do=part&id="
+inurl:"/productinfo.php?id="
+inurl:"/collectionitem.php?id="
+inurl:"/band_info.php?id="
+inurl:"/product.php?id="
+inurl:"/releases.php?id="
+inurl:"/ray.php?id="
+inurl:"/produit.php?id="
+inurl:"/pop.php?id="
+inurl:"/shopping.php?id="
+inurl:"/productdetail.php?id="
+inurl:"/post.php?id="
+inurl:"/viewshowdetail.php?id="
+inurl:"/clubpage.php?id="
+inurl:"/memberInfo.php?id="
+inurl:"/section.php?id="
+inurl:"/theme.php?id="
+inurl:"/page.php?id="
+inurl:"/shredder-categories.php?id="
+inurl:"/tradeCategory.php?id="
+inurl:"/product_ranges_view.php?ID="
+inurl:"/shop_category.php?id="
+inurl:"/transcript.php?id="
+inurl:"/channel_id="
+inurl:"/item_show.php?id="
+inurl:"/newsitem.php?id="
+inurl:"/trainers.php?id="
+inurl:"/news-full.php?id="
+inurl:"/software.php?id="
+inurl:"/showimg.php?id="
+inurl:"/view_product.php?id="
+inurl:"/zoomify.php?id="
+inurl:"/goals.php?id="
+inurl:"/products.php?id="
+inurl:"/info.php?id="
+inurl:"/showthread.php?tid="
+inurl:"/showthread.php?pid="
+inurl:"/showflat.php?Cat="
+inurl:"/showflat.php?Board="
+inurl:"/showflat.php?Number="
+inurl:"/showpost.php?p="
+inurl:"/showthread.php?t="
+inurl:"/viewthread.php?tid="
+inurl:"/viewtopic.php?t="
+inurl:"/viewtopic.php?topic="
+inurl:"/viewforum.php?f="
+inurl:"/viewforum.php?forum="
+inurl:"/forumdisplay.php?f="
+inurl:"/forumdisplay.php?fid="
+inurl:"/memberlist.php?mode="
+inurl:"/memberlist.php?s="
+inurl:"/profile.php?mode="
+inurl:"/profile.php?id="
+inurl:"/usercp.php?folder="
+inurl:"/private.php?folder="
+inurl:"/search.php?searchid="
+inurl:"/admin.php?action="
+inurl:"/admin.php?page="
+inurl:"/admin.php?op="
+inurl:"/admin.php?do="
+inurl:"/admin/index.php?action="
+inurl:"/admin/index.php?page="
+inurl:"/admin/index.php?op="
+inurl:"/admin/index.php?do="
+inurl:"/modcp.php?action="
+inurl:"/modcp.php?page="
+inurl:"/modcp.php?op="
+inurl:"/modcp.php?do="
+inurl:"/editpost.php?postid="
+inurl:"/editpost.php?id="
+inurl:"/newreply.php?tid="
+inurl:"/newreply.php?do="
+inurl:"/newthread.php?fid="
+inurl:"/newthread.php?do="
+inurl:"/search.php?action="
+inurl:"/search.php?do="
+inurl:"/usercp.php?action="
+inurl:"/usercp.php?do="
+inurl:"/calendar.php?action="
+inurl:"/calendar.php?do="
+inurl:"/misc.php?action="
+inurl:"/misc.php?do="
+inurl:"/showgroups.php?gid="
+inurl:"/online.php?action="
+inurl:"/online.php?do="
+inurl:"/stats.php?action="
+inurl:"/stats.php?do="
+inurl:"/reputation.php?uid="
+inurl:"/reputation.php?pid="
+inurl:"/sendmessage.php?do="
+inurl:"/sendmessage.php?action="
+inurl:"/printthread.php?tid="
+inurl:"/printthread.php?t="
+inurl:"/sendthread.php?tid="
+inurl:"/sendthread.php?t="
+inurl:"/ratethread.php?tid="
+inurl:"/ratethread.php?t="
+inurl:"/subscription.php?do="
+inurl:"/subscription.php?action="
+inurl:"/report.php?pid="
+inurl:"/report.php?postid="
+inurl:"/arcade.php?act="
+inurl:"/arcade.php?do="
+inurl:"/arcade.php?action="
+inurl:"/gallery.php?do="
+inurl:"/gallery.php?action="
+inurl:"/gallery.php?g="
+inurl:"/gallery.php?ppuser="
+inurl:"/album.php?albumid="
+inurl:"/album.php?u="
+inurl:"/picture.php?pictureid="
+inurl:"/picture.php?pid="
+inurl:"/showalbum.php?alb="
+inurl:"/showgallery.php?cat="
+inurl:"/showgallery.php?ppuser="
+inurl:"/thumbnail.php?album="
+inurl:"/thumbnail.php?pic="
+inurl:"/view.php?pic="
+inurl:"/view.php?album="
+inurl:"/viewpic.php?pic="
+inurl:"/viewpic.php?album="
+inurl:"/showimage.php?i="
+inurl:"/showimage.php?pic="
+inurl:"/showcat.php?cat="
+inurl:"/showcat.php?c="
+inurl:"/showuser.php?userid="
+inurl:"/showuser.php?u="
+inurl:"/showmembers.php?Cat="
+inurl:"/showmembers.php?id="
+inurl:"/view_items.php?id="
+inurl:"/pollbooth.php?pollid="
+inurl:"/pollbooth.php?op="
+inurl:"/pollresults.php?pollid="
+inurl:"/pollresults.php?op="
+inurl:"/download.php?id="
+inurl:"/download.php?view="
+inurl:"/download.php?download="
+inurl:"/downloads.php?cat="
+inurl:"/downloads.php?d="
+inurl:"/downloads.php?do="
+inurl:"/prod_detail.php?id="
+inurl:"/viewdownload.php?id="
+inurl:"/viewdownload.php?download="
+inurl:"/download_info.php?id="
+inurl:"/downloads_info.php?id="
+inurl:"/product_detail.php?id="
+inurl:"/product_info.php?id="
+inurl:"/product_info.php?products_id="
+inurl:"/product_info.php?p="
+inurl:"/product.php?productid="
+inurl:"/product.php?id="
+inurl:"/buy.php?category="
+inurl:"/buy.php?p="
+inurl:"/buy.php?id="
+inurl:"/shoppingcart.php?id="
+inurl:"/productlist.php?id="
+inurl:"/productlist.php?category="
+inurl:"/productlist.php?viewcart="
+inurl:"/productlist.php?catalogid="
+inurl:"/store.php?id="
+inurl:"/store.php?category="
+inurl:"/store.php?action="
+inurl:"/store.php?do="
+inurl:"/shop.php?action="
+inurl:"/shop.php?do="
+inurl:"/shop.php?id="
+inurl:"/shop.php?category="
+inurl:"/shop.php?productid="
+inurl:"/catalog.php?id="
+inurl:"/catalog.php?category="
+inurl:"/catalog.php?action="
+inurl:"/catalog.php?pid="
+inurl:"/catalog.php?viewcart="
+inurl:"/catalog.php?add="
+inurl:"/catalog.php?catalogid="
+inurl:"/cart.php?id="
+inurl:"/cart.php?action="
+inurl:"/cart.php?do="
+inurl:"/cart.php?view="
+inurl:"/cart.php?add="
+inurl:"/cart.php?update="
+inurl:"/displayproducts.php?category_id="
+inurl:"/displayproducts.php?id="
+inurl:"/displayproducts.php?cat="
+inurl:"/displayproducts.php?product="
+inurl:"/showproduct.php?productid="
+inurl:"/showproduct.php?id="
+inurl:"/showproduct.php?cat="
+inurl:"/showproduct.php?category="
+inurl:"/showdetail.php?id="
+inurl:"/showdetail.php?product="
+inurl:"/showdetail.php?productid="
+inurl:"/showdetail.php?item="
+inurl:"/showitem.php?id="
+inurl:"/showitem.php?product="
+inurl:"/showitem.php?productid="
+inurl:"/showitem.php?item="
+inurl:"/showitem.php?cat="
+inurl:"/showitem.php?category="
+inurl:"/showitem.php?subcategory="
+inurl:"/showitem.php?table="
+inurl:"/showitem.php?select="
+inurl:"/showitem.php?pid="
+inurl:"/showitem.php?cartid="
+inurl:"/showitem.php?add="
+inurl:"/showitem.php?viewcart="
+inurl:"/showitem.php?template="
+inurl:"/showitem.php?oldid="
+inurl:"/showitem.php?order="
+inurl:"/showitem.php?goto="
+inurl:"/showitem.php?from="
+inurl:"/showitem.php?itemid="
+inurl:"/showitem.php?catid="
+inurl:"/productinfo.php?id="
+inurl:"/productinfo.php?productid="
+inurl:"/productinfo.php?product="
+inurl:"/productinfo.php?pid="
+inurl:"/productinfo.php?item="
+inurl:"/productinfo.php?cat="
+inurl:"/productinfo.php?category="
+inurl:"/productinfo.php?subcategory="
+inurl:"/productinfo.php?name="
+inurl:"/productinfo.php?cartid="
+inurl:"/productinfo.php?add="
+inurl:"/productinfo.php?viewcart="
+inurl:"/productinfo.php?template="
+inurl:"/productinfo.php?oldid="
+inurl:"/productinfo.php?order="
+inurl:"/productinfo.php?goto="
+inurl:"/productinfo.php?from="
+inurl:"/productinfo.php?itemid="
+inurl:"/productinfo.php?catid="
+inurl:"/productdetails.php?id="
+inurl:"/productdetails.php?productid="
+inurl:"/productdetails.php?product="
+inurl:"/productdetails.php?pid="
+inurl:"/productdetails.php?item="
+inurl:"/productdetails.php?cat="
+inurl:"/productdetails.php?category="
+inurl:"/productdetails.php?subcategory="
+inurl:"/productdetails.php?name="
+inurl:"/productdetails.php?cartid="
+inurl:"/productdetails.php?add="
+inurl:"/productdetails.php?viewcart="
+inurl:"/productdetails.php?template="
+inurl:"/productdetails.php?oldid="
+inurl:"/productdetails.php?order="
+inurl:"/productdetails.php?goto="
+inurl:"/productdetails.php?from="
+inurl:"/productdetails.php?itemid="
+inurl:"/productdetails.php?catid="
+inurl:"/productdetail.php?id="
+inurl:"/productdetail.php?productid="
+inurl:"/productdetail.php?product="
+inurl:"/productdetail.php?pid="
+inurl:"/productdetail.php?item="
+inurl:"/productdetail.php?cat="
+inurl:"/productdetail.php?category="
+inurl:"/productdetail.php?subcategory="
+inurl:"/productdetail.php?name="
+inurl:"/productdetail.php?cartid="
+inurl:"/productdetail.php?add="
+inurl:"/productdetail.php?viewcart="
+inurl:"/productdetail.php?template="
+inurl:"/productdetail.php?oldid="
+inurl:"/productdetail.php?order="
+inurl:"/productdetail.php?goto="
+inurl:"/productdetail.php?from="
+inurl:"/productdetail.php?itemid="
+inurl:"/productdetail.php?catid="
+
+# File inclusion dorks
+inurl:page.php?file=
+inurl:index.php?include=
+inurl:index.php?page=
+inurl:index.php?inc=
+inurl:index.php?load=
+inurl:index.php?path=
+inurl:index.php?dir=
+inurl:index.php?file=
+inurl:main.php?page=
+inurl:main.php?file=
+inurl:main.php?include=
+inurl:main.php?inc=
+inurl:main.php?load=
+inurl:main.php?path=
+inurl:main.php?dir=
+inurl:home.php?page=
+inurl:home.php?file=
+inurl:home.php?include=
+inurl:home.php?inc=
+inurl:home.php?load=
+inurl:home.php?path=
+inurl:home.php?dir=
+
+# Login page dorks
+inurl:admin/login.php
+inurl:administrator/login.php
+inurl:moderator/login.php
+inurl:admin/admin.php
+inurl:admin/index.php
+inurl:admin/home.php
+inurl:admin/controlpanel.php
+inurl:admin.php
+inurl:admin.html
+inurl:admin/cp.php
+inurl:cp.php
+inurl:administrator/index.php
+inurl:administrator/admin.php
+inurl:administrator.php
+inurl:login.php
+inurl:modelsearch/login.php
+inurl:moderator.php
+inurl:moderator/admin.php
+inurl:moderator/login.php
+inurl:moderator/
+inurl:account.php
+inurl:controlpanel.php
+inurl:admincontrol.php
+inurl:admin_login.php
+inurl:panel.php
+inurl:instadmin/
+inurl:memberadmin.php
+inurl:administratorlogin.php
+inurl:admin/account.php
+inurl:admin/index.php
+inurl:admin/login.php
+inurl:admin/admin.php
+inurl:admin/account.php
+inurl:admin_area/admin.php
+inurl:admin_area/login.php
+inurl:siteadmin/login.php
+inurl:siteadmin/index.php
+inurl:siteadmin/login.html
+inurl:admin/account.html
+inurl:admin/index.html
+inurl:admin/login.html
+inurl:admin/admin.html
+inurl:admin_area/index.php
+inurl:bb-admin/index.php
+inurl:bb-admin/login.php
+inurl:bb-admin/admin.php
+inurl:admin/home.php
+inurl:admin_area/login.html
+inurl:admin_area/index.html
+inurl:admin/controlpanel.html
+inurl:admin.html
+inurl:admin/cp.html
+inurl:cp.html
+inurl:administrator/index.html
+inurl:administrator/login.html
+inurl:administrator/account.html
+inurl:administrator.html
+inurl:login.html
+inurl:modelsearch/login.html
+inurl:moderator.html
+inurl:moderator/login.html
+inurl:administrator/login.html
+inurl:moderator/admin.html
+inurl:controlpanel.html
+inurl:admin/account.html
+inurl:admincontrol.html
+inurl:admin_login.html
+inurl:panel.html
+inurl:instadmin/
+inurl:memberadmin.html
+inurl:administratorlogin.html
+inurl:admin/controlpanel.html
+inurl:admin.html
+inurl:admin/cp.html
+inurl:cp.html
+inurl:administrator/index.html
+inurl:administrator/login.html
+inurl:administrator/account.html
+inurl:administrator.html
+inurl:login.html
+inurl:modelsearch/login.html
+inurl:moderator.html
+inurl:moderator/login.html
+inurl:administrator/login.html
+inurl:moderator/admin.html
+inurl:controlpanel.html
+inurl:admin/account.html
+inurl:admincontrol.html
+inurl:admin_login.html
+inurl:panel.html
+inurl:instadmin/
+inurl:memberadmin.html
+inurl:administratorlogin.html
+
+# Configuration file dorks
+filetype:sql "INSERT INTO"
+filetype:sql "CREATE TABLE"
+filetype:sql "password"
+filetype:sql "username"
+filetype:conf "password"
+filetype:conf "username"
+filetype:cfg "password"
+filetype:cfg "username"
+filetype:ini "password"
+filetype:ini "username"
+filetype:log "password"
+filetype:log "username"
+filetype:txt "password"
+filetype:txt "username"
+filetype:xml "password"
+filetype:xml "username"
+filetype:properties "password"
+filetype:properties "username"
+
+# Backup file dorks
+filetype:bak "password"
+filetype:bak "username"
+filetype:backup "password"
+filetype:backup "username"
+filetype:old "password"
+filetype:old "username"
+filetype:save "password"
+filetype:save "username"
+filetype:tar "password"
+filetype:tar "username"
+filetype:zip "password"
+filetype:zip "username"
+filetype:gz "password"
+filetype:gz "username"
+filetype:rar "password"
+filetype:rar "username"
+filetype:7z "password"
+filetype:7z "username"
+
+# Database backup dorks
+filetype:sql "mysqldump"
+filetype:sql "pg_dump"
+filetype:sql "CREATE DATABASE"
+filetype:sql "USE DATABASE"
+filetype:sql "DROP DATABASE"
+filetype:sql "ALTER DATABASE"
+filetype:sql "backup"
+filetype:sql "dump"
+filetype:sql "export"
+filetype:sql "import"
+filetype:sql "restore"
+filetype:sql "structure"
+filetype:sql "schema"
+filetype:sql "migration"
+filetype:sql "seed"
+filetype:sql "fixture"
+filetype:sql "data"
+filetype:sql "table"
+filetype:sql "view"
+filetype:sql "procedure"
+filetype:sql "function"
+filetype:sql "trigger"
+filetype:sql "index"
+filetype:sql "constraint"
+filetype:sql "primary key"
+filetype:sql "foreign key"
+filetype:sql "unique"
+filetype:sql "not null"
+filetype:sql "default"
+filetype:sql "auto_increment"
+filetype:sql "identity"
+filetype:sql "sequence"
+filetype:sql "generator"
+filetype:sql "domain"
+filetype:sql "type"
+filetype:sql "enum"
+filetype:sql "set"
+filetype:sql "collate"
+filetype:sql "charset"
+filetype:sql "encoding"
+filetype:sql "comment"
+filetype:sql "metadata"
+filetype:sql "information_schema"
+filetype:sql "sys"
+filetype:sql "system"
+filetype:sql "admin"
+filetype:sql "root"
+filetype:sql "sa"
+filetype:sql "dbo"
+filetype:sql "owner"
+filetype:sql "grant"
+filetype:sql "revoke"
+filetype:sql "privilege"
+filetype:sql "permission"
+filetype:sql "role"
+filetype:sql "user"
+filetype:sql "group"
+filetype:sql "login"
+filetype:sql "session"
+filetype:sql "connection"
+filetype:sql "database"
+filetype:sql "catalog"
+filetype:sql "instance"
+filetype:sql "server"
+filetype:sql "host"
+filetype:sql "port"
+filetype:sql "driver"
+filetype:sql "datasource"
+filetype:sql "connection string"
+filetype:sql "jdbc"
+filetype:sql "odbc"
+filetype:sql "oledb"
+filetype:sql "provider"
+filetype:sql "connector"
+filetype:sql "adapter"
+filetype:sql "wrapper"
+filetype:sql "bridge"
+filetype:sql "gateway"
+filetype:sql "proxy"
+filetype:sql "firewall"
+filetype:sql "security"
+filetype:sql "encryption"
+filetype:sql "ssl"
+filetype:sql "tls"
+filetype:sql "certificate"
+filetype:sql "key"
+filetype:sql "token"
+filetype:sql "api"
+filetype:sql "endpoint"
+filetype:sql "service"
+filetype:sql "client"
+filetype:sql "application"
+filetype:sql "program"
+filetype:sql "process"
+filetype:sql "thread"
+filetype:sql "job"
+filetype:sql "task"
+filetype:sql "scheduler"
+filetype:sql "cron"
+filetype:sql "batch"
+filetype:sql "script"
+filetype:sql "command"
+filetype:sql "shell"
+filetype:sql "terminal"
+filetype:sql "console"
+filetype:sql "interface"
+filetype:sql "gui"
+filetype:sql "ui"
+filetype:sql "frontend"
+filetype:sql "backend"
+filetype:sql "middleware"
+filetype:sql "framework"
+filetype:sql "library"
+filetype:sql "module"
+filetype:sql "package"
+filetype:sql "component"
+filetype:sql "plugin"
+filetype:sql "extension"
+filetype:sql "addon"
+filetype:sql "widget"
+filetype:sql "control"
+filetype:sql "element"
+filetype:sql "object"
+filetype:sql "class"
+filetype:sql "method"
+filetype:sql "function"
+filetype:sql "procedure"
+filetype:sql "routine"
+filetype:sql "subroutine"
+filetype:sql "macro"
+filetype:sql "template"
+filetype:sql "pattern"
+filetype:sql "model"
+filetype:sql "entity"
+filetype:sql "record"
+filetype:sql "row"
+filetype:sql "column"
+filetype:sql "field"
+filetype:sql "attribute"
+filetype:sql "property"
+filetype:sql "value"
+filetype:sql "data"
+filetype:sql "information"
+filetype:sql "content"
+filetype:sql "text"
+filetype:sql "string"
+filetype:sql "number"
+filetype:sql "integer"
+filetype:sql "float"
+filetype:sql "decimal"
+filetype:sql "boolean"
+filetype:sql "date"
+filetype:sql "time"
+filetype:sql "timestamp"
+filetype:sql "datetime"
+filetype:sql "year"
+filetype:sql "month"
+filetype:sql "day"
+filetype:sql "hour"
+filetype:sql "minute"
+filetype:sql "second"
+filetype:sql "millisecond"
+filetype:sql "microsecond"
+filetype:sql "nanosecond"
+filetype:sql "timezone"
+filetype:sql "locale"
+filetype:sql "language"
+filetype:sql "country"
+filetype:sql "region"
+filetype:sql "currency"
+filetype:sql "money"
+filetype:sql "price"
+filetype:sql "cost"
+filetype:sql "amount"
+filetype:sql "quantity"
+filetype:sql "count"
+filetype:sql "sum"
+filetype:sql "average"
+filetype:sql "min"
+filetype:sql "max"
+filetype:sql "total"
+filetype:sql "subtotal"
+filetype:sql "grand total"
+filetype:sql "balance"
+filetype:sql "credit"
+filetype:sql "debit"
+filetype:sql "transaction"
+filetype:sql "payment"
+filetype:sql "invoice"
+filetype:sql "receipt"
+filetype:sql "order"
+filetype:sql "purchase"
+filetype:sql "sale"
+filetype:sql "product"
+filetype:sql "item"
+filetype:sql "service"
+filetype:sql "category"
+filetype:sql "group"
+filetype:sql "type"
+filetype:sql "kind"
+filetype:sql "sort"
+filetype:sql "status"
+filetype:sql "state"
+filetype:sql "condition"
+filetype:sql "flag"
+filetype:sql "marker"
+filetype:sql "indicator"
+filetype:sql "signal"
+filetype:sql "alert"
+filetype:sql "notification"
+filetype:sql "message"
+filetype:sql "email"
+filetype:sql "mail"
+filetype:sql "address"
+filetype:sql "phone"
+filetype:sql "fax"
+filetype:sql "mobile"
+filetype:sql "contact"
+filetype:sql "person"
+filetype:sql "individual"
+filetype:sql "customer"
+filetype:sql "client"
+filetype:sql "user"
+filetype:sql "member"
+filetype:sql "account"
+filetype:sql "profile"
+filetype:sql "identity"
+filetype:sql "credential"
+filetype:sql "authentication"
+filetype:sql "authorization"
+filetype:sql "access"
+filetype:sql "permission"
+filetype:sql "privilege"
+filetype:sql "right"
+filetype:sql "policy"
+filetype:sql "rule"
+filetype:sql "constraint"
+filetype:sql "validation"
+filetype:sql "verification"
+filetype:sql "check"
+filetype:sql "test"
+filetype:sql "audit"
+filetype:sql "log"
+filetype:sql "history"
+filetype:sql "trace"
+filetype:sql "debug"
+filetype:sql "error"
+filetype:sql "exception"
+filetype:sql "warning"
+filetype:sql "info"
+filetype:sql "notice"
+filetype:sql "event"
+filetype:sql "action"
+filetype:sql "operation"
+filetype:sql "activity"
+filetype:sql "behavior"
+filetype:sql "workflow"
+filetype:sql "process"
+filetype:sql "procedure"
+filetype:sql "protocol"
+filetype:sql "standard"
+filetype:sql "specification"
+filetype:sql "requirement"
+filetype:sql "design"
+filetype:sql "architecture"
+filetype:sql "structure"
+filetype:sql "organization"
+filetype:sql "hierarchy"
+filetype:sql "tree"
+filetype:sql "graph"
+filetype:sql "network"
+filetype:sql "connection"
+filetype:sql "relationship"
+filetype:sql "association"
+filetype:sql "link"
+filetype:sql "reference"
+filetype:sql "pointer"
+filetype:sql "index"
+filetype:sql "key"
+filetype:sql "identifier"
+filetype:sql "id"
+filetype:sql "uuid"
+filetype:sql "guid"
+filetype:sql "hash"
+filetype:sql "checksum"
+filetype:sql "signature"
+filetype:sql "token"
+filetype:sql "ticket"
+filetype:sql "voucher"
+filetype:sql "coupon"
+filetype:sql "code"
+filetype:sql "serial"
+filetype:sql "version"
+filetype:sql "revision"
+filetype:sql "build"
+filetype:sql "release"
+filetype:sql "tag"
+filetype:sql "label"
+filetype:sql "name"
+filetype:sql "title"
+filetype:sql "caption"
+filetype:sql "description"
+filetype:sql "summary"
+filetype:sql "abstract"
+filetype:sql "overview"
+filetype:sql "introduction"
+filetype:sql "preface"
+filetype:sql "foreword"
+filetype:sql "prologue"
+filetype:sql "epilogue"
+filetype:sql "conclusion"
+filetype:sql "result"
+filetype:sql "outcome"
+filetype:sql "output"
+filetype:sql "report"
+filetype:sql "document"
+filetype:sql "file"
+filetype:sql "attachment"
+filetype:sql "resource"
+filetype:sql "asset"
+filetype:sql "media"
+filetype:sql "image"
+filetype:sql "picture"
+filetype:sql "photo"
+filetype:sql "graphic"
+filetype:sql "icon"
+filetype:sql "logo"
+filetype:sql "banner"
+filetype:sql "header"
+filetype:sql "footer"
+filetype:sql "sidebar"
+filetype:sql "menu"
+filetype:sql "navigation"
+filetype:sql "link"
+filetype:sql "button"
+filetype:sql "form"
+filetype:sql "input"
+filetype:sql "field"
+filetype:sql "control"
+filetype:sql "widget"
+filetype:sql "component"
+filetype:sql "element"
+filetype:sql "tag"
+filetype:sql "attribute"
+filetype:sql "property"
+filetype:sql "parameter"
+filetype:sql "argument"
+filetype:sql "variable"
+filetype:sql "constant"
+filetype:sql "literal"
+filetype:sql "expression"
+filetype:sql "formula"
+filetype:sql "equation"
+filetype:sql "calculation"
+filetype:sql "computation"
+filetype:sql "algorithm"
+filetype:sql "logic"
+filetype:sql "condition"
+filetype:sql "criteria"
+filetype:sql "filter"
+filetype:sql "search"
+filetype:sql "query"
+filetype:sql "statement"
+filetype:sql "command"
+filetype:sql "instruction"
+filetype:sql "directive"
+filetype:sql "order"
+filetype:sql "request"
+filetype:sql "response"
+filetype:sql "reply"
+filetype:sql "answer"
+filetype:sql "solution"
+filetype:sql "fix"
+filetype:sql "patch"
+filetype:sql "update"
+filetype:sql "upgrade"
+filetype:sql "migration"
+filetype:sql "conversion"
+filetype:sql "transformation"
+filetype:sql "translation"
+filetype:sql "mapping"
+filetype:sql "binding"
+filetype:sql "association"
+filetype:sql "relationship"
+filetype:sql "connection"
+filetype:sql "link"
+filetype:sql "reference"
+filetype:sql "pointer"
+filetype:sql "index"
+filetype:sql "key"
+filetype:sql "identifier"
+filetype:sql "id"
+filetype:sql "uuid"
+filetype:sql "guid"
+filetype:sql "hash"
+filetype:sql "checksum"
+filetype:sql "signature"
+filetype:sql "token"
+filetype:sql "ticket"
+filetype:sql "voucher"
+filetype:sql "coupon"
+filetype:sql "code"
+filetype:sql "serial"
+filetype:sql "version"
+filetype:sql "revision"
+filetype:sql "build"
+filetype:sql "release"
+filetype:sql "tag"
+filetype:sql "label"
+filetype:sql "name"
+filetype:sql "title"
+filetype:sql "caption"
+filetype:sql "description"
+filetype:sql "summary"
+filetype:sql "abstract"
+filetype:sql "overview"
+filetype:sql "introduction"
+filetype:sql "preface"
+filetype:sql "foreword"
+filetype:sql "prologue"
+filetype:sql "epilogue"
+filetype:sql "conclusion"
+filetype:sql "result"
+filetype:sql "outcome"
+filetype:sql "output"
+filetype:sql "report"
+filetype:sql "document"
+filetype:sql "file"
+filetype:sql "attachment"
+filetype:sql "resource"
+filetype:sql "asset"
+filetype:sql "media"
+filetype:sql "image"
+filetype:sql "picture"
+filetype:sql "photo"
+filetype:sql "graphic"
+filetype:sql "icon"
+filetype:sql "logo"
+filetype:sql "banner"
+filetype:sql "header"
+filetype:sql "footer"
+filetype:sql "sidebar"
+filetype:sql "menu"
+filetype:sql "navigation"
+filetype:sql "link"
+filetype:sql "button"
+filetype:sql "form"
+filetype:sql "input"
+filetype:sql "field"
+filetype:sql "control"
+filetype:sql "widget"
+filetype:sql "component"
+filetype:sql "element"
+filetype:sql "tag"
+filetype:sql "attribute"
+filetype:sql "property"
+filetype:sql "parameter"
+filetype:sql "argument"
+filetype:sql "variable"
+filetype:sql "constant"
+filetype:sql "literal"
+filetype:sql "expression"
+filetype:sql "formula"
+filetype:sql "equation"
+filetype:sql "calculation"
+filetype:sql "computation"
+filetype:sql "algorithm"
+filetype:sql "logic"
+filetype:sql "condition"
+filetype:sql "criteria"
+filetype:sql "filter"
+filetype:sql "search"
+filetype:sql "query"
+filetype:sql "statement"
+filetype:sql "command"
+filetype:sql "instruction"
+filetype:sql "directive"
+filetype:sql "order"
+filetype:sql "request"
+filetype:sql "response"
+filetype:sql "reply"
+filetype:sql "answer"
+filetype:sql "solution"
+filetype:sql "fix"
+filetype:sql "patch"
+filetype:sql "update"
+filetype:sql "upgrade"
+filetype:sql "migration"
+filetype:sql "conversion"
+filetype:sql "transformation"
+filetype:sql "translation"
+filetype:sql "mapping"
+filetype:sql "binding"
+filetype:sql "association"
+filetype:sql "relationship"
+filetype:sql "connection"
+filetype:sql "link"
+filetype:sql "reference"
+filetype:sql "pointer"
+filetype:sql "index"
+filetype:sql "key"
+filetype:sql "identifier"
+filetype:sql "id"
+filetype:sql "uuid"
+filetype:sql "guid"
+filetype:sql "hash"
+filetype:sql "checksum"
+filetype:sql "signature"
+filetype:sql "token"
+filetype:sql "ticket"
+filetype:sql "voucher"
+filetype:sql "coupon"
+filetype:sql "code"
+filetype:sql "serial"
+filetype:sql "version"
+filetype:sql "revision"
+filetype:sql "build"
+filetype:sql "release"
+filetype:sql "tag"
+filetype:sql "label"
+filetype:sql "name"
+filetype:sql "title"
+filetype:sql "caption"
+filetype:sql "description"
+filetype:sql "summary"
+filetype:sql "abstract"
+filetype:sql "overview"
+filetype:sql "introduction"
+filetype:sql "preface"
+filetype:sql "foreword"
+filetype:sql "prologue"
+filetype:sql "epilogue"
+filetype:sql "conclusion"
+filetype:sql "result"
+filetype:sql "outcome"
+filetype:sql "output"
+filetype:sql "report"
+filetype:sql "document"
+filetype:sql "file"
+filetype:sql "attachment"
+filetype:sql "resource"
+filetype:sql "asset"
+filetype:sql "media"
+filetype:sql "image"
+filetype:sql "picture"
+filetype:sql "photo"
+filetype:sql "graphic"
+filetype:sql "icon"
+filetype:sql "logo"
+filetype:sql "banner"
+filetype:sql "header"
+filetype:sql "footer"
+filetype:sql "sidebar"
+filetype:sql "menu"
+filetype:sql "navigation"
+filetype:sql "link"
+filetype:sql "button"
+filetype:sql "form"
+filetype:sql "input"
+filetype:sql "field"
+filetype:sql "control"
+filetype:sql "widget"
+filetype:sql "component"
+filetype:sql "element"
+filetype:sql "tag"
+filetype:sql "attribute"
+filetype:sql "property"
+filetype:sql "parameter"
+filetype:sql "argument"
+filetype:sql "variable"
+filetype:sql "constant"
+filetype:sql "literal"
+filetype:sql "expression"
+filetype:sql "formula"
+filetype:sql "equation"
+filetype:sql "calculation"
+filetype:sql "computation"
+filetype:sql "algorithm"
+filetype:sql "logic"
+filetype:sql "condition"
+filetype:sql "criteria"
+filetype:sql "filter"
+filetype:sql "search"
+filetype:sql "query"
+filetype:sql "statement"
+filetype:sql "command"
+filetype:sql "instruction"
+filetype:sql "directive"
+filetype:sql "order"
+filetype:sql "request"
+filetype:sql "response"
+filetype:sql "reply"
+filetype:sql "answer"
+filetype:sql "solution"
+filetype:sql "fix"
+filetype:sql "patch"
+filetype:sql "update"
+filetype:sql "upgrade"
+filetype:sql "migration"
+filetype:sql "conversion"
+filetype:sql "transformation"
+filetype:sql "translation"
+filetype:sql "mapping"
+filetype:sql "binding"
+
+# XSS dorks
+inurl:search.php?q=<script>
+inurl:search.php?query=<script>
+inurl:index.php?search=<script>
+inurl:index.php?q=<script>
+inurl:index.php?query=<script>
+inurl:search.php?search=<script>
+inurl:find.php?q=<script>
+inurl:find.php?query=<script>
+inurl:find.php?search=<script>
+inurl:lookup.php?q=<script>
+inurl:lookup.php?query=<script>
+inurl:lookup.php?search=<script>
+
+# Command injection dorks
+inurl:ping.php?host=
+inurl:traceroute.php?host=
+inurl:whois.php?domain=
+inurl:nslookup.php?host=
+inurl:dig.php?host=
+inurl:system.php?cmd=
+inurl:exec.php?cmd=
+inurl:shell.php?cmd=
+inurl:command.php?cmd=
+inurl:run.php?cmd=
+inurl:execute.php?cmd=
+inurl:admin.php?cmd=
+inurl:test.php?cmd=
+inurl:debug.php?cmd=
+inurl:console.php?cmd=
+inurl:terminal.php?cmd=
+inurl:bash.php?cmd=
+inurl:sh.php?cmd=
+inurl:powershell.php?cmd=
+inurl:cmd.php?cmd=
+inurl:command.php?command=
+inurl:run.php?command=
+inurl:execute.php?command=
+inurl:admin.php?command=
+inurl:test.php?command=
+inurl:debug.php?command=
+inurl:console.php?command=
+inurl:terminal.php?command=
+inurl:bash.php?command=
+inurl:sh.php?command=
+inurl:powershell.php?command=
+inurl:cmd.php?command=
+
+# Path traversal dorks
+inurl:download.php?file=../
+inurl:include.php?file=../
+inurl:view.php?file=../
+inurl:read.php?file=../
+inurl:open.php?file=../
+inurl:load.php?file=../
+inurl:get.php?file=../
+inurl:show.php?file=../
+inurl:display.php?file=../
+inurl:fetch.php?file=../
+inurl:retrieve.php?file=../
+inurl:access.php?file=../
+inurl:serve.php?file=../
+inurl:render.php?file=../
+inurl:parse.php?file=../
+inurl:process.php?file=../
+inurl:handle.php?file=../
+inurl:manage.php?file=../
+inurl:control.php?file=../
+inurl:admin.php?file=../
+inurl:test.php?file=../
+inurl:debug.php?file=../
+inurl:console.php?file=../
+inurl:terminal.php?file=../
+inurl:bash.php?file=../
+inurl:sh.php?file=../
+inurl:powershell.php?file=../
+inurl:cmd.php?file=../
+inurl:download.php?path=../
+inurl:include.php?path=../
+inurl:view.php?path=../
+inurl:read.php?path=../
+inurl:open.php?path=../
+inurl:load.php?path=../
+inurl:get.php?path=../
+inurl:show.php?path=../
+inurl:display.php?path=../
+inurl:fetch.php?path=../
+inurl:retrieve.php?path=../
+inurl:access.php?path=../
+inurl:serve.php?path=../
+inurl:render.php?path=../
+inurl:parse.php?path=../
+inurl:process.php?path=../
+inurl:handle.php?path=../
+inurl:manage.php?path=../
+inurl:control.php?path=../
+inurl:admin.php?path=../
+inurl:test.php?path=../
+inurl:debug.php?path=../
+inurl:console.php?path=../
+inurl:terminal.php?path=../
+inurl:bash.php?path=../
+inurl:sh.php?path=../
+inurl:powershell.php?path=../
+inurl:cmd.php?path=../
+inurl:download.php?dir=../
+inurl:include.php?dir=../
+inurl:view.php?dir=../
+inurl:read.php?dir=../
+inurl:open.php?dir=../
+inurl:load.php?dir=../
+inurl:get.php?dir=../
+inurl:show.php?dir=../
+inurl:display.php?dir=../
+inurl:fetch.php?dir=../
+inurl:retrieve.php?dir=../
+inurl:access.php?dir=../
+inurl:serve.php?dir=../
+inurl:render.php?dir=../
+inurl:parse.php?dir=../
+inurl:process.php?dir=../
+inurl:handle.php?dir=../
+inurl:manage.php?dir=../
+inurl:control.php?dir=../
+inurl:admin.php?dir=../
+inurl:test.php?dir=../
+inurl:debug.php?dir=../
+inurl:console.php?dir=../
+inurl:terminal.php?dir=../
+inurl:bash.php?dir=../
+inurl:sh.php?dir=../
+inurl:powershell.php?dir=../
+inurl:cmd.php?dir=../
