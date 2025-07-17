@@ -10,7 +10,7 @@ import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..core.web_crawler import WebCrawler, CrawledUrl, Parameter
+from core.web_crawler import WebCrawler, CrawledUrl, Parameter
 
 class CrawlerPage(ttk.Frame):
     """Web crawler page"""

@@ -4,7 +4,6 @@ Advanced database enumeration and dumping capabilities
 """
 
 import asyncio
-import aiohttp
 import json
 import csv
 import xml.etree.ElementTree as ET
@@ -17,6 +16,7 @@ import re
 import time
 import html
 
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
 from .sql_injection_engine import VulnerabilityResult, DatabaseType, InjectionType, InjectionVector
 from .logger import LoggerMixin
 
@@ -114,23 +114,27 @@ class DatabaseDumper(LoggerMixin):
         
     def init_session(self):
         """Initialize aiohttp session"""
-        timeout = aiohttp.ClientTimeout(total=self.config.get("RequestTimeout", 30))
-        connector = aiohttp.TCPConnector(
-            limit=self.config.get("MaxThreads", 3),
-            ssl=False
-        )
-        
-        self.session = aiohttp.ClientSession(
-            timeout=timeout,
-            connector=connector,
-            headers={
-                'User-Agent': self.config.get("UserAgent", "BoomSQL/2.0"),
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
-                'Connection': 'keep-alive'
-            }
-        )
+        if AIOHTTP_AVAILABLE:
+            timeout = aiohttp.ClientTimeout(total=self.config.get("RequestTimeout", 30))
+            connector = aiohttp.TCPConnector(
+                limit=self.config.get("MaxThreads", 3),
+                ssl=False
+            )
+            
+            self.session = aiohttp.ClientSession(
+                timeout=timeout,
+                connector=connector,
+                headers={
+                    'User-Agent': self.config.get("UserAgent", "BoomSQL/2.0"),
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Connection': 'keep-alive'
+                }
+            )
+        else:
+            # Use fallback session
+            self.session = ClientSession()
         
     async def close(self):
         """Close the session"""

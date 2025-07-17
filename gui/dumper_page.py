@@ -10,8 +10,8 @@ import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..core.database_dumper import DatabaseDumper, DatabaseInfo, ExportFormat
-from ..core.sql_injection_engine import VulnerabilityResult
+from core.database_dumper import DatabaseDumper, DatabaseInfo, ExportFormat
+from core.sql_injection_engine import VulnerabilityResult
 
 class DumperPage(ttk.Frame):
     """Database dumper page"""

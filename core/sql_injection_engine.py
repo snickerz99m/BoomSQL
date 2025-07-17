@@ -4,7 +4,6 @@ Advanced SQL injection detection and exploitation engine
 """
 
 import asyncio
-import aiohttp
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -20,6 +19,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .logger import LoggerMixin
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
 
 class InjectionType(Enum):
     """SQL injection types"""

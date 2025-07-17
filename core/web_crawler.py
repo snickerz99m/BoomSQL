@@ -4,7 +4,6 @@ Advanced web crawler with parameter extraction and injection point detection
 """
 
 import asyncio
-import aiohttp
 import re
 import time
 from typing import Dict, List, Optional, Set, Tuple, Any
@@ -17,6 +16,7 @@ from bs4 import BeautifulSoup
 import json
 
 from .logger import LoggerMixin
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
 
 class ParameterType(Enum):
     """Parameter types"""

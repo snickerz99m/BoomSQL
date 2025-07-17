@@ -10,7 +10,7 @@ import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..core.dork_searcher import DorkSearcher, SearchEngine, SearchResult
+from core.dork_searcher import DorkSearcher, SearchEngine, SearchResult
 
 class DorkPage(ttk.Frame):
     """Dork search page"""
