@@ -270,11 +270,11 @@ OR
   </bypass>
   
   <!-- Operator Alternative Bypasses -->
-  <bypass category="operator_alternatives" title="AND to &&">
-    <description>Replace AND with &&</description>
+  <bypass category="operator_alternatives" title="AND to &amp;&amp;">
+    <description>Replace AND with &amp;&amp;</description>
     <example>
       <original>' AND 1=1 --</original>
-      <encoded>' && 1=1 --</encoded>
+      <encoded>' &amp;&amp; 1=1 --</encoded>
     </example>
     <script>
       <![CDATA[
