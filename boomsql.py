@@ -422,6 +422,12 @@ class BoomSQLApplication:
             print("⚠️  Legal disclaimer accepted (GUI not available)")
             return True
             
+        # Check for skip disclaimer environment variable (useful for testing)
+        import os
+        if os.environ.get('BOOMSQL_SKIP_DISCLAIMER', '').lower() in ('true', '1', 'yes'):
+            self.logger.info("Disclaimer skipped via BOOMSQL_SKIP_DISCLAIMER environment variable")
+            return True
+            
         try:
             print("📋 Showing legal disclaimer dialog...")
             disclaimer = DisclaimerDialog(self.root)
@@ -438,6 +444,8 @@ class BoomSQLApplication:
         except Exception as e:
             print(f"⚠️  Error showing disclaimer dialog: {e}")
             print("⚠️  Proceeding with disclaimer acceptance...")
+            self.logger.warning(f"Disclaimer dialog error: {e}")
+            # In case of dialog failure, assume acceptance to ensure GUI continues
             return True
         
     def run(self):
@@ -452,8 +460,12 @@ class BoomSQLApplication:
         self.root.focus_force()
         
         # Show disclaimer first
-        if not self.show_disclaimer():
-            return
+        try:
+            if not self.show_disclaimer():
+                return
+        except Exception as e:
+            self.logger.warning(f"Disclaimer dialog failed: {e}")
+            # Continue anyway to ensure GUI appears
             
         # Enhanced Windows GUI initialization and visibility
         self.logger.info("Initializing GUI window...")

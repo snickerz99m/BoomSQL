@@ -64,8 +64,9 @@ class DisclaimerDialog:
                 self.dialog.after(100, lambda: self.dialog.attributes('-topmost', False))
                 self.dialog.after(50, lambda: self.dialog.focus_force())
             
-            # Add auto-timeout as safety measure (30 seconds)
-            self.dialog.after(30000, self.auto_accept)
+            # Add timeout to prevent hanging in headless environments
+            # Auto-decline after 30 seconds if no user interaction
+            self.timeout_id = self.dialog.after(30000, self.timeout_disclaimer)
             
             print("📋 Showing disclaimer dialog - waiting for user response...")
             
@@ -79,11 +80,11 @@ class DisclaimerDialog:
             # If dialog creation fails, auto-accept
             self.accepted = True
             
-    def auto_accept(self):
-        """Auto-accept disclaimer after timeout"""
-        print("📋 Auto-accepting disclaimer after 30 seconds timeout...")
+    def timeout_disclaimer(self):
+        """Handle timeout - auto decline to prevent hanging"""
+        print("📋 Auto-declining disclaimer after 30 seconds timeout...")
         if hasattr(self, 'dialog') and self.dialog.winfo_exists():
-            self.accepted = True
+            self.accepted = False
             self.dialog.destroy()
         
     def create_widgets(self):
@@ -285,6 +286,10 @@ Version 2.0.0 - Python Edition"""
             print("📋 Agreement checkbox not checked")
             messagebox.showerror("Error", "You must agree to the terms to continue.")
             return
+            
+        # Cancel timeout
+        if hasattr(self, 'timeout_id'):
+            self.dialog.after_cancel(self.timeout_id)
         
         print("📋 Showing final confirmation dialog...")
         # Show final confirmation
@@ -307,6 +312,10 @@ Version 2.0.0 - Python Edition"""
             
     def decline_disclaimer(self):
         """Decline disclaimer and exit"""
+        # Cancel timeout
+        if hasattr(self, 'timeout_id'):
+            self.dialog.after_cancel(self.timeout_id)
+        
         print("📋 Disclaimer declined - exiting")
         self.accepted = False
         self.dialog.destroy()
