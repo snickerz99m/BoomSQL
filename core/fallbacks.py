@@ -74,7 +74,8 @@ except ImportError:
     warnings.warn("aiohttp not available, using mock implementation")
     aiohttp = type('MockAiohttp', (), {
         'ClientSession': MockClientSession,
-        'ClientTimeout': lambda **kwargs: None
+        'ClientTimeout': lambda **kwargs: None,
+        'TCPConnector': lambda **kwargs: None
     })()
     ClientSession = MockClientSession
     AIOHTTP_AVAILABLE = False
