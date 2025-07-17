@@ -671,7 +671,8 @@ class DatabaseDumper(LoggerMixin):
                             if value is None:
                                 values.append("NULL")
                             else:
-                                values.append(f"'{str(value).replace(\"'\", \"\\'\")}'")
+                                escaped_value = str(value).replace("'", "\'")
+                                values.append(f"'{escaped_value}'")
                         f.write(f"INSERT INTO `{table.name}` VALUES ({', '.join(values)});\n")
                     f.write("\n")
                     
