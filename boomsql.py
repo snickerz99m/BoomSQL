@@ -170,11 +170,81 @@ def main():
     print("Starting application...")
     print()
     
+    # Check if display is available
     try:
-        app = BoomSQLApplication()
-        app.run()
+        import tkinter as tk
+        root = tk.Tk()
+        root.withdraw()  # Hide immediately
+        display_available = True
+        root.destroy()
     except Exception as e:
-        print(f"Failed to start application: {e}")
+        display_available = False
+        print(f"Display not available: {e}")
+        print("GUI mode not available in this environment.")
+        print("Please run in an environment with X11 display support.")
+        print()
+    
+    if display_available:
+        try:
+            app = BoomSQLApplication()
+            app.run()
+        except Exception as e:
+            print(f"Failed to start GUI application: {e}")
+            print("Falling back to command line mode...")
+            run_cli_mode()
+    else:
+        print("Running in command line mode...")
+        run_cli_mode()
+
+def run_cli_mode():
+    """Run in command line mode when GUI is not available"""
+    print("=" * 60)
+    print("BoomSQL - Command Line Mode")
+    print("=" * 60)
+    print()
+    print("Core functionality test:")
+    
+    # Test core functionality
+    try:
+        from core.config_manager import ConfigManager
+        from core.logger import setup_logging
+        from core.sql_injection_engine import SqlInjectionEngine
+        from core.web_crawler import WebCrawler
+        from core.dork_searcher import DorkSearcher
+        from core.report_generator import ReportGenerator
+        
+        # Initialize components
+        config = ConfigManager()
+        setup_logging()
+        
+        print("✓ Configuration manager loaded")
+        print("✓ Logging system initialized")
+        
+        # Test SQL injection engine
+        sql_engine = SqlInjectionEngine(config)
+        print("✓ SQL injection engine loaded")
+        
+        # Test web crawler
+        web_crawler = WebCrawler(config)
+        print("✓ Web crawler initialized")
+        
+        # Test dork searcher
+        dork_searcher = DorkSearcher(config)
+        print("✓ Dork searcher initialized")
+        
+        # Test report generator
+        report_generator = ReportGenerator(config)
+        print("✓ Report generator initialized")
+        
+        print()
+        print("All core components initialized successfully!")
+        print("GUI mode is required for full functionality.")
+        print("Please run in an environment with display support to use the GUI.")
+        
+    except Exception as e:
+        print(f"Error testing core functionality: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
