@@ -57,6 +57,37 @@ except ImportError:
             pass
         def destroy(self):
             pass
+        def update_idletasks(self):
+            pass
+        def update(self):
+            pass
+        def winfo_width(self):
+            return 1200
+        def winfo_height(self):
+            return 800
+        def winfo_screenwidth(self):
+            return 1920
+        def winfo_screenheight(self):
+            return 1080
+        def winfo_id(self):
+            return 123456
+        def winfo_children(self):
+            return []
+        def state(self, state=None):
+            pass
+        def attributes(self, name, value=None):
+            pass
+        def wm_attributes(self, name, value=None):
+            pass
+        def tkraise(self):
+            pass
+        def focus_set(self):
+            pass
+        def after(self, delay, func=None):
+            if func:
+                func()
+        def quit(self):
+            pass
     
     tk = type('MockTkinter', (), {
         'Tk': MockTk,
