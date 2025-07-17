@@ -10,7 +10,7 @@ import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..core.sql_injection_engine import SqlInjectionEngine, TestResult, VulnerabilityResult
+from core.sql_injection_engine import SqlInjectionEngine, TestResult, VulnerabilityResult
 
 class TesterPage(ttk.Frame):
     """SQL injection tester page"""
@@ -544,7 +544,7 @@ class TesterPage(ttk.Frame):
         if file_path:
             try:
                 # Create report generator
-                from ..core.report_generator import ReportGenerator, ReportType, ReportFormat
+                from core.report_generator import ReportGenerator, ReportType, ReportFormat
                 
                 generator = ReportGenerator(self.app.config.config)
                 generator.add_test_results(self.test_results)
@@ -589,7 +589,7 @@ class TesterPage(ttk.Frame):
         
         if file_path:
             try:
-                from ..core.report_generator import ReportGenerator, ReportType, ReportFormat
+                from core.report_generator import ReportGenerator, ReportType, ReportFormat
                 
                 generator = ReportGenerator(self.app.config.config)
                 generator.add_test_results(self.test_results)

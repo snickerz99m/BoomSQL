@@ -44,6 +44,9 @@ class MainWindow:
         self.root.geometry("1400x900")
         self.root.minsize(1200, 800)
         
+        # Apply dark theme
+        self.apply_dark_theme()
+        
         # Configure grid weights
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
@@ -56,6 +59,109 @@ class MainWindow:
         
         # Handle window close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
+        # Add keyboard shortcuts
+        self.setup_keyboard_shortcuts()
+    
+    def apply_dark_theme(self):
+        """Apply professional dark theme"""
+        # Configure colors
+        self.colors = {
+            'bg': '#2b2b2b',
+            'fg': '#ffffff',
+            'select_bg': '#404040',
+            'select_fg': '#ffffff',
+            'entry_bg': '#404040',
+            'entry_fg': '#ffffff',
+            'button_bg': '#404040',
+            'button_fg': '#ffffff',
+            'frame_bg': '#2b2b2b',
+            'accent': '#007acc',
+            'success': '#4caf50',
+            'warning': '#ff9800',
+            'error': '#f44336'
+        }
+        
+        # Configure root window
+        self.root.configure(bg=self.colors['bg'])
+        
+        # Configure ttk styles
+        style = ttk.Style()
+        style.theme_use('clam')
+        
+        # Configure notebook (tabs)
+        style.configure('TNotebook', background=self.colors['bg'])
+        style.configure('TNotebook.Tab', 
+                       background=self.colors['button_bg'],
+                       foreground=self.colors['fg'],
+                       padding=[10, 5])
+        style.map('TNotebook.Tab',
+                 background=[('selected', self.colors['accent'])])
+        
+        # Configure frames
+        style.configure('TFrame', background=self.colors['bg'])
+        style.configure('TLabelframe', background=self.colors['bg'],
+                       foreground=self.colors['fg'])
+        
+        # Configure labels
+        style.configure('TLabel', background=self.colors['bg'],
+                       foreground=self.colors['fg'])
+        
+        # Configure buttons
+        style.configure('TButton', 
+                       background=self.colors['button_bg'],
+                       foreground=self.colors['fg'],
+                       padding=[10, 5])
+        style.map('TButton',
+                 background=[('active', self.colors['accent'])])
+        
+        # Configure entries
+        style.configure('TEntry',
+                       fieldbackground=self.colors['entry_bg'],
+                       foreground=self.colors['entry_fg'],
+                       bordercolor=self.colors['accent'])
+        
+        # Configure text widgets
+        style.configure('TText',
+                       background=self.colors['entry_bg'],
+                       foreground=self.colors['entry_fg'])
+        
+        # Configure treeview
+        style.configure('Treeview',
+                       background=self.colors['entry_bg'],
+                       foreground=self.colors['entry_fg'],
+                       fieldbackground=self.colors['entry_bg'])
+        style.map('Treeview',
+                 background=[('selected', self.colors['accent'])])
+        
+        # Configure progressbar
+        style.configure('TProgressbar',
+                       background=self.colors['accent'],
+                       troughcolor=self.colors['entry_bg'])
+    
+    def setup_keyboard_shortcuts(self):
+        """Setup keyboard shortcuts for power users"""
+        # File operations
+        self.root.bind('<Control-o>', lambda e: self.show_open_dialog())
+        self.root.bind('<Control-s>', lambda e: self.show_save_dialog())
+        self.root.bind('<Control-q>', lambda e: self.on_closing())
+        
+        # Tab navigation
+        self.root.bind('<Control-1>', lambda e: self.switch_to_tab(0))
+        self.root.bind('<Control-2>', lambda e: self.switch_to_tab(1))
+        self.root.bind('<Control-3>', lambda e: self.switch_to_tab(2))
+        self.root.bind('<Control-4>', lambda e: self.switch_to_tab(3))
+        self.root.bind('<Control-5>', lambda e: self.switch_to_tab(4))
+        
+        # Tool operations
+        self.root.bind('<F1>', lambda e: self.show_help())
+        self.root.bind('<F5>', lambda e: self.refresh_current_tab())
+        self.root.bind('<Control-r>', lambda e: self.refresh_current_tab())
+        
+        # Advanced shortcuts
+        self.root.bind('<Control-Shift-t>', lambda e: self.new_tab())
+        self.root.bind('<Control-w>', lambda e: self.close_current_tab())
+        self.root.bind('<Control-f>', lambda e: self.show_search_dialog())
         
     def create_widgets(self):
         """Create main window widgets"""
@@ -521,3 +627,146 @@ All Rights Reserved"""
             (self.tester_page and self.tester_page.is_running()) or
             (self.dumper_page and self.dumper_page.is_running())
         )
+    
+    def show_open_dialog(self):
+        """Show file open dialog"""
+        file_path = filedialog.askopenfilename(
+            title="Open Configuration",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+        if file_path:
+            self.load_configuration(file_path)
+    
+    def show_save_dialog(self):
+        """Show file save dialog"""
+        file_path = filedialog.asksaveasfilename(
+            title="Save Configuration",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+        if file_path:
+            self.save_configuration(file_path)
+    
+    def switch_to_tab(self, tab_index: int):
+        """Switch to specified tab"""
+        if hasattr(self, 'notebook') and tab_index < self.notebook.index("end"):
+            self.notebook.select(tab_index)
+    
+    def show_help(self):
+        """Show help dialog"""
+        help_text = """
+BoomSQL - Advanced SQL Injection Testing Tool
+
+Keyboard Shortcuts:
+• Ctrl+O: Open configuration
+• Ctrl+S: Save configuration
+• Ctrl+Q: Quit application
+• F1: Show help
+• F5 or Ctrl+R: Refresh current tab
+• Ctrl+1-5: Switch to tab 1-5
+• Ctrl+Shift+T: New tab
+• Ctrl+W: Close current tab
+• Ctrl+F: Search
+
+Advanced Features:
+• 15+ SQL injection techniques
+• 12 database systems supported
+• 16 WAF bypass categories
+• Multi-threaded testing
+• Real-time progress tracking
+• Professional reporting
+• Session management
+        """
+        messagebox.showinfo("Help - BoomSQL", help_text)
+    
+    def refresh_current_tab(self):
+        """Refresh current tab"""
+        try:
+            current_tab = self.notebook.select()
+            tab_text = self.notebook.tab(current_tab, "text")
+            
+            if tab_text == "Dork Search" and self.dork_page:
+                self.dork_page.refresh()
+            elif tab_text == "Web Crawler" and self.crawler_page:
+                self.crawler_page.refresh()
+            elif tab_text == "SQL Tester" and self.tester_page:
+                self.tester_page.refresh()
+            elif tab_text == "DB Dumper" and self.dumper_page:
+                self.dumper_page.refresh()
+        except Exception as e:
+            self.logger.error(f"Error refreshing tab: {e}")
+    
+    def new_tab(self):
+        """Create new tab (placeholder for future implementation)"""
+        messagebox.showinfo("New Tab", "New tab functionality will be available in future versions")
+    
+    def close_current_tab(self):
+        """Close current tab (placeholder for future implementation)"""
+        messagebox.showinfo("Close Tab", "Close tab functionality will be available in future versions")
+    
+    def show_search_dialog(self):
+        """Show search dialog"""
+        search_window = tk.Toplevel(self.root)
+        search_window.title("Search")
+        search_window.geometry("400x100")
+        search_window.configure(bg=self.colors['bg'])
+        
+        # Search entry
+        search_frame = ttk.Frame(search_window)
+        search_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        ttk.Label(search_frame, text="Search:").pack(side=tk.LEFT)
+        
+        search_entry = ttk.Entry(search_frame, width=30)
+        search_entry.pack(side=tk.LEFT, padx=(5, 0), fill=tk.X, expand=True)
+        search_entry.focus()
+        
+        # Search button
+        ttk.Button(search_frame, text="Search", 
+                  command=lambda: self.perform_search(search_entry.get())).pack(side=tk.RIGHT, padx=(5, 0))
+        
+        # Enter key binding
+        search_entry.bind('<Return>', lambda e: self.perform_search(search_entry.get()))
+    
+    def perform_search(self, query: str):
+        """Perform search in current tab"""
+        if not query:
+            return
+            
+        try:
+            current_tab = self.notebook.select()
+            tab_text = self.notebook.tab(current_tab, "text")
+            
+            if tab_text == "Dork Search" and self.dork_page:
+                self.dork_page.search(query)
+            elif tab_text == "Web Crawler" and self.crawler_page:
+                self.crawler_page.search(query)
+            elif tab_text == "SQL Tester" and self.tester_page:
+                self.tester_page.search(query)
+            elif tab_text == "DB Dumper" and self.dumper_page:
+                self.dumper_page.search(query)
+        except Exception as e:
+            self.logger.error(f"Error performing search: {e}")
+    
+    def load_configuration(self, file_path: str):
+        """Load configuration from file"""
+        try:
+            import json
+            with open(file_path, 'r') as f:
+                config = json.load(f)
+            
+            # Apply configuration to app
+            self.app.config.update(config)
+            messagebox.showinfo("Success", f"Configuration loaded from {file_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load configuration: {e}")
+    
+    def save_configuration(self, file_path: str):
+        """Save configuration to file"""
+        try:
+            import json
+            with open(file_path, 'w') as f:
+                json.dump(self.app.config, f, indent=2)
+            
+            messagebox.showinfo("Success", f"Configuration saved to {file_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save configuration: {e}")

@@ -398,7 +398,7 @@ OR
     <description>Duplicate parameters with different values</description>
     <example>
       <original>id=1' OR 1=1 --</original>
-      <encoded>id=1&id=1' OR 1=1 --</encoded>
+      <encoded>id=1&amp;id=1' OR 1=1 --</encoded>
     </example>
     <script>
       <![CDATA[

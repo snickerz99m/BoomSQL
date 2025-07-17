@@ -10,7 +10,7 @@ import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..core.dork_searcher import DorkSearcher, SearchEngine, SearchResult
+from core.dork_searcher import DorkSearcher, SearchEngine, SearchResult
 
 class DorkPage(ttk.Frame):
     """Dork search page"""
@@ -131,7 +131,8 @@ class DorkPage(ttk.Frame):
         summary_frame = ttk.Frame(right_frame)
         summary_frame.pack(fill=tk.X, pady=(0, 10))
         
-        self.summary_var = tk.StringVar(value="No results yet")\n        ttk.Label(summary_frame, textvariable=self.summary_var).pack(side=tk.LEFT)
+        self.summary_var = tk.StringVar(value="No results yet")
+        ttk.Label(summary_frame, textvariable=self.summary_var).pack(side=tk.LEFT)
         
         # Export button
         ttk.Button(summary_frame, text="Export Results", command=self.export_results).pack(side=tk.RIGHT)

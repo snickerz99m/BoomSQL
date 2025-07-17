@@ -4,7 +4,6 @@ Advanced Google dorking with multiple search engines
 """
 
 import asyncio
-import aiohttp
 import re
 import random
 import time
@@ -17,6 +16,7 @@ from bs4 import BeautifulSoup
 import json
 
 from .logger import LoggerMixin
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
 
 class SearchEngine(Enum):
     """Supported search engines"""
