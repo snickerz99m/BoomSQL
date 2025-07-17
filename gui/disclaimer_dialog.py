@@ -65,8 +65,9 @@ class DisclaimerDialog:
                 self.dialog.after(50, lambda: self.dialog.focus_force())
             
             # Add timeout to prevent hanging in headless environments
-            # Auto-decline after 30 seconds if no user interaction
-            self.timeout_id = self.dialog.after(30000, self.timeout_disclaimer)
+            # Auto-decline after 60 seconds if no user interaction (increased from 30)
+            self.timeout_id = self.dialog.after(60000, self.timeout_disclaimer)
+            print("📋 Auto-timeout set for 60 seconds")
             
             print("📋 Showing disclaimer dialog - waiting for user response...")
             
@@ -82,7 +83,7 @@ class DisclaimerDialog:
             
     def timeout_disclaimer(self):
         """Handle timeout - auto decline to prevent hanging"""
-        print("📋 Auto-declining disclaimer after 30 seconds timeout...")
+        print("📋 Auto-declining disclaimer after 60 seconds timeout...")
         if hasattr(self, 'dialog') and self.dialog.winfo_exists():
             self.accepted = False
             self.dialog.destroy()
@@ -163,28 +164,116 @@ class DisclaimerDialog:
         )
         agreement_checkbox.pack(anchor=tk.W)
         
+        print("📋 Disclaimer checkbox created")
+        
         # Button frame
         button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X)
+        button_frame.pack(fill=tk.X, pady=(10, 0))
         
-        # Buttons
+        print("📋 Creating disclaimer buttons...")
+        
+        # Buttons with enhanced visibility
         self.accept_button = ttk.Button(
             button_frame,
             text="Accept and Continue",
             command=self.accept_disclaimer,
             state=tk.DISABLED
         )
-        self.accept_button.pack(side=tk.RIGHT, padx=(10, 0))
+        self.accept_button.pack(side=tk.RIGHT, padx=(10, 0), pady=5)
         
         decline_button = ttk.Button(
             button_frame,
             text="Decline and Exit",
             command=self.decline_disclaimer
         )
-        decline_button.pack(side=tk.RIGHT)
+        decline_button.pack(side=tk.RIGHT, pady=5)
+        
+        # Windows-specific button styling and visibility fixes
+        import sys
+        if sys.platform.startswith('win'):
+            try:
+                # Force button style refresh on Windows
+                style = ttk.Style()
+                style.configure('Disclaimer.TButton', padding=(10, 5))
+                
+                self.accept_button.configure(style='Disclaimer.TButton')
+                decline_button.configure(style='Disclaimer.TButton')
+                
+                # Make buttons more visible
+                button_frame.configure(relief='raised', borderwidth=1)
+                
+                print("📋 Windows-specific button styling applied")
+            except Exception as e:
+                print(f"📋 Button styling failed: {e}")
+        
+        # EMERGENCY: Add fallback buttons using tk.Button for Windows compatibility
+        if sys.platform.startswith('win'):
+            try:
+                print("📋 Adding emergency fallback buttons for Windows...")
+                
+                # Emergency button frame
+                emergency_frame = tk.Frame(main_frame, bg="#f0f0f0", relief="raised", bd=2)
+                emergency_frame.pack(fill=tk.X, pady=(10, 0))
+                
+                # Emergency label
+                emergency_label = tk.Label(
+                    emergency_frame,
+                    text="If buttons above don't work, use these emergency buttons:",
+                    font=("Arial", 9),
+                    bg="#f0f0f0",
+                    fg="#666666"
+                )
+                emergency_label.pack(pady=(5, 0))
+                
+                # Emergency button frame
+                emergency_button_frame = tk.Frame(emergency_frame, bg="#f0f0f0")
+                emergency_button_frame.pack(fill=tk.X, pady=(5, 5))
+                
+                # Emergency accept button
+                self.emergency_accept_button = tk.Button(
+                    emergency_button_frame,
+                    text="✅ ACCEPT & CONTINUE",
+                    command=self.emergency_accept,
+                    font=("Arial", 10, "bold"),
+                    bg="#4CAF50",
+                    fg="white",
+                    padx=15,
+                    pady=5,
+                    state=tk.DISABLED
+                )
+                self.emergency_accept_button.pack(side=tk.RIGHT, padx=(10, 5))
+                
+                # Emergency decline button
+                emergency_decline_button = tk.Button(
+                    emergency_button_frame,
+                    text="❌ DECLINE & EXIT",
+                    command=self.decline_disclaimer,
+                    font=("Arial", 10, "bold"),
+                    bg="#f44336",
+                    fg="white",
+                    padx=15,
+                    pady=5
+                )
+                emergency_decline_button.pack(side=tk.RIGHT, padx=5)
+                
+                print("📋 Emergency fallback buttons created")
+                
+            except Exception as e:
+                print(f"📋 Emergency button creation failed: {e}")
+        
+        print("📋 Disclaimer buttons created successfully")
         
         # Bind escape key
         self.dialog.bind("<Escape>", lambda e: self.decline_disclaimer())
+        
+        # Add keyboard shortcuts for accessibility
+        self.dialog.bind("<Return>", lambda e: self.try_accept_disclaimer())
+        self.dialog.bind("<space>", lambda e: self.toggle_agreement())
+        
+        # Focus on the checkbox initially for keyboard navigation
+        agreement_checkbox.focus_set()
+        
+        print("📋 Keyboard shortcuts added (Enter=accept, Space=toggle, Esc=decline)")
         
     def get_disclaimer_text(self):
         """Get the disclaimer text"""
@@ -274,10 +363,50 @@ Version 2.0.0 - Python Edition"""
 
     def on_agreement_change(self):
         """Handle agreement checkbox change"""
+        print(f"📋 Checkbox state changed: {self.agreement_var.get()}")
         if self.agreement_var.get():
+            print("📋 Enabling accept button")
             self.accept_button.config(state=tk.NORMAL)
+            # Also enable emergency button if it exists
+            if hasattr(self, 'emergency_accept_button'):
+                self.emergency_accept_button.config(state=tk.NORMAL)
+                print("📋 Emergency accept button enabled")
         else:
+            print("📋 Disabling accept button")
             self.accept_button.config(state=tk.DISABLED)
+            # Also disable emergency button if it exists
+            if hasattr(self, 'emergency_accept_button'):
+                self.emergency_accept_button.config(state=tk.DISABLED)
+                print("📋 Emergency accept button disabled")
+            
+    def try_accept_disclaimer(self):
+        """Try to accept disclaimer (for Enter key)"""
+        if self.agreement_var.get():
+            print("📋 Enter key pressed - accepting disclaimer")
+            self.accept_disclaimer()
+        else:
+            print("📋 Enter key pressed but agreement not checked")
+            
+    def toggle_agreement(self):
+        """Toggle agreement checkbox (for Space key)"""
+        current_state = self.agreement_var.get()
+        self.agreement_var.set(not current_state)
+        self.on_agreement_change()
+        print(f"📋 Space key pressed - agreement toggled to {self.agreement_var.get()}")
+        
+    def emergency_accept(self):
+        """Emergency accept method for Windows compatibility"""
+        print("📋 Emergency accept button clicked")
+        if not self.agreement_var.get():
+            print("📋 Agreement checkbox not checked - cannot accept")
+            try:
+                messagebox.showerror("Error", "You must check the agreement checkbox above to continue.")
+            except:
+                print("📋 Cannot show error dialog")
+            return
+        
+        # Same logic as regular accept
+        self.accept_disclaimer()
             
     def accept_disclaimer(self):
         """Accept disclaimer and continue"""
