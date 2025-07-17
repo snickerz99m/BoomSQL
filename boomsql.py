@@ -421,19 +421,34 @@ class BoomSQLApplication:
             # In non-GUI mode, assume acceptance
             return True
             
-        disclaimer = DisclaimerDialog(self.root)
-        if not disclaimer.accepted:
-            self.root.destroy()
-            return False
-        return True
+        # Check for skip disclaimer environment variable (useful for testing)
+        import os
+        if os.environ.get('BOOMSQL_SKIP_DISCLAIMER', '').lower() in ('true', '1', 'yes'):
+            self.logger.info("Disclaimer skipped via BOOMSQL_SKIP_DISCLAIMER environment variable")
+            return True
+            
+        try:
+            disclaimer = DisclaimerDialog(self.root)
+            if not disclaimer.accepted:
+                self.root.destroy()
+                return False
+            return True
+        except Exception as e:
+            self.logger.warning(f"Disclaimer dialog error: {e}")
+            # In case of dialog failure, assume acceptance to ensure GUI continues
+            return True
         
     def run(self):
         """Run the application"""
         self.logger.info("Starting BoomSQL application")
         
         # Show disclaimer first
-        if not self.show_disclaimer():
-            return
+        try:
+            if not self.show_disclaimer():
+                return
+        except Exception as e:
+            self.logger.warning(f"Disclaimer dialog failed: {e}")
+            # Continue anyway to ensure GUI appears
             
         # Enhanced Windows GUI initialization and visibility
         self.logger.info("Initializing GUI window...")

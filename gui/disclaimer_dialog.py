@@ -56,6 +56,10 @@ class DisclaimerDialog:
             self.dialog.after(100, lambda: self.dialog.attributes('-topmost', False))
             self.dialog.after(50, lambda: self.dialog.focus_force())
         
+        # Add timeout to prevent hanging in headless environments
+        # Auto-decline after 30 seconds if no user interaction
+        self.timeout_id = self.dialog.after(30000, self.timeout_disclaimer)
+        
         # Wait for user response
         self.dialog.wait_window()
         
@@ -257,6 +261,10 @@ Version 2.0.0 - Python Edition"""
             messagebox.showerror("Error", "You must agree to the terms to continue.")
             return
             
+        # Cancel timeout
+        if hasattr(self, 'timeout_id'):
+            self.dialog.after_cancel(self.timeout_id)
+            
         # Show final confirmation
         result = messagebox.askyesno(
             "Final Confirmation",
@@ -274,5 +282,14 @@ Version 2.0.0 - Python Edition"""
             
     def decline_disclaimer(self):
         """Decline disclaimer and exit"""
+        # Cancel timeout
+        if hasattr(self, 'timeout_id'):
+            self.dialog.after_cancel(self.timeout_id)
+            
+        self.accepted = False
+        self.dialog.destroy()
+        
+    def timeout_disclaimer(self):
+        """Handle timeout - auto decline to prevent hanging"""
         self.accepted = False
         self.dialog.destroy()
