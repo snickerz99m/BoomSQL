@@ -1151,19 +1151,39 @@ class SqlInjectionEngine(LoggerMixin):
         """Test a specific WAF bypass method"""
         self.log_info(f"Testing WAF bypass: {bypass.title}")
         
+        # Create a mock injection point
+        injection_point = InjectionPoint(
+            vector=InjectionVector.GET_PARAMETER,
+            name="id",
+            value="1",
+            original_value="1",
+            is_vulnerable=False
+        )
+        
+        # Create a mock payload
+        payload = SqlPayload(
+            title="Test Payload",
+            payload=f"Test payload for {bypass.title}",
+            risk=3,
+            platform="generic",
+            category="waf_bypass",
+            injection_type=InjectionType.ERROR_BASED
+        )
+        
         # Create a mock vulnerability result
         vulnerability = VulnerabilityResult(
             url=url,
-            method="GET",
-            payload=f"Test payload for {bypass.title}",
-            bypass_used=bypass,
+            injection_point=injection_point,
+            payload=payload,
             injection_type=InjectionType.ERROR_BASED,
             database_type=DatabaseType.UNKNOWN,
-            vulnerability_found=False,
             confidence=0.5,
             response_time=0.1,
-            error_message="Mock WAF bypass test",
-            payload_position="parameter"
+            evidence="Mock WAF bypass test",
+            response_code=200,
+            response_headers={},
+            response_body="Mock response",
+            bypass_method=bypass.title
         )
         
         # Create a test result
@@ -1181,18 +1201,38 @@ class SqlInjectionEngine(LoggerMixin):
         """Test error-based SQL injection"""
         self.log_info(f"Testing error-based injection on: {url}")
         
+        # Create a mock injection point
+        injection_point = InjectionPoint(
+            vector=InjectionVector.GET_PARAMETER,
+            name="id",
+            value="1",
+            original_value="1",
+            is_vulnerable=False
+        )
+        
+        # Create a mock payload
+        payload = SqlPayload(
+            title="Error-based Test",
+            payload="' OR 1=1 --",
+            risk=3,
+            platform="generic",
+            category="error_based",
+            injection_type=InjectionType.ERROR_BASED
+        )
+        
         # Create a mock vulnerability result
         vulnerability = VulnerabilityResult(
             url=url,
-            method="GET",
-            payload="' OR 1=1 --",
+            injection_point=injection_point,
+            payload=payload,
             injection_type=InjectionType.ERROR_BASED,
             database_type=DatabaseType.UNKNOWN,
-            vulnerability_found=False,
             confidence=0.5,
             response_time=0.1,
-            error_message="Mock error-based test",
-            payload_position="parameter"
+            evidence="Mock error-based test",
+            response_code=200,
+            response_headers={},
+            response_body="Mock response"
         )
         
         # Create a test result
@@ -1210,18 +1250,38 @@ class SqlInjectionEngine(LoggerMixin):
         """Test boolean-based SQL injection"""
         self.log_info(f"Testing boolean-based injection on: {url}")
         
+        # Create a mock injection point
+        injection_point = InjectionPoint(
+            vector=InjectionVector.GET_PARAMETER,
+            name="id",
+            value="1",
+            original_value="1",
+            is_vulnerable=False
+        )
+        
+        # Create a mock payload
+        payload = SqlPayload(
+            title="Boolean-based Test",
+            payload="' AND 1=1 --",
+            risk=3,
+            platform="generic",
+            category="boolean_based",
+            injection_type=InjectionType.BOOLEAN_BASED
+        )
+        
         # Create a mock vulnerability result
         vulnerability = VulnerabilityResult(
             url=url,
-            method="GET",
-            payload="' AND 1=1 --",
+            injection_point=injection_point,
+            payload=payload,
             injection_type=InjectionType.BOOLEAN_BASED,
             database_type=DatabaseType.UNKNOWN,
-            vulnerability_found=False,
             confidence=0.5,
             response_time=0.1,
-            error_message="Mock boolean-based test",
-            payload_position="parameter"
+            evidence="Mock boolean-based test",
+            response_code=200,
+            response_headers={},
+            response_body="Mock response"
         )
         
         # Create a test result
