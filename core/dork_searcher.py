@@ -508,58 +508,65 @@ class DorkSearcher(LoggerMixin):
         engine_config = self.search_engines[engine]
         results = []
         
-        max_pages = engine_config.get('max_pages', 5)
-        results_per_page = engine_config.get('results_per_page', 10)
-        
-        for page in range(max_pages):
-            if self.cancel_requested:
-                break
+        try:
+            max_pages = engine_config.get('max_pages', 5)
+            results_per_page = engine_config.get('results_per_page', 10)
+            
+            for page in range(max_pages):
+                if self.cancel_requested:
+                    break
+                    
+                # Calculate start parameter
+                start = page * results_per_page
                 
-            # Calculate start parameter
-            start = page * results_per_page
-            
-            # Build search URL
-            query = quote_plus(dork)
-            if engine_config.get('next_page_param'):
-                search_url = engine_config['url_format'].format(query=query, start=start)
-            else:
-                search_url = engine_config['url_format'].format(query=query)
+                # Build search URL
+                query = quote_plus(dork)
+                if engine_config.get('next_page_param'):
+                    search_url = engine_config['url_format'].format(query=query, start=start)
+                else:
+                    search_url = engine_config['url_format'].format(query=query)
+                    
+                # Prepare headers
+                headers = engine_config.get('headers', {}).copy()
+                headers['User-Agent'] = self.get_random_user_agent()
                 
-            # Prepare headers
-            headers = engine_config.get('headers', {}).copy()
-            headers['User-Agent'] = self.get_random_user_agent()
-            
-            # Add proxy if available
-            proxy = self.get_random_proxy()
-            
-            try:
-                async with self.session.get(search_url, headers=headers, proxy=proxy) as response:
-                    if response.status == 200:
-                        content = await response.text()
-                        page_results = self.parse_search_results(content, engine, dork, start)
-                        results.extend(page_results)
-                        
-                        # If no results on this page, stop pagination
-                        if not page_results:
+                # Add proxy if available
+                proxy = self.get_random_proxy()
+                
+                try:
+                    async with self.session.get(search_url, headers=headers, proxy=proxy) as response:
+                        if response.status == 200:
+                            content = await response.text()
+                            page_results = self.parse_search_results(content, engine, dork, start)
+                            results.extend(page_results)
+                            
+                            # If no results on this page, stop pagination
+                            if not page_results:
+                                break
+                                
+                        elif response.status == 429:
+                            # Rate limited, wait longer
+                            self.log_warning(f"Rate limited by {engine.value}, waiting...")
+                            await asyncio.sleep(10)
                             break
                             
-                    elif response.status == 429:
-                        # Rate limited, wait longer
-                        self.log_warning(f"Rate limited by {engine.value}, waiting...")
-                        await asyncio.sleep(10)
-                        break
-                        
-                    else:
-                        self.log_warning(f"HTTP {response.status} from {engine.value}")
-                        break
-                        
-            except Exception as e:
-                self.log_error(f"Error searching {engine.value}: {e}")
-                break
-                
-            # Add delay between pages
-            if page < max_pages - 1:
-                await asyncio.sleep(random.uniform(1, 3))
+                        else:
+                            self.log_warning(f"HTTP {response.status} from {engine.value}")
+                            break
+                            
+                except Exception as e:
+                    self.log_error(f"Error searching {engine.value}: {e}")
+                    break
+                    
+                # Add delay between pages
+                if page < max_pages - 1:
+                    await asyncio.sleep(random.uniform(1, 3))
+                    
+        except Exception as e:
+            self.log_error(f"Fatal error in search_engine: {e}")
+        finally:
+            # Ensure session cleanup if needed
+            pass
                 
         return results
         

@@ -171,75 +171,86 @@ class WebCrawler(LoggerMixin):
         # Ensure session is initialized
         self.init_session()
         
-        self.is_crawling = True
-        self.cancel_requested = False
-        self.visited_urls.clear()
-        self.crawled_urls.clear()
-        self.parameters.clear()
-        self.pending_urls.clear()
-        
-        # Initialize progress
-        self.progress = CrawlProgress(
-            urls_found=1,
-            urls_crawled=0,
-            urls_pending=1,
-            current_url=start_url,
-            current_depth=0,
-            max_depth=self.config.get("MaxDepth", 5),
-            start_time=time.time(),
-            parameters_found=0,
-            forms_found=0
-        )
-        
-        # Add start URL to pending
-        self.pending_urls.append((start_url, 0, ""))
-        
-        max_urls = self.config.get("MaxUrls", 1000)
-        max_depth = self.config.get("MaxDepth", 5)
-        
-        # Process URLs
-        while self.pending_urls and not self.cancel_requested:
-            if len(self.crawled_urls) >= max_urls:
-                break
-                
-            url, depth, parent = self.pending_urls.pop(0)
+        try:
+            self.is_crawling = True
+            self.cancel_requested = False
+            self.visited_urls.clear()
+            self.crawled_urls.clear()
+            self.parameters.clear()
+            self.pending_urls.clear()
             
-            if depth > max_depth:
-                continue
-                
-            if url in self.visited_urls:
-                continue
-                
-            self.visited_urls.add(url)
-            self.progress.current_url = url
-            self.progress.current_depth = depth
-            self.progress.urls_pending = len(self.pending_urls)
+            # Initialize progress
+            self.progress = CrawlProgress(
+                urls_found=1,
+                urls_crawled=0,
+                urls_pending=1,
+                current_url=start_url,
+                current_depth=0,
+                max_depth=self.config.get("MaxDepth", 5),
+                start_time=time.time(),
+                parameters_found=0,
+                forms_found=0
+            )
             
-            if callback:
-                callback(f"Crawling: {url}")
-                
-            try:
-                crawled_url = await self.crawl_url(url, depth, parent)
-                if crawled_url:
-                    self.crawled_urls.append(crawled_url)
-                    self.progress.urls_crawled += 1
-                    self.progress.parameters_found += len(crawled_url.parameters)
-                    self.progress.forms_found += len(crawled_url.forms)
+            # Add start URL to pending
+            self.pending_urls.append((start_url, 0, ""))
+            
+            max_urls = self.config.get("MaxUrls", 1000)
+            max_depth = self.config.get("MaxDepth", 5)
+            
+            # Process URLs
+            while self.pending_urls and not self.cancel_requested:
+                if len(self.crawled_urls) >= max_urls:
+                    break
                     
-                    # Extract new URLs
-                    new_urls = await self.extract_urls(crawled_url)
-                    for new_url in new_urls:
-                        if new_url not in self.visited_urls and len(self.pending_urls) < max_urls:
-                            self.pending_urls.append((new_url, depth + 1, url))
-                            self.progress.urls_found += 1
-                            
-            except Exception as e:
-                self.log_error(f"Error crawling {url}: {e}")
+                url, depth, parent = self.pending_urls.pop(0)
                 
-            # Add delay between requests
-            await asyncio.sleep(self.config.get("RequestDelay", 1000) / 1000)
+                if depth > max_depth:
+                    continue
+                    
+                if url in self.visited_urls:
+                    continue
+                    
+                self.visited_urls.add(url)
+                self.progress.current_url = url
+                self.progress.current_depth = depth
+                self.progress.urls_pending = len(self.pending_urls)
+                
+                if callback:
+                    callback(f"Crawling: {url}")
+                    
+                try:
+                    crawled_url = await self.crawl_url(url, depth, parent)
+                    if crawled_url:
+                        self.crawled_urls.append(crawled_url)
+                        self.progress.urls_crawled += 1
+                        self.progress.parameters_found += len(crawled_url.parameters)
+                        self.progress.forms_found += len(crawled_url.forms)
+                        
+                        # Extract new URLs
+                        new_urls = await self.extract_urls(crawled_url)
+                        for new_url in new_urls:
+                            if new_url not in self.visited_urls and len(self.pending_urls) < max_urls:
+                                self.pending_urls.append((new_url, depth + 1, url))
+                                self.progress.urls_found += 1
+                                
+                except Exception as e:
+                    self.log_error(f"Error crawling {url}: {e}")
+                    
+                # Add delay between requests
+                await asyncio.sleep(self.config.get("RequestDelay", 1000) / 1000)
+                
+        except Exception as e:
+            self.log_error(f"Error during crawling: {e}")
+        finally:
+            # Ensure proper cleanup
+            self.is_crawling = False
+            try:
+                if self.session and not self.session.closed:
+                    await self.close()
+            except Exception as cleanup_error:
+                self.log_warning(f"Error during session cleanup: {cleanup_error}")
             
-        self.is_crawling = False
         self.log_info(f"Crawling completed. Found {len(self.crawled_urls)} URLs with {len(self.parameters)} parameters")
         
         return self.crawled_urls
