@@ -16,6 +16,12 @@ from .tester_page import TesterPage
 from .dumper_page import DumperPage
 from .settings_page import SettingsPage
 
+# Import Unicode handling
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from core.fallbacks import safe_text
+
 class MainWindow:
     """Main application window"""
     
@@ -239,23 +245,23 @@ class MainWindow:
         """Create notebook tabs"""
         # Dork Search Tab
         self.dork_page = DorkPage(self.notebook, self.app)
-        self.notebook.add(self.dork_page, text="🔍 Dork Search")
+        self.notebook.add(self.dork_page, text=safe_text("🔍 Dork Search"))
         
         # Web Crawler Tab
         self.crawler_page = CrawlerPage(self.notebook, self.app)
-        self.notebook.add(self.crawler_page, text="🕷️ Web Crawler")
+        self.notebook.add(self.crawler_page, text=safe_text("🕷️ Web Crawler"))
         
         # SQL Tester Tab
         self.tester_page = TesterPage(self.notebook, self.app)
-        self.notebook.add(self.tester_page, text="🎯 SQL Tester")
+        self.notebook.add(self.tester_page, text=safe_text("🎯 SQL Tester"))
         
         # Database Dumper Tab
         self.dumper_page = DumperPage(self.notebook, self.app)
-        self.notebook.add(self.dumper_page, text="💾 Database Dumper")
+        self.notebook.add(self.dumper_page, text=safe_text("💾 Database Dumper"))
         
         # Settings Tab
         self.settings_page = SettingsPage(self.notebook, self.app)
-        self.notebook.add(self.settings_page, text="⚙️ Settings")
+        self.notebook.add(self.settings_page, text=safe_text("⚙️ Settings"))
         
         # Bind tab change event
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
