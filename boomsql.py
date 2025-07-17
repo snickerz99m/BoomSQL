@@ -13,9 +13,6 @@ Unauthorized use against systems without explicit permission is illegal and unet
 Users are solely responsible for complying with all applicable laws and regulations.
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import asyncio
 import sys
 import os
 import threading
@@ -24,20 +21,78 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+# Try to import tkinter, handle gracefully if not available
+try:
+    import tkinter as tk
+    from tkinter import ttk, messagebox, filedialog
+    TKINTER_AVAILABLE = True
+except ImportError:
+    TKINTER_AVAILABLE = False
+    # Create mock classes for non-GUI environments
+    class MockTk:
+        def __init__(self):
+            pass
+        def withdraw(self):
+            pass
+        def title(self, title):
+            pass
+        def geometry(self, geometry):
+            pass
+        def minsize(self, width, height):
+            pass
+        def configure(self, **kwargs):
+            pass
+        def iconbitmap(self, path):
+            pass
+        def deiconify(self):
+            pass
+        def lift(self):
+            pass
+        def focus_force(self):
+            pass
+        def mainloop(self):
+            pass
+        def destroy(self):
+            pass
+    
+    tk = type('MockTkinter', (), {
+        'Tk': MockTk,
+        'ttk': type('MockTTK', (), {}),
+        'messagebox': type('MockMessageBox', (), {}),
+        'filedialog': type('MockFileDialog', (), {})
+    })()
+    ttk = tk.ttk
+    messagebox = tk.messagebox
+    filedialog = tk.filedialog
+
+import asyncio
+
 # Add the project root to Python path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Import our modules
-from core.sql_injection_engine import SqlInjectionEngine
-from core.database_dumper import DatabaseDumper
-from core.web_crawler import WebCrawler
-from core.dork_searcher import DorkSearcher
-from core.report_generator import ReportGenerator
-from core.config_manager import ConfigManager
-from core.logger import setup_logging
-from gui.main_window import MainWindow
-from gui.disclaimer_dialog import DisclaimerDialog
+try:
+    from core.sql_injection_engine import SqlInjectionEngine
+    from core.database_dumper import DatabaseDumper
+    from core.web_crawler import WebCrawler
+    from core.dork_searcher import DorkSearcher
+    from core.report_generator import ReportGenerator
+    from core.config_manager import ConfigManager
+    from core.logger import setup_logging
+    from core.event_loop_manager import get_event_loop_manager, shutdown_event_loop
+    
+    # GUI imports (may fail if tkinter not available)
+    if TKINTER_AVAILABLE:
+        from gui.main_window import MainWindow
+        from gui.disclaimer_dialog import DisclaimerDialog
+    else:
+        MainWindow = None
+        DisclaimerDialog = None
+        
+except ImportError as e:
+    print(f"Error importing modules: {e}")
+    sys.exit(1)
 
 class BoomSQLApplication:
     """Main BoomSQL application class"""
@@ -49,6 +104,9 @@ class BoomSQLApplication:
         # Setup logging
         setup_logging()
         self.logger = logging.getLogger(__name__)
+        
+        # Initialize event loop manager
+        self.event_loop_manager = get_event_loop_manager()
         
         # Load configuration
         self.config = ConfigManager()
@@ -81,7 +139,10 @@ class BoomSQLApplication:
         self.apply_theme()
         
         # Create main window
-        self.main_window = MainWindow(self.root, self)
+        if TKINTER_AVAILABLE and MainWindow:
+            self.main_window = MainWindow(self.root, self)
+        else:
+            self.main_window = None
         
     def apply_theme(self):
         """Apply dark theme to the application"""
@@ -112,6 +173,10 @@ class BoomSQLApplication:
         
     def show_disclaimer(self):
         """Show legal disclaimer dialog"""
+        if not TKINTER_AVAILABLE or not DisclaimerDialog:
+            # In non-GUI mode, assume acceptance
+            return True
+            
         disclaimer = DisclaimerDialog(self.root)
         if not disclaimer.accepted:
             self.root.destroy()
@@ -154,6 +219,13 @@ class BoomSQLApplication:
         if self.database_dumper:
             self.database_dumper.close()
             
+        # Shutdown event loop manager
+        if hasattr(self, 'event_loop_manager'):
+            self.event_loop_manager.stop()
+            
+        # Global shutdown
+        shutdown_event_loop()
+            
         self.logger.info("BoomSQL application closed")
 
 def main():
@@ -171,18 +243,23 @@ def main():
     print()
     
     # Check if display is available
-    try:
-        import tkinter as tk
-        root = tk.Tk()
-        root.withdraw()  # Hide immediately
-        display_available = True
-        root.destroy()
-    except Exception as e:
+    if not TKINTER_AVAILABLE:
         display_available = False
-        print(f"Display not available: {e}")
-        print("GUI mode not available in this environment.")
-        print("Please run in an environment with X11 display support.")
+        print("tkinter not available in this environment.")
+        print("GUI mode not available.")
         print()
+    else:
+        try:
+            root = tk.Tk()
+            root.withdraw()  # Hide immediately
+            display_available = True
+            root.destroy()
+        except Exception as e:
+            display_available = False
+            print(f"Display not available: {e}")
+            print("GUI mode not available in this environment.")
+            print("Please run in an environment with X11 display support.")
+            print()
     
     if display_available:
         try:

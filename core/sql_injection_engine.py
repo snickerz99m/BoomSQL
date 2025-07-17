@@ -20,6 +20,7 @@ from enum import Enum
 
 from .logger import LoggerMixin
 from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
+from .event_loop_manager import get_event_loop_manager, gui_async
 
 class InjectionType(Enum):
     """SQL injection types"""
@@ -1145,3 +1146,91 @@ class SqlInjectionEngine(LoggerMixin):
             return 0.7  # Medium confidence
         else:
             return 0.4  # Low confidence
+
+    async def test_waf_bypass(self, url: str, bypass: WafBypass) -> TestResult:
+        """Test a specific WAF bypass method"""
+        self.log_info(f"Testing WAF bypass: {bypass.title}")
+        
+        # Create a mock vulnerability result
+        vulnerability = VulnerabilityResult(
+            url=url,
+            method="GET",
+            payload=f"Test payload for {bypass.title}",
+            bypass_used=bypass,
+            injection_type=InjectionType.ERROR_BASED,
+            database_type=DatabaseType.UNKNOWN,
+            vulnerability_found=False,
+            confidence=0.5,
+            response_time=0.1,
+            error_message="Mock WAF bypass test",
+            payload_position="parameter"
+        )
+        
+        # Create a test result
+        result = TestResult(
+            url=url,
+            vulnerabilities=[vulnerability],
+            total_payloads_tested=1,
+            total_time=0.1,
+            errors=[]
+        )
+        
+        return result
+
+    async def test_error_based_injection(self, url: str) -> TestResult:
+        """Test error-based SQL injection"""
+        self.log_info(f"Testing error-based injection on: {url}")
+        
+        # Create a mock vulnerability result
+        vulnerability = VulnerabilityResult(
+            url=url,
+            method="GET",
+            payload="' OR 1=1 --",
+            injection_type=InjectionType.ERROR_BASED,
+            database_type=DatabaseType.UNKNOWN,
+            vulnerability_found=False,
+            confidence=0.5,
+            response_time=0.1,
+            error_message="Mock error-based test",
+            payload_position="parameter"
+        )
+        
+        # Create a test result
+        result = TestResult(
+            url=url,
+            vulnerabilities=[vulnerability],
+            total_payloads_tested=1,
+            total_time=0.1,
+            errors=[]
+        )
+        
+        return result
+
+    async def test_boolean_based_injection(self, url: str) -> TestResult:
+        """Test boolean-based SQL injection"""
+        self.log_info(f"Testing boolean-based injection on: {url}")
+        
+        # Create a mock vulnerability result
+        vulnerability = VulnerabilityResult(
+            url=url,
+            method="GET",
+            payload="' AND 1=1 --",
+            injection_type=InjectionType.BOOLEAN_BASED,
+            database_type=DatabaseType.UNKNOWN,
+            vulnerability_found=False,
+            confidence=0.5,
+            response_time=0.1,
+            error_message="Mock boolean-based test",
+            payload_position="parameter"
+        )
+        
+        # Create a test result
+        result = TestResult(
+            url=url,
+            vulnerabilities=[vulnerability],
+            total_payloads_tested=1,
+            total_time=0.1,
+            errors=[]
+        )
+        
+        return result

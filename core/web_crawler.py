@@ -12,11 +12,11 @@ from urllib.robotparser import RobotFileParser
 from pathlib import Path
 from dataclasses import dataclass, field
 from enum import Enum
-from bs4 import BeautifulSoup
 import json
 
 from .logger import LoggerMixin
-from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE, BeautifulSoup, BS4_AVAILABLE
+from .event_loop_manager import get_event_loop_manager, gui_async
 
 class ParameterType(Enum):
     """Parameter types"""

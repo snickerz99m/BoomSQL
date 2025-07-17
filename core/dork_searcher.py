@@ -12,11 +12,11 @@ from urllib.parse import urljoin, urlparse, quote_plus
 from pathlib import Path
 from dataclasses import dataclass, field
 from enum import Enum
-from bs4 import BeautifulSoup
 import json
 
 from .logger import LoggerMixin
-from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
+from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE, BeautifulSoup, BS4_AVAILABLE
+from .event_loop_manager import get_event_loop_manager, gui_async
 
 class SearchEngine(Enum):
     """Supported search engines"""
@@ -388,8 +388,12 @@ class DorkSearcher(LoggerMixin):
             'site:target.com filetype:db'
         ]
         
-    async def search(self, dorks: List[str], engines: List[SearchEngine] = None, callback=None) -> List[SearchResult]:
+    async def search(self, dorks, engines: List[SearchEngine] = None, callback=None) -> List[SearchResult]:
         """Search using dorks across multiple engines"""
+        # Handle single string input
+        if isinstance(dorks, str):
+            dorks = [dorks]
+        
         if engines is None:
             engines = [SearchEngine.GOOGLE, SearchEngine.BING, SearchEngine.YAHOO, SearchEngine.DUCKDUCKGO]
             
@@ -447,6 +451,11 @@ class DorkSearcher(LoggerMixin):
                 self.progress.engines_processed += 1
                 
             self.progress.dorks_processed += 1
+            
+        self.is_searching = False
+        self.log_info(f"Search completed. Found {len(self.results)} results")
+        
+        return self.results
             
         self.is_searching = False
         self.log_info(f"Search completed. Found {len(self.results)} results from {len(self.unique_domains)} unique domains")

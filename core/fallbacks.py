@@ -180,10 +180,144 @@ except ImportError:
     aiofiles = MockAiofiles()
     AIOFILES_AVAILABLE = False
 
+# Fallback for BeautifulSoup4
+try:
+    from bs4 import BeautifulSoup
+    BS4_AVAILABLE = True
+except ImportError:
+    warnings.warn("BeautifulSoup4 not available, using basic HTML parsing")
+    
+    class MockBeautifulSoup:
+        """Mock BeautifulSoup for when bs4 is not available"""
+        
+        def __init__(self, markup="", features=None):
+            self.markup = str(markup)
+            self.text = self.markup
+            
+        def find(self, tag, **kwargs):
+            """Mock find method"""
+            return None
+            
+        def find_all(self, tag, **kwargs):
+            """Mock find_all method"""
+            return []
+            
+        def select(self, selector):
+            """Mock select method"""
+            return []
+            
+        def get_text(self, separator="", strip=False):
+            """Mock get_text method"""
+            return self.markup
+            
+        def get(self, key, default=None):
+            """Mock get method"""
+            return default
+            
+        @property
+        def title(self):
+            """Mock title property"""
+            return MockTag("title", "Mock Title")
+            
+        @property
+        def body(self):
+            """Mock body property"""
+            return MockTag("body", self.markup)
+    
+    class MockTag:
+        """Mock HTML tag"""
+        
+        def __init__(self, name, text=""):
+            self.name = name
+            self.text = text
+            self.attrs = {}
+            
+        def get(self, key, default=None):
+            return self.attrs.get(key, default)
+            
+        def find(self, tag, **kwargs):
+            return None
+            
+        def find_all(self, tag, **kwargs):
+            return []
+            
+        def get_text(self, separator="", strip=False):
+            return self.text
+    
+    BeautifulSoup = MockBeautifulSoup
+    BS4_AVAILABLE = False
+
+# Fallback for lxml
+try:
+    from lxml import etree as lxml_etree
+    LXML_AVAILABLE = True
+except ImportError:
+    warnings.warn("lxml not available, using xml.etree.ElementTree")
+    import xml.etree.ElementTree as lxml_etree
+    LXML_AVAILABLE = False
+
+# Enhanced XML parsing with fallbacks
+def safe_parse_xml(xml_content, use_lxml=True):
+    """
+    Parse XML content with fallbacks for different parsers
+    
+    Args:
+        xml_content: XML content to parse (string or file path)
+        use_lxml: Whether to prefer lxml (if available)
+        
+    Returns:
+        Parsed XML tree
+    """
+    import xml.etree.ElementTree as ET
+    
+    # Try lxml first if requested and available
+    if use_lxml and LXML_AVAILABLE:
+        try:
+            if isinstance(xml_content, str) and xml_content.endswith('.xml'):
+                return lxml_etree.parse(xml_content)
+            else:
+                return lxml_etree.fromstring(xml_content)
+        except Exception as e:
+            warnings.warn(f"lxml parsing failed, falling back to ElementTree: {e}")
+    
+    # Fall back to ElementTree
+    try:
+        if isinstance(xml_content, str) and xml_content.endswith('.xml'):
+            return ET.parse(xml_content)
+        else:
+            return ET.fromstring(xml_content)
+    except Exception as e:
+        warnings.warn(f"XML parsing failed: {e}")
+        return None
+
+# Enhanced HTML parsing with fallbacks
+def safe_parse_html(html_content, features=None):
+    """
+    Parse HTML content with fallbacks for different parsers
+    
+    Args:
+        html_content: HTML content to parse
+        features: Parser features (for BeautifulSoup compatibility)
+        
+    Returns:
+        Parsed HTML object
+    """
+    if BS4_AVAILABLE:
+        try:
+            return BeautifulSoup(html_content, features or 'html.parser')
+        except Exception as e:
+            warnings.warn(f"BeautifulSoup parsing failed: {e}")
+    
+    # Fallback to mock implementation
+    return BeautifulSoup(html_content, features)
+
 # Export the imports and availability flags
 __all__ = [
     'aiohttp', 'ClientSession', 'AIOHTTP_AVAILABLE',
     'aiofiles', 'AIOFILES_AVAILABLE',
+    'BeautifulSoup', 'BS4_AVAILABLE',
+    'lxml_etree', 'LXML_AVAILABLE',
     'MockSession', 'MockResponse', 'MockClientSession',
-    'safe_text', 'safe_log_message', 'EMOJI_FALLBACKS'
+    'safe_text', 'safe_log_message', 'EMOJI_FALLBACKS',
+    'safe_parse_xml', 'safe_parse_html'
 ]
