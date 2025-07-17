@@ -1,10 +1,75 @@
 """
-Fallback implementations for missing dependencies
+Fallback implementations for missing dependencies and Unicode handling
 """
 import sys
 import asyncio
 import warnings
 from typing import Any, Dict, List, Optional, Union
+
+# Unicode emoji fallbacks for Windows compatibility
+EMOJI_FALLBACKS = {
+    '🔍': '[Search]',
+    '🎯': '[Target]',
+    '🚀': '[Launch]',
+    '⚡': '[Fast]',
+    '🔧': '[Tools]',
+    '📊': '[Stats]',
+    '📝': '[Log]',
+    '⚠️': '[Warning]',
+    '✅': '[OK]',
+    '❌': '[Error]',
+    '🔐': '[Security]',
+    '🌐': '[Web]',
+    '💾': '[Save]',
+    '🔄': '[Refresh]',
+    '📋': '[Report]',
+    '⚙️': '[Settings]',
+    '🕷️': '[Spider]',
+    '🛡️': '[Shield]',
+    '🔑': '[Key]',
+    '📄': '[Document]',
+    '🗂️': '[Files]'
+}
+
+def safe_text(text: str, use_fallback: bool = None) -> str:
+    """
+    Convert text with emojis to safe version for display
+    
+    Args:
+        text: Text that may contain emoji characters
+        use_fallback: Force use of fallback (True) or emoji (False). 
+                     If None, auto-detect based on system
+    
+    Returns:
+        Safe text for display
+    """
+    if use_fallback is None:
+        # Auto-detect: use fallback on Windows or if encoding issues are likely
+        use_fallback = (
+            sys.platform.startswith('win') or 
+            (hasattr(sys.stdout, 'encoding') and 
+             sys.stdout.encoding in ['cp1252', 'ascii', 'latin-1'])
+        )
+    
+    if use_fallback:
+        result = text
+        for emoji, fallback in EMOJI_FALLBACKS.items():
+            result = result.replace(emoji, fallback)
+        return result
+    else:
+        return text
+
+def safe_log_message(message: str) -> str:
+    """
+    Make log message safe for output by replacing problematic Unicode characters
+    
+    Args:
+        message: Log message that may contain Unicode characters
+    
+    Returns:
+        Safe log message
+    """
+    return safe_text(message, use_fallback=True)
 
 # Fallback for aiohttp
 class MockSession:
@@ -99,5 +164,6 @@ except ImportError:
 __all__ = [
     'aiohttp', 'ClientSession', 'AIOHTTP_AVAILABLE',
     'aiofiles', 'AIOFILES_AVAILABLE',
-    'MockSession', 'MockResponse', 'MockClientSession'
+    'MockSession', 'MockResponse', 'MockClientSession',
+    'safe_text', 'safe_log_message', 'EMOJI_FALLBACKS'
 ]

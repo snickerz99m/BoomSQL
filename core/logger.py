@@ -19,8 +19,17 @@ def setup_logging(log_level: str = "INFO", log_file: str = "boomsql.log",
     # Full path to log file
     log_file_path = log_dir / log_file
     
+    # Import Unicode handling
+    from .fallbacks import safe_log_message
+    
+    # Custom formatter that handles Unicode safely
+    class SafeFormatter(logging.Formatter):
+        def format(self, record):
+            result = super().format(record)
+            return safe_log_message(result)
+    
     # Configure logging format
-    formatter = logging.Formatter(
+    formatter = SafeFormatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
@@ -33,15 +42,21 @@ def setup_logging(log_level: str = "INFO", log_file: str = "boomsql.log",
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
     
-    # Console handler
+    # Console handler with UTF-8 encoding
     console_handler = logging.StreamHandler()
     console_handler.setLevel(getattr(logging, log_level.upper()))
     console_handler.setFormatter(formatter)
+    # Ensure UTF-8 encoding for console output
+    if hasattr(console_handler.stream, 'reconfigure'):
+        try:
+            console_handler.stream.reconfigure(encoding='utf-8')
+        except Exception:
+            pass  # Fallback for systems where reconfigure is not available
     root_logger.addHandler(console_handler)
     
-    # File handler with rotation
+    # File handler with rotation and UTF-8 encoding
     file_handler = logging.handlers.RotatingFileHandler(
-        log_file_path, maxBytes=max_size, backupCount=max_files
+        log_file_path, maxBytes=max_size, backupCount=max_files, encoding='utf-8'
     )
     file_handler.setLevel(getattr(logging, log_level.upper()))
     file_handler.setFormatter(formatter)
@@ -71,16 +86,20 @@ class LoggerMixin:
         
     def log_info(self, message: str):
         """Log info message"""
-        self.logger.info(message)
+        from .fallbacks import safe_log_message
+        self.logger.info(safe_log_message(message))
         
     def log_warning(self, message: str):
         """Log warning message"""
-        self.logger.warning(message)
+        from .fallbacks import safe_log_message
+        self.logger.warning(safe_log_message(message))
         
     def log_error(self, message: str):
         """Log error message"""
-        self.logger.error(message)
+        from .fallbacks import safe_log_message
+        self.logger.error(safe_log_message(message))
         
     def log_debug(self, message: str):
         """Log debug message"""
-        self.logger.debug(message)
+        from .fallbacks import safe_log_message
+        self.logger.debug(safe_log_message(message))
