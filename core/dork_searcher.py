@@ -143,11 +143,14 @@ class DorkSearcher(LoggerMixin):
             # Schedule cleanup for next event loop iteration
             try:
                 import asyncio
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 if loop.is_running():
                     loop.create_task(self.close())
+            except RuntimeError:
+                # No running loop, which is fine during cleanup
+                pass
             except:
-                pass  # Ignore errors during cleanup
+                pass  # Ignore other errors during cleanup
             
     def get_search_engine_configs(self) -> Dict[SearchEngine, Dict[str, Any]]:
         """Get search engine configurations"""

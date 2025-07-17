@@ -158,11 +158,14 @@ class WebCrawler(LoggerMixin):
             # Schedule cleanup for next event loop iteration
             try:
                 import asyncio
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 if loop.is_running():
                     loop.create_task(self.close())
+            except RuntimeError:
+                # No running loop, which is fine during cleanup
+                pass
             except:
-                pass  # Ignore errors during cleanup
+                pass  # Ignore other errors during cleanup
             
     async def crawl(self, start_url: str, callback=None) -> List[CrawledUrl]:
         """Crawl website starting from given URL"""

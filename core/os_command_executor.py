@@ -3,6 +3,7 @@ OS Command Execution Module for BoomSQL
 Provides operating system command execution capabilities through SQL injection
 """
 
+import time
 import asyncio
 import aiohttp
 import logging
@@ -159,7 +160,7 @@ class OSCommandExecutor:
     async def execute_command(self, url: str, vuln: VulnerabilityResult, command: str, 
                             technique: OSCommandTechnique = None) -> OSCommandResult:
         """Execute OS command through SQL injection"""
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.time()
         result = OSCommandResult()
         result.command = command
         
@@ -196,13 +197,13 @@ class OSCommandExecutor:
                     result.error = str(e)
                     continue
             
-            result.execution_time = asyncio.get_event_loop().time() - start_time
+            result.execution_time = time.time() - start_time
             return result
             
         except Exception as e:
             self.logger.error(f"Command execution failed: {e}")
             result.error = str(e)
-            result.execution_time = asyncio.get_event_loop().time() - start_time
+            result.execution_time = time.time() - start_time
             return result
     
     async def test_file_access(self, url: str, vuln: VulnerabilityResult) -> FileSystemAccess:

@@ -6,6 +6,7 @@ Provides comprehensive database enumeration capabilities similar to SQLMap
 import asyncio
 import aiohttp
 import logging
+import time
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from enum import Enum
@@ -236,7 +237,7 @@ class AdvancedEnumeration:
     async def enumerate_databases(self, url: str, vuln: VulnerabilityResult, 
                                 technique: EnumerationTechnique = EnumerationTechnique.INFORMATION_SCHEMA) -> EnumerationResult:
         """Enumerate databases"""
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.time()
         
         try:
             databases = []
@@ -256,7 +257,7 @@ class AdvancedEnumeration:
             else:
                 databases = await self._enumerate_information_schema(url, vuln, payloads)
             
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.DATABASES,
@@ -271,7 +272,7 @@ class AdvancedEnumeration:
             
         except Exception as e:
             self.logger.error(f"Database enumeration failed: {e}")
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.DATABASES,
@@ -287,7 +288,7 @@ class AdvancedEnumeration:
     async def enumerate_tables(self, url: str, vuln: VulnerabilityResult, database: str,
                              technique: EnumerationTechnique = EnumerationTechnique.INFORMATION_SCHEMA) -> EnumerationResult:
         """Enumerate tables in a database"""
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.time()
         
         try:
             tables = []
@@ -310,7 +311,7 @@ class AdvancedEnumeration:
             else:
                 tables = await self._enumerate_information_schema(url, vuln, formatted_payloads)
             
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.TABLES,
@@ -325,7 +326,7 @@ class AdvancedEnumeration:
             
         except Exception as e:
             self.logger.error(f"Table enumeration failed: {e}")
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.TABLES,
@@ -341,7 +342,7 @@ class AdvancedEnumeration:
     async def enumerate_columns(self, url: str, vuln: VulnerabilityResult, database: str, table: str,
                               technique: EnumerationTechnique = EnumerationTechnique.INFORMATION_SCHEMA) -> EnumerationResult:
         """Enumerate columns in a table"""
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.time()
         
         try:
             columns = []
@@ -364,7 +365,7 @@ class AdvancedEnumeration:
             else:
                 columns = await self._enumerate_information_schema(url, vuln, formatted_payloads)
             
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.COLUMNS,
@@ -379,7 +380,7 @@ class AdvancedEnumeration:
             
         except Exception as e:
             self.logger.error(f"Column enumeration failed: {e}")
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.COLUMNS,
@@ -395,7 +396,7 @@ class AdvancedEnumeration:
     async def enumerate_data(self, url: str, vuln: VulnerabilityResult, database: str, table: str, 
                            columns: List[str], limit: int = 100) -> EnumerationResult:
         """Enumerate data from a table"""
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.time()
         
         try:
             data = []
@@ -422,7 +423,7 @@ class AdvancedEnumeration:
                     # Single column
                     data.append({columns[0]: row})
             
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.DATA,
@@ -437,7 +438,7 @@ class AdvancedEnumeration:
             
         except Exception as e:
             self.logger.error(f"Data enumeration failed: {e}")
-            execution_time = asyncio.get_event_loop().time() - start_time
+            execution_time = time.time() - start_time
             
             return EnumerationResult(
                 target=EnumerationTarget.DATA,
@@ -702,9 +703,9 @@ class AdvancedEnumeration:
             test_payload = f"AND IF(EXISTS(SELECT 1 FROM ({query}) AS x),{delay_func},0)"
             test_url = self._build_injection_url(url, vuln, test_payload)
             
-            start_time = asyncio.get_event_loop().time()
+            start_time = time.time()
             response = await self.network_manager.get(test_url)
-            end_time = asyncio.get_event_loop().time()
+            end_time = time.time()
             
             # If response was delayed, query returned results
             if end_time - start_time > 3:  # 3 second threshold

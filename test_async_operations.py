@@ -36,10 +36,14 @@ def test_async_sql_engine():
         # Get event loop manager
         manager = get_event_loop_manager()
         
-        # Test async operation
+        # Test async operation with proper cleanup
         async def test_url():
-            result = await engine.test_url("http://example.com/test?id=1")
-            return result
+            try:
+                result = await engine.test_url("http://example.com/test?id=1")
+                return result
+            finally:
+                # Ensure session cleanup
+                await engine.close()
         
         # Run async operation with shorter timeout
         result = manager.run_async_blocking(test_url(), timeout=5.0)
@@ -77,10 +81,14 @@ def test_async_web_crawler():
         # Get event loop manager
         manager = get_event_loop_manager()
         
-        # Test async operation
+        # Test async operation with proper cleanup
         async def test_crawl():
-            result = await crawler.crawl("http://example.com")
-            return result
+            try:
+                result = await crawler.crawl("http://example.com")
+                return result
+            finally:
+                # Ensure session cleanup
+                await crawler.close()
         
         # Run async operation with shorter timeout
         result = manager.run_async_blocking(test_crawl(), timeout=5.0)
@@ -118,10 +126,14 @@ def test_async_dork_searcher():
         # Get event loop manager
         manager = get_event_loop_manager()
         
-        # Test async operation
+        # Test async operation with proper cleanup
         async def test_search():
-            result = await searcher.search("inurl:login")
-            return result
+            try:
+                result = await searcher.search("inurl:login")
+                return result
+            finally:
+                # Ensure session cleanup
+                await searcher.close()
         
         # Run async operation with shorter timeout
         result = manager.run_async_blocking(test_search(), timeout=5.0)
