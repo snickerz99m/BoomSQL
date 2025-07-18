@@ -15,7 +15,8 @@ import html
 import base64
 
 from .sql_injection_engine import TestResult, VulnerabilityResult, InjectionType, DatabaseType
-from .database_dumper import DatabaseInfo, TableInfo, DumpProgress
+from .database_dumper import DatabaseInfo, TableInfo
+# from .database_dumper import DumpProgress  # Temporarily disabled
 from .web_crawler import CrawledUrl, Parameter, CrawlProgress
 from .dork_searcher import SearchResult, SearchProgress
 from .logger import LoggerMixin

@@ -167,6 +167,127 @@ class WebCrawler(LoggerMixin):
             except:
                 pass  # Ignore other errors during cleanup
             
+    async def crawl_smart(self, start_url: str, callback=None) -> List[CrawledUrl]:
+        """Smart crawl that stops when enough parameters are found"""
+        self.log_info(f"Starting smart crawl from: {start_url}")
+        
+        # Ensure session is initialized
+        self.init_session()
+        
+        try:
+            self.is_crawling = True
+            self.cancel_requested = False
+            self.visited_urls.clear()
+            self.crawled_urls.clear()
+            self.parameters.clear()
+            self.pending_urls.clear()
+            
+            # Initialize progress
+            self.progress = CrawlProgress(
+                urls_found=1,
+                urls_crawled=0,
+                urls_pending=1,
+                current_url=start_url,
+                current_depth=0,
+                max_depth=self.config.get("MaxDepth", 5),
+                start_time=time.time(),
+                parameters_found=0,
+                forms_found=0
+            )
+            
+            # Add start URL to pending
+            self.pending_urls.append((start_url, 0, ""))
+            
+            max_urls = self.config.get("MaxUrls", 50)
+            max_depth = self.config.get("MaxDepth", 3)
+            max_params = self.config.get("MaxParametersPerDomain", 5)
+            smart_stop = self.config.get("SmartStop", True)
+            
+            parameters_found = 0
+            
+            # Process URLs
+            while self.pending_urls and not self.cancel_requested:
+                if len(self.crawled_urls) >= max_urls:
+                    if callback:
+                        callback(f"Reached max URLs ({max_urls}) for domain")
+                    break
+                    
+                # Check if we found enough parameters and should stop
+                if smart_stop and parameters_found >= max_params:
+                    if callback:
+                        callback(f"Found {parameters_found} parameters - stopping smart crawl")
+                    break
+                    
+                url, depth, parent = self.pending_urls.pop(0)
+                
+                if depth > max_depth:
+                    continue
+                    
+                if url in self.visited_urls:
+                    continue
+                    
+                self.visited_urls.add(url)
+                self.progress.current_url = url
+                self.progress.current_depth = depth
+                self.progress.urls_pending = len(self.pending_urls)
+                
+                # Call progress callback
+                if callback:
+                    callback(f"Crawling: {url}")
+                    
+                # Crawl URL
+                crawled_url = await self.crawl_url(url, depth, parent)
+                
+                if crawled_url:
+                    self.crawled_urls.append(crawled_url)
+                    self.progress.urls_crawled = len(self.crawled_urls)
+                    
+                    # Count parameters found
+                    if crawled_url.parameters:
+                        parameters_found += len(crawled_url.parameters)
+                        self.progress.parameters_found = parameters_found
+                        
+                        if callback:
+                            callback(f"Found {len(crawled_url.parameters)} parameters in {url}")
+                        
+                        # If smart stop is enabled and we found parameters, 
+                        # prioritize this domain by reducing URL discovery
+                        if smart_stop and parameters_found >= max_params:
+                            if callback:
+                                callback(f"Smart stop: Found {parameters_found} parameters")
+                            break
+                    
+                    # Add forms count
+                    if crawled_url.forms:
+                        self.progress.forms_found += len(crawled_url.forms)
+                    
+                    # Extract new URLs only if we haven't found enough parameters yet
+                    if not smart_stop or parameters_found < max_params:
+                        await self.extract_urls_from_content(crawled_url, depth)
+                
+                # Small delay
+                request_delay = self.config.get("RequestDelay", 1000)
+                if request_delay > 0:
+                    await asyncio.sleep(request_delay / 1000.0)
+            
+            # Final progress update
+            self.progress.end_time = time.time()
+            self.progress.total_time = self.progress.end_time - self.progress.start_time
+            
+            if callback:
+                callback(f"Smart crawl completed: {len(self.crawled_urls)} URLs, {parameters_found} parameters")
+            
+            self.log_info(f"Smart crawl completed: {len(self.crawled_urls)} URLs crawled, {parameters_found} parameters found")
+            
+            return self.crawled_urls
+            
+        except Exception as e:
+            self.log_error(f"Smart crawl failed: {e}")
+            raise
+        finally:
+            self.is_crawling = False
+            await self.close()
+
     async def crawl(self, start_url: str, callback=None) -> List[CrawledUrl]:
         """Crawl website starting from given URL"""
         self.log_info(f"Starting crawl from: {start_url}")

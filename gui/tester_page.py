@@ -90,7 +90,19 @@ class TesterPage(ttk.Frame):
             self.detection_vars[key] = var
             ttk.Checkbutton(detection_frame, text=name, variable=var).pack(anchor=tk.W)
             
-        # Testing options
+        # Smart testing options
+        smart_frame = ttk.LabelFrame(left_frame, text="Smart Testing", padding=5)
+        smart_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.smart_test_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(smart_frame, text="Smart Testing (avoid duplicates)", variable=self.smart_test_var).pack(anchor=tk.W)
+        
+        ttk.Label(smart_frame, text="Max vulnerabilities per base domain:").pack(anchor=tk.W)
+        self.max_vulns_per_domain_var = tk.StringVar(value="3")
+        ttk.Entry(smart_frame, textvariable=self.max_vulns_per_domain_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        
+        self.stop_after_vuln_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(smart_frame, text="Stop after finding vulnerability", variable=self.stop_after_vuln_var).pack(anchor=tk.W)
         options_frame = ttk.LabelFrame(left_frame, text="Testing Options", padding=5)
         options_frame.pack(fill=tk.X, pady=(0, 10))
         
@@ -300,7 +312,7 @@ class TesterPage(ttk.Frame):
         self.test_thread.start()
         
     def run_testing(self, urls: List[str]):
-        """Run testing in background thread"""
+        """Run testing in background thread with smart duplicate avoidance"""
         try:
             # Create config
             config = {
@@ -324,6 +336,15 @@ class TesterPage(ttk.Frame):
             # Create engine
             self.sql_engine = SqlInjectionEngine(config)
             
+            # Smart testing variables
+            smart_testing = self.smart_test_var.get()
+            max_vulns_per_domain = int(self.max_vulns_per_domain_var.get())
+            stop_after_vuln = self.stop_after_vuln_var.get()
+            
+            # Track found vulnerabilities by domain
+            domain_vulns = {}
+            unique_vulns = set()
+            
             # Run tests
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -332,6 +353,16 @@ class TesterPage(ttk.Frame):
                 for i, url in enumerate(urls):
                     if not self.is_testing:
                         break
+                    
+                    # Extract domain for smart testing
+                    from urllib.parse import urlparse
+                    domain = urlparse(url).netloc
+                    
+                    # Check if we should skip this domain (smart testing)
+                    if smart_testing and domain in domain_vulns:
+                        if len(domain_vulns[domain]) >= max_vulns_per_domain:
+                            self.after(0, lambda d=domain: self.status_var.set(f"Skipping {d} (enough vulnerabilities found)"))
+                            continue
                         
                     self.after(0, lambda u=url: self.status_var.set(f"Testing: {u}"))
                     
@@ -339,7 +370,24 @@ class TesterPage(ttk.Frame):
                     result = loop.run_until_complete(self.sql_engine.test_url(url))
                     
                     self.test_results.append(result)
-                    self.vulnerability_results.extend(result.vulnerabilities)
+                    
+                    # Process vulnerabilities with duplicate detection
+                    new_vulns = []
+                    for vuln in result.vulnerabilities:
+                        # Create unique key for vulnerability
+                        vuln_key = f"{domain}:{vuln.injection_point.name}:{vuln.injection_type.value if vuln.injection_type else 'unknown'}"
+                        
+                        if vuln_key not in unique_vulns:
+                            unique_vulns.add(vuln_key)
+                            new_vulns.append(vuln)
+                            
+                            # Track by domain
+                            if domain not in domain_vulns:
+                                domain_vulns[domain] = []
+                            domain_vulns[domain].append(vuln)
+                    
+                    # Add only unique vulnerabilities
+                    self.vulnerability_results.extend(new_vulns)
                     
                     # Update progress
                     progress = ((i + 1) / len(urls)) * 100
@@ -347,6 +395,12 @@ class TesterPage(ttk.Frame):
                     
                     # Update display
                     self.after(0, self.update_results_display)
+                    
+                    # Smart stop: if we found vulnerabilities and stop_after_vuln is enabled
+                    if smart_testing and stop_after_vuln and new_vulns:
+                        self.after(0, lambda: self.status_var.set(f"Found vulnerability in {url} - smart stop"))
+                        # Continue to next domain, but skip similar URLs in same domain
+                        pass
                     
                 # Close engine
                 loop.run_until_complete(self.sql_engine.close())
