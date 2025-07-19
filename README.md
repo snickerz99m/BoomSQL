@@ -36,11 +36,17 @@ pip install -r requirements.txt
 
 ### Running the Application
 ```bash
-# Launch the modern GUI interface
-python boomsql_new.py
-
-# Or run the original version
+# Launch GUI interface (auto-detects display availability)
 python boomsql.py
+
+# Force GUI mode (will use enhanced fallback if main GUI fails)
+python boomsql.py --force-gui
+
+# Skip GUI and run in command line mode
+python boomsql.py --skip-gui
+
+# Test GUI functionality
+python boomsql.py --gui-test
 ```
 
 ## 🎯 GUI Usage
@@ -117,9 +123,17 @@ BoomSQL/
 ## 🔍 Troubleshooting
 
 ### GUI Issues
-- **Buttons not visible**: Use `boomsql_new.py` (fixed grid layout)
-- **Layout problems**: The new interface resolves all pack() geometry issues
-- **Display scaling**: Modern interface adapts to different screen sizes
+- **Main interface failed to load**: Application now automatically falls back to enhanced basic GUI
+- **Buttons not visible**: All layout issues have been fixed with proper grid-based positioning
+- **Import hanging**: GUI module imports now have proper error handling and timeout protection
+- **Display scaling**: Interface adapts to different screen sizes and environments
+
+### Current Status
+- **✅ GUI imports fixed**: All GUI modules now import correctly without hanging
+- **✅ Syntax errors resolved**: Fixed duplicate self.self.left_frame references
+- **✅ Enhanced fallback**: Created comprehensive fallback GUI with SQL testing capabilities
+- **✅ Command line working**: Full functionality available via command line interface
+- **✅ Auto-detection**: Application automatically detects GUI availability and falls back gracefully
 
 ### SQLMap Issues
 - **Permission errors**: Ensure SQLMap binary has execute permissions
@@ -153,5 +167,6 @@ BoomSQL is designed for authorized penetration testing and security research. On
 
 ---
 
-**🎉 GUI Issues Fixed**: Start/Stop buttons now fully visible with modern grid layout system!
-**🚀 Ready for Production**: Complete SQLMap integration for real-world testing!
+**🎉 GUI Issues RESOLVED**: All import and initialization problems fixed!
+**🚀 Enhanced Fallback**: Comprehensive fallback GUI ensures functionality in all environments!
+**✅ Production Ready**: Complete SQLMap integration with robust error handling!
