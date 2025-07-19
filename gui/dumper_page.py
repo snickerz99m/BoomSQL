@@ -183,19 +183,19 @@ class DumperPage(ttk.Frame):
         self.dump_button = ttk.Button(
             self.control_frame,
             text="📦 DUMP DATA",
-            command=self.dump_data,
+            command=self.dump_database,
             state="disabled"
         )
-        self.dump_button.grid(row=1, column=0, sticky="ew", padx=2, pady=2)
+        self.dump_button.pack(fill=tk.X, padx=2, pady=2)
         
         # STOP BUTTON - NOW VISIBLE
         self.stop_button = ttk.Button(
             self.control_frame,
             text="🛑 STOP",
-            command=self.stop_operation,
+            command=self.stop_dump,
             state="disabled"
         )
-        self.stop_button.grid(row=2, column=0, sticky="ew", padx=2, pady=2)
+        self.stop_button.pack(fill=tk.X, padx=2, pady=2)
         
         # EXPORT BUTTON - NOW VISIBLE
         self.export_button = ttk.Button(
@@ -203,7 +203,7 @@ class DumperPage(ttk.Frame):
             text="💾 EXPORT",
             command=self.export_results
         )
-        self.export_button.grid(row=3, column=0, sticky="ew", padx=2, pady=2)
+        self.export_button.pack(fill=tk.X, padx=2, pady=2)
         
         # Right panel - Results
         right_frame = ttk.LabelFrame(main_frame, text="Database Structure", padding=10)
