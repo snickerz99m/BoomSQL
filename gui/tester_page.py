@@ -33,10 +33,10 @@ class TesterPage(ttk.Frame):
         
         # Left panel - Configuration
         self.left_frame = ttk.LabelFrame(main_frame, text="Testing Configuration", padding=10)
-        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        self.left_frame.configure(width=380)
-        # Allow frame to expand to show all controls
-        # self.left_frame.pack_propagate(False)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
+        # Make the left frame responsive but with a reasonable minimum width
+        self.left_frame.configure(width=420)
+        self.left_frame.pack_propagate(False)
         
         # Targets section
         targets_frame = ttk.LabelFrame(self.left_frame, text="Target URLs", padding=5)
@@ -67,11 +67,11 @@ class TesterPage(ttk.Frame):
         ttk.Button(url_buttons_frame, text="Remove", command=self.remove_url).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(url_buttons_frame, text="Clear", command=self.clear_urls).pack(side=tk.LEFT)
         
-        # Detection methods section
+        # Detection methods section with improved layout
         detection_frame = ttk.LabelFrame(self.left_frame, text="Detection Methods", padding=5)
         detection_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Detection checkboxes
+        # Detection checkboxes in a 2-column layout
         self.detection_vars = {}
         detection_methods = [
             ("Error-based", "EnableErrorBasedDetection", True),
@@ -86,85 +86,110 @@ class TesterPage(ttk.Frame):
             ("Second-order", "EnableSecondOrderDetection", False)
         ]
         
-        for name, key, default in detection_methods:
+        for i, (name, key, default) in enumerate(detection_methods):
             var = tk.BooleanVar(value=default)
             self.detection_vars[key] = var
-            ttk.Checkbutton(detection_frame, text=name, variable=var).pack(anchor=tk.W)
+            row = i // 2
+            col = i % 2
+            ttk.Checkbutton(detection_frame, text=name, variable=var).grid(
+                row=row, column=col, sticky="w", padx=(0, 20) if col == 0 else (0, 0), pady=1
+            )
             
-        # Smart testing options
+        # Smart testing options with improved layout
         smart_frame = ttk.LabelFrame(self.left_frame, text="Smart Testing", padding=5)
         smart_frame.pack(fill=tk.X, pady=(0, 10))
         
         self.smart_test_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(smart_frame, text="Smart Testing (avoid duplicates)", variable=self.smart_test_var).pack(anchor=tk.W)
+        ttk.Checkbutton(smart_frame, text="Smart Testing (avoid duplicates)", variable=self.smart_test_var).grid(row=0, column=0, columnspan=2, sticky="w")
         
-        ttk.Label(smart_frame, text="Max vulnerabilities per base domain:").pack(anchor=tk.W)
+        ttk.Label(smart_frame, text="Max vulns per domain:").grid(row=1, column=0, sticky="w", padx=(0, 5), pady=(5, 0))
         self.max_vulns_per_domain_var = tk.StringVar(value="3")
-        ttk.Entry(smart_frame, textvariable=self.max_vulns_per_domain_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(smart_frame, textvariable=self.max_vulns_per_domain_var, width=8).grid(row=1, column=1, sticky="w", pady=(5, 0))
         
         self.stop_after_vuln_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(smart_frame, text="Stop after finding vulnerability", variable=self.stop_after_vuln_var).pack(anchor=tk.W)
+        ttk.Checkbutton(smart_frame, text="Stop after finding vulnerability", variable=self.stop_after_vuln_var).grid(row=2, column=0, columnspan=2, sticky="w", pady=(5, 0))
+        # Testing options with improved layout
         options_frame = ttk.LabelFrame(self.left_frame, text="Testing Options", padding=5)
         options_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Max threads
-        ttk.Label(options_frame, text="Max Threads:").pack(anchor=tk.W)
+        # Use grid layout for better organization
+        row = 0
+        
+        # Threading and timeout in same row
+        ttk.Label(options_frame, text="Threads:").grid(row=row, column=0, sticky="w", padx=(0, 5))
         self.threads_var = tk.StringVar(value="3")
-        ttk.Entry(options_frame, textvariable=self.threads_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.threads_var, width=8).grid(row=row, column=1, sticky="w", padx=(0, 10))
         
-        # Request timeout
-        ttk.Label(options_frame, text="Request Timeout (s):").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Timeout (s):").grid(row=row, column=2, sticky="w", padx=(0, 5))
         self.timeout_var = tk.StringVar(value="30")
-        ttk.Entry(options_frame, textvariable=self.timeout_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.timeout_var, width=8).grid(row=row, column=3, sticky="w")
+        row += 1
         
-        # Time-based threshold
-        ttk.Label(options_frame, text="Time-based Threshold (s):").pack(anchor=tk.W)
+        # Time threshold and max payloads in same row
+        ttk.Label(options_frame, text="Time Threshold (s):").grid(row=row, column=0, sticky="w", padx=(0, 5), pady=(5, 0))
         self.time_threshold_var = tk.StringVar(value="3.0")
-        ttk.Entry(options_frame, textvariable=self.time_threshold_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.time_threshold_var, width=8).grid(row=row, column=1, sticky="w", padx=(0, 10), pady=(5, 0))
         
-        # Max payloads per URL
-        ttk.Label(options_frame, text="Max Payloads per URL:").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Max Payloads:").grid(row=row, column=2, sticky="w", padx=(0, 5), pady=(5, 0))
         self.max_payloads_var = tk.StringVar(value="50")
-        ttk.Entry(options_frame, textvariable=self.max_payloads_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.max_payloads_var, width=8).grid(row=row, column=3, sticky="w", pady=(5, 0))
+        row += 1
         
         # Request delay
-        ttk.Label(options_frame, text="Request Delay (ms):").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Request Delay (ms):").grid(row=row, column=0, sticky="w", padx=(0, 5), pady=(5, 0))
         self.delay_var = tk.StringVar(value="1000")
-        ttk.Entry(options_frame, textvariable=self.delay_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.delay_var, width=8).grid(row=row, column=1, sticky="w", pady=(5, 0))
+        row += 1
         
         # Checkboxes
         self.waf_bypass_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Enable WAF Bypasses", variable=self.waf_bypass_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Enable WAF Bypasses", variable=self.waf_bypass_var).grid(row=row, column=0, columnspan=2, sticky="w", pady=(5, 0))
         
         self.ssl_verify_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(options_frame, text="SSL Certificate Verification", variable=self.ssl_verify_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="SSL Verification", variable=self.ssl_verify_var).grid(row=row, column=2, columnspan=2, sticky="w", pady=(5, 0))
         
-        # Control buttons
-        control_frame = ttk.Frame(self.left_frame)
-        control_frame.pack(fill=tk.X, pady=(10, 10))
+        # Add compact workflow instructions at the bottom
+        workflow_frame = ttk.LabelFrame(self.left_frame, text="Quick Start", padding=5)
+        workflow_frame.pack(fill=tk.X, pady=(10, 0))
         
-        # Add workflow instructions
-        workflow_frame = ttk.LabelFrame(self.left_frame, text="Workflow", padding=5)
-        workflow_frame.pack(fill=tk.X, pady=(0, 10))
+        workflow_steps = [
+            "1. Add URLs to test above",
+            "2. Click 'Start Testing'", 
+            "3. Use 'Send to Dumper' for data extraction"
+        ]
+        for step in workflow_steps:
+            ttk.Label(workflow_frame, text=step, font=("Arial", 8)).pack(anchor=tk.W)
         
-        workflow_text = tk.Text(workflow_frame, height=4, wrap=tk.WORD, state=tk.DISABLED, bg='#f0f0f0')
-        workflow_instructions = """1. Add URLs to test
-2. Click 'Start Testing' to find vulnerabilities
-3. Click 'Send to Dumper' to extract data from found vulnerabilities
-4. Go to Database Dumper tab to enumerate and dump data"""
-        workflow_text.config(state=tk.NORMAL)
-        workflow_text.insert(tk.END, workflow_instructions)
-        workflow_text.config(state=tk.DISABLED)
-        workflow_text.pack(fill=tk.X)
+        # Control buttons - Main action buttons always visible at the top
+        control_frame = ttk.LabelFrame(self.left_frame, text="Controls", padding=5)
+        control_frame.pack(fill=tk.X, pady=(0, 10))
         
-        self.start_button = ttk.Button(control_frame, text="🚀 Start Testing", command=self.start_testing)
-        self.start_button.pack(side=tk.LEFT, padx=(0, 5))
+        # Main control buttons in a grid for better visibility
+        buttons_frame = ttk.Frame(control_frame)
+        buttons_frame.pack(fill=tk.X)
         
-        self.stop_button = ttk.Button(control_frame, text="🛑 Stop", command=self.stop_testing, state=tk.DISABLED)
-        self.stop_button.pack(side=tk.LEFT, padx=(0, 5))
+        self.start_button = ttk.Button(
+            buttons_frame, 
+            text="🚀 Start Testing", 
+            command=self.start_testing,
+            style="Accent.TButton"
+        )
+        self.start_button.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
         
-        self.clear_button = ttk.Button(control_frame, text="🗑️ Clear Results", command=self.clear_results)
-        self.clear_button.pack(side=tk.LEFT)
+        self.stop_button = ttk.Button(
+            buttons_frame, 
+            text="🛑 Stop", 
+            command=self.stop_testing, 
+            state=tk.DISABLED
+        )
+        self.stop_button.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
+        
+        self.clear_button = ttk.Button(
+            buttons_frame, 
+            text="🗑️ Clear", 
+            command=self.clear_results
+        )
+        self.clear_button.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Right panel - Results
         right_frame = ttk.LabelFrame(main_frame, text="Test Results", padding=10)

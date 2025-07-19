@@ -32,9 +32,39 @@ class CrawlerPage(ttk.Frame):
         
         # Left panel - Configuration
         left_frame = ttk.LabelFrame(main_frame, text="Crawler Configuration", padding=10)
-        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        left_frame.configure(width=300)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
+        left_frame.configure(width=380)
         left_frame.pack_propagate(False)
+        
+        # Control buttons - Always visible at the top
+        control_frame = ttk.LabelFrame(left_frame, text="Controls", padding=5)
+        control_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        buttons_frame = ttk.Frame(control_frame)
+        buttons_frame.pack(fill=tk.X)
+        
+        self.start_button = ttk.Button(
+            buttons_frame, 
+            text="🕷️ Start Crawl", 
+            command=self.start_crawl,
+            style="Accent.TButton"
+        )
+        self.start_button.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
+        
+        self.stop_button = ttk.Button(
+            buttons_frame, 
+            text="🛑 Stop", 
+            command=self.stop_crawl, 
+            state=tk.DISABLED
+        )
+        self.stop_button.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
+        
+        self.clear_button = ttk.Button(
+            buttons_frame, 
+            text="🗑️ Clear", 
+            command=self.clear_results
+        )
+        self.clear_button.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Target URLs (multiple)
         ttk.Label(left_frame, text="Target URLs (one per line):").pack(anchor=tk.W)
@@ -57,59 +87,50 @@ class CrawlerPage(ttk.Frame):
         ttk.Button(url_buttons_frame, text="Load URLs", command=self.load_urls).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(url_buttons_frame, text="Clear URLs", command=self.clear_urls).pack(side=tk.LEFT)
         
-        # Crawl options
+        # Crawl options with improved layout
         options_frame = ttk.LabelFrame(left_frame, text="Crawl Options", padding=5)
         options_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Max depth
-        ttk.Label(options_frame, text="Max Depth:").pack(anchor=tk.W)
+        # Use grid layout for better organization
+        row = 0
+        
+        # Max depth and max URLs in same row
+        ttk.Label(options_frame, text="Max Depth:").grid(row=row, column=0, sticky="w", padx=(0, 5))
         self.depth_var = tk.StringVar(value="3")
-        ttk.Entry(options_frame, textvariable=self.depth_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.depth_var, width=8).grid(row=row, column=1, sticky="w", padx=(0, 10))
         
-        # Max URLs per domain
-        ttk.Label(options_frame, text="Max URLs per domain:").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Max URLs:").grid(row=row, column=2, sticky="w", padx=(0, 5))
         self.max_urls_var = tk.StringVar(value="50")
-        ttk.Entry(options_frame, textvariable=self.max_urls_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.max_urls_var, width=8).grid(row=row, column=3, sticky="w")
+        row += 1
         
-        # Max parameters per domain (stop when found enough)
-        ttk.Label(options_frame, text="Stop after finding parameters:").pack(anchor=tk.W)
+        # Stop after params and delay in same row
+        ttk.Label(options_frame, text="Stop after params:").grid(row=row, column=0, sticky="w", padx=(0, 5), pady=(5, 0))
         self.max_params_var = tk.StringVar(value="5")
-        ttk.Entry(options_frame, textvariable=self.max_params_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.max_params_var, width=8).grid(row=row, column=1, sticky="w", padx=(0, 10), pady=(5, 0))
         
-        # Request delay
-        ttk.Label(options_frame, text="Request Delay (ms):").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Delay (ms):").grid(row=row, column=2, sticky="w", padx=(0, 5), pady=(5, 0))
         self.delay_var = tk.StringVar(value="1000")
-        ttk.Entry(options_frame, textvariable=self.delay_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.delay_var, width=8).grid(row=row, column=3, sticky="w", pady=(5, 0))
+        row += 1
         
-        # Checkboxes
+        # Checkboxes in 2-column layout
         self.follow_redirects_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Follow Redirects", variable=self.follow_redirects_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Follow Redirects", variable=self.follow_redirects_var).grid(row=row, column=0, columnspan=2, sticky="w", pady=(5, 0))
         
         self.extract_params_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Extract Parameters", variable=self.extract_params_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Extract Parameters", variable=self.extract_params_var).grid(row=row, column=2, columnspan=2, sticky="w", pady=(5, 0))
+        row += 1
         
         self.extract_forms_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Extract Forms", variable=self.extract_forms_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Extract Forms", variable=self.extract_forms_var).grid(row=row, column=0, columnspan=2, sticky="w", pady=(5, 0))
         
         self.extract_cookies_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Extract Cookies", variable=self.extract_cookies_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Extract Cookies", variable=self.extract_cookies_var).grid(row=row, column=2, columnspan=2, sticky="w", pady=(5, 0))
+        row += 1
         
-        # Smart crawling option
         self.smart_crawl_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Smart Stop (stop when parameters found)", variable=self.smart_crawl_var).pack(anchor=tk.W)
-        
-        # Control buttons
-        control_frame = ttk.Frame(left_frame)
-        control_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        self.start_button = ttk.Button(control_frame, text="Start Crawl", command=self.start_crawl)
-        self.start_button.pack(side=tk.LEFT, padx=(0, 5))
-        
-        self.stop_button = ttk.Button(control_frame, text="Stop", command=self.stop_crawl, state=tk.DISABLED)
-        self.stop_button.pack(side=tk.LEFT, padx=(0, 5))
-        
-        self.clear_button = ttk.Button(control_frame, text="Clear Results", command=self.clear_results)
-        self.clear_button.pack(side=tk.LEFT)
+        ttk.Checkbutton(options_frame, text="Smart Stop (stop when parameters found)", variable=self.smart_crawl_var).grid(row=row, column=0, columnspan=4, sticky="w", pady=(5, 0))
         
         # Right panel - Results
         right_frame = ttk.LabelFrame(main_frame, text="Crawl Results", padding=10)

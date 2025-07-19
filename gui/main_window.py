@@ -123,6 +123,14 @@ class MainWindow:
         style.map('TButton',
                  background=[('active', self.colors['accent'])])
         
+        # Configure accent buttons  
+        style.configure('Accent.TButton',
+                       background=self.colors['accent'],
+                       foreground=self.colors['fg'],
+                       padding=[10, 5])
+        style.map('Accent.TButton',
+                 background=[('active', '#0056b3')])  # Darker blue on hover
+        
         # Configure entries
         style.configure('TEntry',
                        fieldbackground=self.colors['entry_bg'],
