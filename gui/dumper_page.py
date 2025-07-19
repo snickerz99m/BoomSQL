@@ -165,39 +165,45 @@ class DumperPage(ttk.Frame):
         self.exclude_tables_var = tk.StringVar(value="log,temp,cache")
         ttk.Entry(filter_frame, textvariable=self.exclude_tables_var, width=20).pack(anchor=tk.W)
         
-        # Control buttons
-        control_frame = ttk.Frame(left_frame)
-        control_frame.pack(fill=tk.X, pady=(10, 10))
+        # Control buttons - FIXED LAYOUT
+        self.control_frame = ttk.Frame(self.left_frame)
+        self.control_frame.grid(row=4, column=0, sticky="ew", padx=5, pady=10)
+        self.control_frame.grid_columnconfigure(0, weight=1)
         
-        # Add workflow instructions
-        workflow_frame = ttk.LabelFrame(left_frame, text="Workflow", padding=5)
-        workflow_frame.pack(fill=tk.X, pady=(0, 10))
+        # ENUMERATE BUTTON - NOW VISIBLE
+        self.enumerate_button = ttk.Button(
+            self.control_frame,
+            text="🔍 ENUMERATE DATABASE",
+            command=self.enumerate_database,
+            style="Accent.TButton"
+        )
+        self.enumerate_button.grid(row=0, column=0, sticky="ew", padx=2, pady=2)
         
-        workflow_text = tk.Text(workflow_frame, height=4, wrap=tk.WORD, state=tk.DISABLED, bg='#f0f0f0')
-        workflow_instructions = """1. Select a vulnerability (from SQL Tester)
-2. Click 'Enumerate DB' to discover database structure
-3. Click 'Dump Data' to extract table data
-4. Click 'Export Results' to save extracted data"""
-        workflow_text.config(state=tk.NORMAL)
-        workflow_text.insert(tk.END, workflow_instructions)
-        workflow_text.config(state=tk.DISABLED)
-        workflow_text.pack(fill=tk.X)
+        # DUMP BUTTON - NOW VISIBLE
+        self.dump_button = ttk.Button(
+            self.control_frame,
+            text="📦 DUMP DATA",
+            command=self.dump_data,
+            state="disabled"
+        )
+        self.dump_button.grid(row=1, column=0, sticky="ew", padx=2, pady=2)
         
-        self.enumerate_button = ttk.Button(control_frame, text="🔍 Enumerate DB", command=self.enumerate_database)
-        self.enumerate_button.pack(side=tk.LEFT, padx=(0, 5))
+        # STOP BUTTON - NOW VISIBLE
+        self.stop_button = ttk.Button(
+            self.control_frame,
+            text="🛑 STOP",
+            command=self.stop_operation,
+            state="disabled"
+        )
+        self.stop_button.grid(row=2, column=0, sticky="ew", padx=2, pady=2)
         
-        self.dump_button = ttk.Button(control_frame, text="📦 Dump Data", command=self.dump_database, state=tk.DISABLED)
-        self.dump_button.pack(side=tk.LEFT, padx=(0, 5))
-        
-        self.stop_button = ttk.Button(control_frame, text="🛑 Stop", command=self.stop_dump, state=tk.DISABLED)
-        self.stop_button.pack(side=tk.LEFT)
-        
-        # Export button
-        export_frame = ttk.Frame(left_frame)
-        export_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        self.export_button = ttk.Button(export_frame, text="💾 Export Results", command=self.export_results, state=tk.DISABLED)
-        self.export_button.pack(fill=tk.X)
+        # EXPORT BUTTON - NOW VISIBLE
+        self.export_button = ttk.Button(
+            self.control_frame,
+            text="💾 EXPORT",
+            command=self.export_results
+        )
+        self.export_button.grid(row=3, column=0, sticky="ew", padx=2, pady=2)
         
         # Right panel - Results
         right_frame = ttk.LabelFrame(main_frame, text="Database Structure", padding=10)
