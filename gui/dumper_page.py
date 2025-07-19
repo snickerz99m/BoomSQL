@@ -36,10 +36,9 @@ class DumperPage(ttk.Frame):
         
         # Left panel - Configuration
         self.left_frame = ttk.LabelFrame(main_frame, text="Dumper Configuration", padding=10)
-        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        self.left_frame.configure(width=340)
-        # Allow frame to expand to show all controls
-        # self.left_frame.pack_propagate(False)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
+        self.left_frame.configure(width=380)
+        self.left_frame.pack_propagate(False)
         
         # Vulnerability selection
         vuln_frame = ttk.LabelFrame(self.left_frame, text="Vulnerability", padding=5)

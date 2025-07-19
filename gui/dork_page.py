@@ -31,11 +31,41 @@ class DorkPage(ttk.Frame):
         main_frame = ttk.Frame(self)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Left panel - Configuration
+        # Left panel - Configuration  
         left_frame = ttk.LabelFrame(main_frame, text="Search Configuration", padding=10)
-        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        left_frame.configure(width=300)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
+        left_frame.configure(width=350)
         left_frame.pack_propagate(False)
+        
+        # Control buttons - Always visible at the top
+        control_frame = ttk.LabelFrame(left_frame, text="Controls", padding=5)
+        control_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        buttons_frame = ttk.Frame(control_frame)
+        buttons_frame.pack(fill=tk.X)
+        
+        self.start_button = ttk.Button(
+            buttons_frame, 
+            text="🔍 Start Search", 
+            command=self.start_search,
+            style="Accent.TButton"
+        )
+        self.start_button.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
+        
+        self.stop_button = ttk.Button(
+            buttons_frame, 
+            text="🛑 Stop", 
+            command=self.stop_search, 
+            state=tk.DISABLED
+        )
+        self.stop_button.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
+        
+        self.clear_button = ttk.Button(
+            buttons_frame, 
+            text="🗑️ Clear", 
+            command=self.clear_results
+        )
+        self.clear_button.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Dorks section
         dorks_frame = ttk.LabelFrame(left_frame, text="Dorks", padding=5)
@@ -66,62 +96,54 @@ class DorkPage(ttk.Frame):
         ttk.Button(dorks_button_frame, text="Remove", command=self.remove_dork).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(dorks_button_frame, text="Clear", command=self.clear_dorks).pack(side=tk.LEFT)
         
-        # Search Engines section
+        # Search Engines section with improved layout
         engines_frame = ttk.LabelFrame(left_frame, text="Search Engines", padding=5)
         engines_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Search engine checkboxes
+        # Search engine checkboxes in a 2-column layout
         self.engine_vars = {}
-        for engine in SearchEngine:
+        engines_list = list(SearchEngine)
+        for i, engine in enumerate(engines_list):
             var = tk.BooleanVar()
             if engine in [SearchEngine.GOOGLE, SearchEngine.BING, SearchEngine.YAHOO, SearchEngine.DUCKDUCKGO]:
                 var.set(True)
             self.engine_vars[engine] = var
             
+            row = i // 2
+            col = i % 2
             ttk.Checkbutton(
                 engines_frame,
                 text=engine.value.title(),
                 variable=var
-            ).pack(anchor=tk.W)
+            ).grid(row=row, column=col, sticky="w", padx=(0, 20) if col == 0 else (0, 0), pady=1)
         
-        # Options section
+        # Options section with improved layout
         options_frame = ttk.LabelFrame(left_frame, text="Options", padding=5)
         options_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Max results
-        ttk.Label(options_frame, text="Max Results:").pack(anchor=tk.W)
+        # Use grid layout for better organization
+        row = 0
+        
+        # Max results and delay in same row
+        ttk.Label(options_frame, text="Max Results:").grid(row=row, column=0, sticky="w", padx=(0, 5))
         self.max_results_var = tk.StringVar(value="100")
-        ttk.Entry(options_frame, textvariable=self.max_results_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.max_results_var, width=8).grid(row=row, column=1, sticky="w", padx=(0, 10))
         
-        # Request delay
-        ttk.Label(options_frame, text="Request Delay (ms):").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Delay (ms):").grid(row=row, column=2, sticky="w", padx=(0, 5))
         self.delay_var = tk.StringVar(value="2000")
-        ttk.Entry(options_frame, textvariable=self.delay_var, width=10).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(options_frame, textvariable=self.delay_var, width=8).grid(row=row, column=3, sticky="w")
+        row += 1
         
-        # Filter results
+        # Checkboxes in a 2-column layout
         self.filter_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Filter Results", variable=self.filter_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Filter Results", variable=self.filter_var).grid(row=row, column=0, columnspan=2, sticky="w", pady=(5, 0))
         
-        # Remove duplicates
         self.dedup_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Remove Duplicates", variable=self.dedup_var).pack(anchor=tk.W)
+        ttk.Checkbutton(options_frame, text="Remove Duplicates", variable=self.dedup_var).grid(row=row, column=2, columnspan=2, sticky="w", pady=(5, 0))
+        row += 1
         
-        # Use proxies
         self.proxy_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(options_frame, text="Use Proxies", variable=self.proxy_var).pack(anchor=tk.W)
-        
-        # Control buttons
-        control_frame = ttk.Frame(left_frame)
-        control_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        self.start_button = ttk.Button(control_frame, text="Start Search", command=self.start_search)
-        self.start_button.pack(side=tk.LEFT, padx=(0, 5))
-        
-        self.stop_button = ttk.Button(control_frame, text="Stop", command=self.stop_search, state=tk.DISABLED)
-        self.stop_button.pack(side=tk.LEFT, padx=(0, 5))
-        
-        self.clear_button = ttk.Button(control_frame, text="Clear Results", command=self.clear_results)
-        self.clear_button.pack(side=tk.LEFT)
+        ttk.Checkbutton(options_frame, text="Use Proxies", variable=self.proxy_var).grid(row=row, column=0, columnspan=2, sticky="w", pady=(5, 0))
         
         # Right panel - Results
         right_frame = ttk.LabelFrame(main_frame, text="Search Results", padding=10)
