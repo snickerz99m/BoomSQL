@@ -37,8 +37,9 @@ class DumperPage(ttk.Frame):
         # Left panel - Configuration
         left_frame = ttk.LabelFrame(main_frame, text="Dumper Configuration", padding=10)
         left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        left_frame.configure(width=300)
-        left_frame.pack_propagate(False)
+        left_frame.configure(width=340)
+        # Allow frame to expand to show all controls
+        # left_frame.pack_propagate(False)
         
         # Vulnerability selection
         vuln_frame = ttk.LabelFrame(left_frame, text="Vulnerability", padding=5)
@@ -166,22 +167,36 @@ class DumperPage(ttk.Frame):
         
         # Control buttons
         control_frame = ttk.Frame(left_frame)
-        control_frame.pack(fill=tk.X, pady=(0, 10))
+        control_frame.pack(fill=tk.X, pady=(10, 10))
         
-        self.enumerate_button = ttk.Button(control_frame, text="Enumerate DB", command=self.enumerate_database)
+        # Add workflow instructions
+        workflow_frame = ttk.LabelFrame(left_frame, text="Workflow", padding=5)
+        workflow_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        workflow_text = tk.Text(workflow_frame, height=4, wrap=tk.WORD, state=tk.DISABLED, bg='#f0f0f0')
+        workflow_instructions = """1. Select a vulnerability (from SQL Tester)
+2. Click 'Enumerate DB' to discover database structure
+3. Click 'Dump Data' to extract table data
+4. Click 'Export Results' to save extracted data"""
+        workflow_text.config(state=tk.NORMAL)
+        workflow_text.insert(tk.END, workflow_instructions)
+        workflow_text.config(state=tk.DISABLED)
+        workflow_text.pack(fill=tk.X)
+        
+        self.enumerate_button = ttk.Button(control_frame, text="🔍 Enumerate DB", command=self.enumerate_database)
         self.enumerate_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        self.dump_button = ttk.Button(control_frame, text="Dump Data", command=self.dump_database, state=tk.DISABLED)
+        self.dump_button = ttk.Button(control_frame, text="📦 Dump Data", command=self.dump_database, state=tk.DISABLED)
         self.dump_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        self.stop_button = ttk.Button(control_frame, text="Stop", command=self.stop_dump, state=tk.DISABLED)
+        self.stop_button = ttk.Button(control_frame, text="🛑 Stop", command=self.stop_dump, state=tk.DISABLED)
         self.stop_button.pack(side=tk.LEFT)
         
         # Export button
         export_frame = ttk.Frame(left_frame)
         export_frame.pack(fill=tk.X, pady=(0, 10))
         
-        self.export_button = ttk.Button(export_frame, text="Export Results", command=self.export_results, state=tk.DISABLED)
+        self.export_button = ttk.Button(export_frame, text="💾 Export Results", command=self.export_results, state=tk.DISABLED)
         self.export_button.pack(fill=tk.X)
         
         # Right panel - Results
@@ -401,28 +416,28 @@ class DumperPage(ttk.Frame):
             return
             
         # Clear existing items
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+        for item in self.db_tree.get_children():
+            self.db_tree.delete(item)
             
         # Add database info
         for db_info in self.database_info:
-            db_item = self.tree.insert("", "end", text=f"Database: {db_info.name}", 
-                                     values=("database", f"Version: {db_info.version}", f"User: {db_info.user}"))
+            db_item = self.db_tree.insert("", "end", text=f"Database: {db_info.name}", 
+                                     values=("database", f"Tables: {len(db_info.tables)}", f"Version: {db_info.version}", "Ready", "☐"))
             
             # Add tables
             for table in db_info.tables:
-                table_item = self.tree.insert(db_item, "end", text=f"Table: {table.name}", 
-                                            values=("table", f"Rows: {table.row_count}", f"Columns: {len(table.columns)}"))
+                table_item = self.db_tree.insert(db_item, "end", text=f"Table: {table.name}", 
+                                            values=("table", f"Rows: {table.row_count}", f"Columns: {len(table.columns)}", "Ready", "☐"))
                 
                 # Add columns
                 for column in table.columns:
-                    self.tree.insert(table_item, "end", text=f"Column: {column.name}", 
-                                   values=("column", f"Type: {column.data_type}", f"Nullable: {column.nullable}"))
+                    self.db_tree.insert(table_item, "end", text=f"Column: {column.name}", 
+                                   values=("column", f"Type: {column.type}", f"Nullable: {column.nullable}", "Ready", "☐"))
         
-        # Expand all items
-        self.tree.item("", open=True)
-        for item in self.tree.get_children():
-            self.tree.item(item, open=True)
+        # Expand database items
+        self.db_tree.item("", open=True)
+        for item in self.db_tree.get_children():
+            self.db_tree.item(item, open=True)
         
     def enumeration_completed(self):
         """Enumeration completed"""

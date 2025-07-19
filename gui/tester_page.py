@@ -34,8 +34,9 @@ class TesterPage(ttk.Frame):
         # Left panel - Configuration
         left_frame = ttk.LabelFrame(main_frame, text="Testing Configuration", padding=10)
         left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        left_frame.configure(width=350)
-        left_frame.pack_propagate(False)
+        left_frame.configure(width=380)
+        # Allow frame to expand to show all controls
+        # left_frame.pack_propagate(False)
         
         # Targets section
         targets_frame = ttk.LabelFrame(left_frame, text="Target URLs", padding=5)
@@ -140,15 +141,29 @@ class TesterPage(ttk.Frame):
         
         # Control buttons
         control_frame = ttk.Frame(left_frame)
-        control_frame.pack(fill=tk.X, pady=(0, 10))
+        control_frame.pack(fill=tk.X, pady=(10, 10))
         
-        self.start_button = ttk.Button(control_frame, text="Start Testing", command=self.start_testing)
+        # Add workflow instructions
+        workflow_frame = ttk.LabelFrame(left_frame, text="Workflow", padding=5)
+        workflow_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        workflow_text = tk.Text(workflow_frame, height=4, wrap=tk.WORD, state=tk.DISABLED, bg='#f0f0f0')
+        workflow_instructions = """1. Add URLs to test
+2. Click 'Start Testing' to find vulnerabilities
+3. Click 'Send to Dumper' to extract data from found vulnerabilities
+4. Go to Database Dumper tab to enumerate and dump data"""
+        workflow_text.config(state=tk.NORMAL)
+        workflow_text.insert(tk.END, workflow_instructions)
+        workflow_text.config(state=tk.DISABLED)
+        workflow_text.pack(fill=tk.X)
+        
+        self.start_button = ttk.Button(control_frame, text="🚀 Start Testing", command=self.start_testing)
         self.start_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        self.stop_button = ttk.Button(control_frame, text="Stop", command=self.stop_testing, state=tk.DISABLED)
+        self.stop_button = ttk.Button(control_frame, text="🛑 Stop", command=self.stop_testing, state=tk.DISABLED)
         self.stop_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        self.clear_button = ttk.Button(control_frame, text="Clear Results", command=self.clear_results)
+        self.clear_button = ttk.Button(control_frame, text="🗑️ Clear Results", command=self.clear_results)
         self.clear_button.pack(side=tk.LEFT)
         
         # Right panel - Results
@@ -195,9 +210,10 @@ class TesterPage(ttk.Frame):
         self.vulns_summary_var = tk.StringVar(value="No vulnerabilities found yet")
         ttk.Label(summary_frame, textvariable=self.vulns_summary_var).pack(side=tk.LEFT)
         
-        ttk.Button(summary_frame, text="Generate Report", command=self.generate_report).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(summary_frame, text="Send to Dumper", command=self.send_to_dumper).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(summary_frame, text="Export Results", command=self.export_vulnerabilities).pack(side=tk.RIGHT)
+        ttk.Button(summary_frame, text="📄 Generate Report", command=self.generate_report).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(summary_frame, text="📤 Send to Dumper", command=self.send_to_dumper, 
+                  style="Accent.TButton").pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(summary_frame, text="💾 Export Results", command=self.export_vulnerabilities).pack(side=tk.RIGHT)
         
         # Vulnerabilities treeview
         columns = ("URL", "Parameter", "Type", "Database", "Severity", "Confidence", "Response Time")
@@ -666,18 +682,34 @@ class TesterPage(ttk.Frame):
                 messagebox.showerror("Error", f"Failed to generate report:\n{str(e)}")
                 
     def send_to_dumper(self):
-        """Send vulnerabilities to dumper"""
+        """Send vulnerabilities to dumper and switch to dumper tab"""
         if not self.vulnerability_results:
-            messagebox.showwarning("Warning", "No vulnerabilities to send")
+            messagebox.showwarning("Warning", "No vulnerabilities to send. Run SQL testing first.")
             return
             
-        # Get dumper page
-        dumper_page = self.app.main_window.dumper_page
-        if dumper_page:
-            dumper_page.import_vulnerabilities(self.vulnerability_results)
-            messagebox.showinfo("Success", f"Sent {len(self.vulnerability_results)} vulnerabilities to dumper")
-        else:
-            messagebox.showerror("Error", "Dumper page not available")
+        # Get dumper page and main window
+        try:
+            dumper_page = self.app.main_window.dumper_page
+            if dumper_page:
+                dumper_page.import_vulnerabilities(self.vulnerability_results)
+                
+                # Switch to dumper tab
+                if hasattr(self.app.main_window, 'notebook'):
+                    self.app.main_window.notebook.select(2)  # Dumper tab is usually index 2
+                
+                # Show success message with instructions
+                messagebox.showinfo(
+                    "Success", 
+                    f"✅ Sent {len(self.vulnerability_results)} vulnerabilities to Database Dumper!\n\n"
+                    f"Next steps:\n"
+                    f"1. Select a vulnerability in the Dumper tab\n"
+                    f"2. Click 'Enumerate DB' to discover database structure\n"
+                    f"3. Click 'Dump Data' to extract table data"
+                )
+            else:
+                messagebox.showerror("Error", "Database Dumper page not available")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to send vulnerabilities to dumper:\n{str(e)}")
             
     def on_vulnerability_double_click(self, event):
         """Handle vulnerability double-click"""
