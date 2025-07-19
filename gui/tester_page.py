@@ -32,14 +32,14 @@ class TesterPage(ttk.Frame):
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Left panel - Configuration
-        left_frame = ttk.LabelFrame(main_frame, text="Testing Configuration", padding=10)
-        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        left_frame.configure(width=380)
+        self.self.left_frame = ttk.LabelFrame(main_frame, text="Testing Configuration", padding=10)
+        self.self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        self.self.left_frame.configure(width=380)
         # Allow frame to expand to show all controls
-        # left_frame.pack_propagate(False)
+        # self.self.left_frame.pack_propagate(False)
         
         # Targets section
-        targets_frame = ttk.LabelFrame(left_frame, text="Target URLs", padding=5)
+        targets_frame = ttk.LabelFrame(self.left_frame, text="Target URLs", padding=5)
         targets_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
         # URLs listbox with scrollbar
@@ -68,7 +68,7 @@ class TesterPage(ttk.Frame):
         ttk.Button(url_buttons_frame, text="Clear", command=self.clear_urls).pack(side=tk.LEFT)
         
         # Detection methods section
-        detection_frame = ttk.LabelFrame(left_frame, text="Detection Methods", padding=5)
+        detection_frame = ttk.LabelFrame(self.left_frame, text="Detection Methods", padding=5)
         detection_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Detection checkboxes
@@ -92,7 +92,7 @@ class TesterPage(ttk.Frame):
             ttk.Checkbutton(detection_frame, text=name, variable=var).pack(anchor=tk.W)
             
         # Smart testing options
-        smart_frame = ttk.LabelFrame(left_frame, text="Smart Testing", padding=5)
+        smart_frame = ttk.LabelFrame(self.left_frame, text="Smart Testing", padding=5)
         smart_frame.pack(fill=tk.X, pady=(0, 10))
         
         self.smart_test_var = tk.BooleanVar(value=True)
@@ -104,7 +104,7 @@ class TesterPage(ttk.Frame):
         
         self.stop_after_vuln_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(smart_frame, text="Stop after finding vulnerability", variable=self.stop_after_vuln_var).pack(anchor=tk.W)
-        options_frame = ttk.LabelFrame(left_frame, text="Testing Options", padding=5)
+        options_frame = ttk.LabelFrame(self.left_frame, text="Testing Options", padding=5)
         options_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Max threads
@@ -140,11 +140,11 @@ class TesterPage(ttk.Frame):
         ttk.Checkbutton(options_frame, text="SSL Certificate Verification", variable=self.ssl_verify_var).pack(anchor=tk.W)
         
         # Control buttons
-        control_frame = ttk.Frame(left_frame)
+        control_frame = ttk.Frame(self.left_frame)
         control_frame.pack(fill=tk.X, pady=(10, 10))
         
         # Add workflow instructions
-        workflow_frame = ttk.LabelFrame(left_frame, text="Workflow", padding=5)
+        workflow_frame = ttk.LabelFrame(self.left_frame, text="Workflow", padding=5)
         workflow_frame.pack(fill=tk.X, pady=(0, 10))
         
         workflow_text = tk.Text(workflow_frame, height=4, wrap=tk.WORD, state=tk.DISABLED, bg='#f0f0f0')

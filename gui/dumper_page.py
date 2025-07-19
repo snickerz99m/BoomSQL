@@ -35,14 +35,14 @@ class DumperPage(ttk.Frame):
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Left panel - Configuration
-        left_frame = ttk.LabelFrame(main_frame, text="Dumper Configuration", padding=10)
-        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        left_frame.configure(width=340)
+        self.left_frame = ttk.LabelFrame(main_frame, text="Dumper Configuration", padding=10)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        self.left_frame.configure(width=340)
         # Allow frame to expand to show all controls
-        # left_frame.pack_propagate(False)
+        # self.left_frame.pack_propagate(False)
         
         # Vulnerability selection
-        vuln_frame = ttk.LabelFrame(left_frame, text="Vulnerability", padding=5)
+        vuln_frame = ttk.LabelFrame(self.left_frame, text="Vulnerability", padding=5)
         vuln_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Vulnerability listbox
@@ -52,7 +52,7 @@ class DumperPage(ttk.Frame):
         ttk.Button(vuln_frame, text="Select Vulnerability", command=self.select_vulnerability).pack(fill=tk.X)
         
         # SQLMap Configuration
-        sqlmap_frame = ttk.LabelFrame(left_frame, text="SQLMap Configuration", padding=5)
+        sqlmap_frame = ttk.LabelFrame(self.left_frame, text="SQLMap Configuration", padding=5)
         sqlmap_frame.pack(fill=tk.X, pady=(0, 10))
         
         # SQLMap technique selection
@@ -110,7 +110,7 @@ class DumperPage(ttk.Frame):
                   command=lambda: self.load_sqlmap_preset('stealth')).pack(side=tk.LEFT)
         
         # Dump options
-        options_frame = ttk.LabelFrame(left_frame, text="Dump Options", padding=5)
+        options_frame = ttk.LabelFrame(self.left_frame, text="Dump Options", padding=5)
         options_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Max threads
@@ -136,7 +136,7 @@ class DumperPage(ttk.Frame):
         format_combo.pack(anchor=tk.W, pady=(0, 5))
         
         # Advanced options frame
-        advanced_frame = ttk.LabelFrame(left_frame, text="Advanced Options", padding=5)
+        advanced_frame = ttk.LabelFrame(self.left_frame, text="Advanced Options", padding=5)
         advanced_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Smart dumping options
@@ -167,7 +167,7 @@ class DumperPage(ttk.Frame):
         
         # Control buttons - FIXED LAYOUT
         self.control_frame = ttk.Frame(self.left_frame)
-        self.control_frame.grid(row=4, column=0, sticky="ew", padx=5, pady=10)
+        self.control_frame.pack(fill=tk.X, pady=10)
         self.control_frame.grid_columnconfigure(0, weight=1)
         
         # ENUMERATE BUTTON - NOW VISIBLE
@@ -177,7 +177,7 @@ class DumperPage(ttk.Frame):
             command=self.enumerate_database,
             style="Accent.TButton"
         )
-        self.enumerate_button.grid(row=0, column=0, sticky="ew", padx=2, pady=2)
+        self.enumerate_button.pack(fill=tk.X, padx=2, pady=2)
         
         # DUMP BUTTON - NOW VISIBLE
         self.dump_button = ttk.Button(
