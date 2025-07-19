@@ -32,11 +32,11 @@ class TesterPage(ttk.Frame):
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Left panel - Configuration
-        self.self.left_frame = ttk.LabelFrame(main_frame, text="Testing Configuration", padding=10)
-        self.self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        self.self.left_frame.configure(width=380)
+        self.left_frame = ttk.LabelFrame(main_frame, text="Testing Configuration", padding=10)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        self.left_frame.configure(width=380)
         # Allow frame to expand to show all controls
-        # self.self.left_frame.pack_propagate(False)
+        # self.left_frame.pack_propagate(False)
         
         # Targets section
         targets_frame = ttk.LabelFrame(self.left_frame, text="Target URLs", padding=5)
