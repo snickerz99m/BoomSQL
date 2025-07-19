@@ -116,13 +116,26 @@ try:
     from core.logger import setup_logging
     from core.event_loop_manager import get_event_loop_manager, shutdown_event_loop
     
-    # GUI imports (may fail if tkinter not available)
+    # GUI imports (may fail if tkinter not available or components broken)
+    MainWindow = None
+    DisclaimerDialog = None
+    
     if TKINTER_AVAILABLE:
-        from gui.main_window import MainWindow
-        from gui.disclaimer_dialog import DisclaimerDialog
-    else:
-        MainWindow = None
-        DisclaimerDialog = None
+        try:
+            print("📦 Testing GUI module imports...")
+            from gui.main_window import MainWindow
+            from gui.disclaimer_dialog import DisclaimerDialog
+            print("✅ GUI modules imported successfully")
+        except ImportError as e:
+            print(f"⚠️ GUI module import failed: {e}")
+            print("🔧 Will use fallback GUI interface")
+            MainWindow = None
+            DisclaimerDialog = None
+        except Exception as e:
+            print(f"⚠️ GUI module initialization failed: {e}")
+            print("🔧 Will use fallback GUI interface")
+            MainWindow = None
+            DisclaimerDialog = None
         
 except ImportError as e:
     print(f"Error importing modules: {e}")
@@ -285,76 +298,264 @@ class BoomSQLApplication:
             
     def create_fallback_interface(self):
         """Create a basic fallback interface when MainWindow fails"""
+        print("🔧 Creating enhanced fallback GUI...")
+        
+        # Import ttk for notebook widget
+        from tkinter import ttk
+        
         # Clear any existing widgets
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        # Main container
+        # Main container with dark theme
         main_frame = tk.Frame(self.root, bg="#2b2b2b")
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Title
+        # Title section
+        title_frame = tk.Frame(main_frame, bg="#2b2b2b")
+        title_frame.pack(fill=tk.X, pady=(0, 20))
+        
         title_label = tk.Label(
-            main_frame,
+            title_frame,
             text="BoomSQL - Advanced SQL Injection Testing Tool",
             font=("Arial", 18, "bold"),
             bg="#2b2b2b",
             fg="#ffffff"
         )
-        title_label.pack(pady=(0, 10))
+        title_label.pack()
         
-        # Version
         version_label = tk.Label(
-            main_frame,
-            text="Version 2.0.0 - Python Edition",
+            title_frame,
+            text="Version 2.0.0 - Python Edition (Fallback GUI)",
             font=("Arial", 12),
             bg="#2b2b2b",
             fg="#cccccc"
         )
-        version_label.pack(pady=(0, 20))
+        version_label.pack()
+        
+        # Create notebook for basic tabs
+        self.fallback_notebook = ttk.Notebook(main_frame)
+        self.fallback_notebook.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
+        
+        # Basic SQL Tester Tab
+        self.create_basic_tester_tab()
+        
+        # Basic Database Dumper Tab
+        self.create_basic_dumper_tab()
+        
+        # Settings/Help Tab
+        self.create_help_tab()
+        
+        print("✅ Enhanced fallback GUI created with basic functionality")
+        
+    def create_basic_tester_tab(self):
+        """Create basic SQL injection tester tab"""
+        tester_frame = tk.Frame(self.fallback_notebook, bg="#2b2b2b")
+        self.fallback_notebook.add(tester_frame, text="🎯 SQL Tester")
+        
+        # URL input section
+        url_frame = tk.LabelFrame(tester_frame, text="Target URL", 
+                                 bg="#2b2b2b", fg="#ffffff", font=("Arial", 12, "bold"))
+        url_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        tk.Label(url_frame, text="Enter URL to test:", 
+                bg="#2b2b2b", fg="#ffffff").pack(anchor=tk.W, padx=5, pady=5)
+        
+        self.url_entry = tk.Entry(url_frame, font=("Arial", 11), width=80)
+        self.url_entry.pack(fill=tk.X, padx=5, pady=5)
+        self.url_entry.insert(0, "http://testphp.vulnweb.com/listproducts.php?cat=1")
+        
+        # Control buttons
+        button_frame = tk.Frame(url_frame, bg="#2b2b2b")
+        button_frame.pack(fill=tk.X, padx=5, pady=10)
+        
+        self.test_button = tk.Button(
+            button_frame,
+            text="🚀 START TESTING",
+            command=self.start_basic_test,
+            font=("Arial", 12, "bold"),
+            bg="#4CAF50",
+            fg="#ffffff",
+            padx=20,
+            pady=8
+        )
+        self.test_button.grid(row=0, column=0, padx=(0, 10), sticky="w")
+        
+        self.stop_button = tk.Button(
+            button_frame,
+            text="⏹ STOP",
+            command=self.stop_basic_test,
+            font=("Arial", 12, "bold"),
+            bg="#f44336",
+            fg="#ffffff",
+            padx=20,
+            pady=8,
+            state=tk.DISABLED
+        )
+        self.stop_button.grid(row=0, column=1, padx=(0, 10), sticky="w")
+        
+        self.clear_button = tk.Button(
+            button_frame,
+            text="🗑 CLEAR",
+            command=self.clear_results,
+            font=("Arial", 12, "bold"),
+            bg="#666666",
+            fg="#ffffff",
+            padx=20,
+            pady=8
+        )
+        self.clear_button.grid(row=0, column=2, sticky="w")
+        
+        # Results section
+        results_frame = tk.LabelFrame(tester_frame, text="Test Results", 
+                                     bg="#2b2b2b", fg="#ffffff", font=("Arial", 12, "bold"))
+        results_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Results text area with scrollbar
+        text_frame = tk.Frame(results_frame, bg="#2b2b2b")
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        self.results_text = tk.Text(
+            text_frame,
+            font=("Consolas", 10),
+            bg="#1e1e1e",
+            fg="#ffffff",
+            wrap=tk.WORD
+        )
+        
+        scrollbar = tk.Scrollbar(text_frame, command=self.results_text.yview)
+        self.results_text.config(yscrollcommand=scrollbar.set)
+        
+        self.results_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+    def create_basic_dumper_tab(self):
+        """Create basic database dumper tab"""
+        dumper_frame = tk.Frame(self.fallback_notebook, bg="#2b2b2b")
+        self.fallback_notebook.add(dumper_frame, text="💾 Database Dumper")
+        
+        # Vulnerable URL input
+        url_frame = tk.LabelFrame(dumper_frame, text="Vulnerable URL", 
+                                 bg="#2b2b2b", fg="#ffffff", font=("Arial", 12, "bold"))
+        url_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        tk.Label(url_frame, text="Enter vulnerable URL:", 
+                bg="#2b2b2b", fg="#ffffff").pack(anchor=tk.W, padx=5, pady=5)
+        
+        self.dump_url_entry = tk.Entry(url_frame, font=("Arial", 11), width=80)
+        self.dump_url_entry.pack(fill=tk.X, padx=5, pady=5)
+        
+        # Control buttons
+        dump_button_frame = tk.Frame(url_frame, bg="#2b2b2b")
+        dump_button_frame.pack(fill=tk.X, padx=5, pady=10)
+        
+        self.enum_button = tk.Button(
+            dump_button_frame,
+            text="🔍 ENUMERATE DATABASE",
+            command=self.start_enum,
+            font=("Arial", 12, "bold"),
+            bg="#2196F3",
+            fg="#ffffff",
+            padx=20,
+            pady=8
+        )
+        self.enum_button.grid(row=0, column=0, padx=(0, 10), sticky="w")
+        
+        self.dump_button = tk.Button(
+            dump_button_frame,
+            text="📦 DUMP DATA",
+            command=self.start_dump,
+            font=("Arial", 12, "bold"),
+            bg="#9C27B0",
+            fg="#ffffff",
+            padx=20,
+            pady=8
+        )
+        self.dump_button.grid(row=0, column=1, padx=(0, 10), sticky="w")
+        
+        # Dump results
+        dump_results_frame = tk.LabelFrame(dumper_frame, text="Database Information", 
+                                          bg="#2b2b2b", fg="#ffffff", font=("Arial", 12, "bold"))
+        dump_results_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        dump_text_frame = tk.Frame(dump_results_frame, bg="#2b2b2b")
+        dump_text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        self.dump_results_text = tk.Text(
+            dump_text_frame,
+            font=("Consolas", 10),
+            bg="#1e1e1e",
+            fg="#ffffff",
+            wrap=tk.WORD
+        )
+        
+        dump_scrollbar = tk.Scrollbar(dump_text_frame, command=self.dump_results_text.yview)
+        self.dump_results_text.config(yscrollcommand=dump_scrollbar.set)
+        
+        self.dump_results_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        dump_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+    def create_help_tab(self):
+        """Create help and settings tab"""
+        help_frame = tk.Frame(self.fallback_notebook, bg="#2b2b2b")
+        self.fallback_notebook.add(help_frame, text="❓ Help")
         
         # Status message
         status_label = tk.Label(
-            main_frame,
-            text="⚠️ Main interface failed to load\nBasic GUI mode active",
-            font=("Arial", 14),
+            help_frame,
+            text="⚠️ Main interface failed to load - Basic GUI mode active",
+            font=("Arial", 14, "bold"),
             bg="#2b2b2b",
             fg="#ff6b35",
             justify=tk.CENTER
         )
-        status_label.pack(pady=(0, 30))
+        status_label.pack(pady=20)
         
         # Instructions
         instructions = tk.Text(
-            main_frame,
-            height=8,
+            help_frame,
+            height=20,
             font=("Arial", 11),
             bg="#404040",
             fg="#ffffff",
             wrap=tk.WORD
         )
-        instructions.pack(fill=tk.X, pady=(0, 20))
+        instructions.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         instructions.insert(tk.END, 
-            "BoomSQL is running in fallback GUI mode.\n\n"
-            "To use the full functionality, run from command line:\n\n"
+            "BoomSQL - Fallback GUI Mode\n\n"
+            "This simplified interface provides basic SQL injection testing capabilities.\n\n"
+            "SQL TESTER:\n"
+            "• Enter a URL with parameters (e.g., http://site.com/page?id=1)\n"
+            "• Click 'START TESTING' to scan for SQL injection vulnerabilities\n"
+            "• Results will show detected vulnerabilities and database information\n\n"
+            "DATABASE DUMPER:\n"
+            "• Enter a confirmed vulnerable URL\n"
+            "• Click 'ENUMERATE DATABASE' to discover database structure\n"
+            "• Click 'DUMP DATA' to extract database contents\n\n"
+            "COMMAND LINE USAGE:\n"
+            "For full functionality, use command line:\n\n"
             "• Test URL: python boomsql.py --url 'http://example.com/page?id=1'\n"
             "• Crawl site: python boomsql.py --crawl 'http://example.com'\n"
             "• Dump database: python boomsql.py --dump 'http://vulnerable-url'\n"
             "• Skip GUI: python boomsql.py --skip-gui\n"
             "• Test GUI: python boomsql.py --gui-test\n\n"
-            "Check the logs for error details."
+            "TROUBLESHOOTING:\n"
+            "• Check the console for error messages\n"
+            "• Ensure target URLs are accessible\n"
+            "• Use --skip-gui flag for command line mode\n"
+            "• Report issues on the project repository\n\n"
+            "This fallback GUI provides essential functionality while the main interface is being fixed."
         )
         instructions.config(state=tk.DISABLED)
         
-        # Buttons frame
-        button_frame = tk.Frame(main_frame, bg="#2b2b2b")
-        button_frame.pack(fill=tk.X, pady=(0, 20))
+        # Action buttons
+        action_frame = tk.Frame(help_frame, bg="#2b2b2b")
+        action_frame.pack(fill=tk.X, padx=20, pady=20)
         
-        # Test GUI button
-        test_button = tk.Button(
-            button_frame,
-            text="Test GUI",
+        gui_test_button = tk.Button(
+            action_frame,
+            text="Test GUI Components",
             command=self.run_gui_test,
             font=("Arial", 11),
             bg="#ff6b35",
@@ -362,12 +563,12 @@ class BoomSQLApplication:
             padx=20,
             pady=8
         )
-        test_button.pack(side=tk.LEFT, padx=(0, 10))
+        gui_test_button.pack(side=tk.LEFT, padx=(0, 10))
         
         # Close button
         close_button = tk.Button(
-            button_frame,
-            text="Close",
+            action_frame,
+            text="Close Application",
             command=self.root.quit,
             font=("Arial", 11),
             bg="#666666",
@@ -377,7 +578,108 @@ class BoomSQLApplication:
         )
         close_button.pack(side=tk.LEFT)
         
-        print("✅ Fallback GUI interface created")
+    def start_basic_test(self):
+        """Start basic SQL injection test"""
+        url = self.url_entry.get().strip()
+        if not url:
+            self.results_text.insert(tk.END, "❌ Please enter a URL to test\n\n")
+            return
+            
+        self.test_button.config(state=tk.DISABLED)
+        self.stop_button.config(state=tk.NORMAL)
+        
+        self.results_text.insert(tk.END, f"🎯 Starting SQL injection test on: {url}\n")
+        self.results_text.insert(tk.END, "=" * 60 + "\n")
+        
+        # Run test in thread to avoid blocking GUI
+        threading.Thread(target=self._run_basic_test, args=(url,), daemon=True).start()
+        
+    def _run_basic_test(self, url):
+        """Run basic SQL injection test in background thread"""
+        try:
+            import subprocess
+            import sys
+            
+            # Use command line interface for testing
+            cmd = [sys.executable, "boomsql.py", "--url", url]
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+                                     text=True, cwd=project_root)
+            
+            # Read output line by line
+            for line in process.stdout:
+                self.root.after(0, lambda l=line: self.results_text.insert(tk.END, l))
+                self.root.after(0, lambda: self.results_text.see(tk.END))
+            
+            process.wait()
+            
+            self.root.after(0, lambda: self.results_text.insert(tk.END, "\n✅ Test completed\n\n"))
+            
+        except Exception as e:
+            self.root.after(0, lambda: self.results_text.insert(tk.END, f"❌ Test failed: {e}\n\n"))
+        finally:
+            self.root.after(0, self._test_finished)
+            
+    def _test_finished(self):
+        """Re-enable test button after test completes"""
+        self.test_button.config(state=tk.NORMAL)
+        self.stop_button.config(state=tk.DISABLED)
+        
+    def stop_basic_test(self):
+        """Stop basic SQL injection test"""
+        self.results_text.insert(tk.END, "⏹ Test stopped by user\n\n")
+        self._test_finished()
+        
+    def clear_results(self):
+        """Clear test results"""
+        self.results_text.delete(1.0, tk.END)
+        
+    def start_enum(self):
+        """Start database enumeration"""
+        url = self.dump_url_entry.get().strip()
+        if not url:
+            self.dump_results_text.insert(tk.END, "❌ Please enter a vulnerable URL\n\n")
+            return
+            
+        self.dump_results_text.insert(tk.END, f"🔍 Enumerating database structure for: {url}\n")
+        self.dump_results_text.insert(tk.END, "=" * 60 + "\n")
+        self.dump_results_text.insert(tk.END, "⏳ This feature requires the full GUI interface\n")
+        self.dump_results_text.insert(tk.END, "💡 Use: python boomsql.py --dump '" + url + "' for command line dumping\n\n")
+        
+    def start_dump(self):
+        """Start database dump"""
+        url = self.dump_url_entry.get().strip()
+        if not url:
+            self.dump_results_text.insert(tk.END, "❌ Please enter a vulnerable URL\n\n")
+            return
+            
+        self.dump_results_text.insert(tk.END, f"📦 Dumping database data for: {url}\n")
+        self.dump_results_text.insert(tk.END, "=" * 60 + "\n")
+        
+        # Run dump in thread
+        threading.Thread(target=self._run_basic_dump, args=(url,), daemon=True).start()
+        
+    def _run_basic_dump(self, url):
+        """Run basic database dump in background thread"""
+        try:
+            import subprocess
+            import sys
+            
+            # Use command line interface for dumping
+            cmd = [sys.executable, "boomsql.py", "--dump", url]
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+                                     text=True, cwd=project_root)
+            
+            # Read output line by line
+            for line in process.stdout:
+                self.root.after(0, lambda l=line: self.dump_results_text.insert(tk.END, l))
+                self.root.after(0, lambda: self.dump_results_text.see(tk.END))
+            
+            process.wait()
+            
+            self.root.after(0, lambda: self.dump_results_text.insert(tk.END, "\n✅ Dump completed\n\n"))
+            
+        except Exception as e:
+            self.root.after(0, lambda: self.dump_results_text.insert(tk.END, f"❌ Dump failed: {e}\n\n"))
         
     def run_gui_test(self):
         """Run GUI diagnostic test"""
@@ -752,10 +1054,22 @@ def main():
         print("🔧 Running GUI diagnostic test...")
         print()
         try:
-            from windows_gui_test import test_windows_gui
-            return test_windows_gui()
-        except ImportError:
-            print("❌ GUI test module not found")
+            # Simple GUI test without external module
+            print("Testing basic tkinter functionality...")
+            test_root = tk.Tk()
+            test_root.title("BoomSQL GUI Test")
+            test_root.geometry("400x300")
+            
+            tk.Label(test_root, text="GUI Test Successful!", 
+                    font=("Arial", 16), pady=50).pack()
+            tk.Button(test_root, text="Close", 
+                     command=test_root.destroy, pady=10).pack()
+            
+            test_root.mainloop()
+            print("✅ Basic GUI test completed successfully")
+            return True
+        except Exception as e:
+            print(f"❌ GUI test failed: {e}")
             return False
     
     print("Starting application...")
